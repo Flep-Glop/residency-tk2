@@ -403,6 +403,25 @@ const SBRTForm = () => {
                     {errors.common_info?.physician?.name?.message}
                   </FormErrorMessage>
                 </FormControl>
+
+                <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
+                  <FormLabel fontSize="sm">Physicist Name</FormLabel>
+                  <Select
+                    size="sm"
+                    {...register("common_info.physicist.name", {
+                      required: "Physicist name is required"
+                    })}
+                    aria-label="Select physicist"
+                  >
+                    <option value="">Select a physicist</option>
+                    {physicists.map(physicist => (
+                      <option key={physicist} value={physicist}>{physicist}</option>
+                    ))}
+                  </Select>
+                  <FormErrorMessage>
+                    {errors.common_info?.physicist?.name?.message}
+                  </FormErrorMessage>
+                </FormControl>
               </Box>
 
               {/* Patient Section (Nested) */}
