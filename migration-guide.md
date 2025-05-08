@@ -83,7 +83,7 @@ A step-by-step checklist for migrating the Medical Physics Residency Toolkit fro
 
 ### Additional Modules
 - [ ] Pacemaker documentation
-- [ ] SBRT write-up generator
+- [x] SBRT write-up generator
 - [ ] SRS write-up generator
 
 ## Deployment

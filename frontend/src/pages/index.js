@@ -31,6 +31,12 @@ const HomePage = () => {
       isAvailable: true
     },
     {
+      title: 'SBRT',
+      description: 'Create stereotactic body radiation therapy documentation',
+      path: '/sbrt',
+      isAvailable: true
+    },
+    {
       title: 'Prior Dose',
       description: 'Calculate and document prior radiation exposures',
       path: '/prior-dose',

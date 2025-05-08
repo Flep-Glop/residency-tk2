@@ -1,0 +1,182 @@
+/* We can remove duplicate variable definitions since they're now in theme_utils.py */
+/* Just keep the styling that's specific to the landing page */
+
+/* Global typography */
+h1 {
+    color: var(--text-color) !important;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: var(--subtitle-color) !important;
+    font-size: 1.2rem;
+    margin-top: 0;
+    font-weight: 300;
+}
+
+h2 {
+    color: var(--text-color) !important;
+    margin-top: 0;
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+h3 {
+    color: var(--primary-color) !important;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+/* Tab styling - matched to QuickWrite style */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 2px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    padding: 8px 16px;
+    font-weight: 500;
+    border-radius: 4px 4px 0 0;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+    color: var(--primary-color) !important;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Card styling */
+.tool-card {
+    background-color: var(--card-background) !important;
+    border-radius: 12px;
+    padding: 1.8rem;
+    margin: 1rem 0;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: 0 4px 16px var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--card-shadow);
+}
+
+.tool-card p {
+    color: var(--subtitle-color) !important;
+    margin-bottom: 1.2rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.info-card, .coming-soon-card {
+    background-color: var(--card-background) !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: 0 4px 12px var(--card-shadow);
+}
+
+.info-card h3, .coming-soon-card h3 {
+    margin-top: 0;
+    color: var(--primary-color) !important;
+}
+
+.coming-soon-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Button styling to match QuickWrite */
+button {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    padding: 0.4rem 0.8rem !important;
+    height: auto !important;
+    transition: all 0.2s ease !important;
+}
+
+button:hover {
+    background-color: var(--primary-color-hover) !important;
+    box-shadow: 0 4px 12px var(--button-shadow) !important;
+}
+
+/* Smaller buttons for quick access */
+[data-testid="stButton"] > button[kind="secondary"] {
+    background-color: var(--secondary-background) !important;
+    color: var(--primary-color) !important;
+    border: 1px solid var(--card-border) !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 8px !important;
+}
+
+[data-testid="stButton"] > button[kind="secondary"]:hover {
+    background-color: var(--secondary-background-hover) !important; 
+    color: var(--primary-color-hover) !important;
+}
+
+/* Version badge */
+.version {
+    display: inline-block;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Timeline */
+.timeline {
+    display: inline-block;
+    background-color: var(--timeline-background) !important;
+    color: var(--timeline-text) !important;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Quick access buttons */
+.quick-access-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.quick-access-button {
+    display: inline-block;
+    background-color: var(--secondary-background) !important;
+    color: var(--primary-color) !important;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: 1px solid var(--card-border);
+    text-align: center;
+    flex: 1 1 calc(33.333% - 10px);
+    min-width: 100px;
+    cursor: pointer;
+}
+
+.quick-access-button:hover {
+    background-color: var(--secondary-background-hover) !important;
+    color: var(--primary-color-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px var(--button-shadow);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .tool-card, .info-card, .coming-soon-card {
+        padding: 1.2rem;
+    }
+    
+    .quick-access-button {
+        flex: 1 1 calc(50% - 10px);
+    }
+}
