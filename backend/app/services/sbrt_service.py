@@ -95,13 +95,13 @@ class SBRTService:
     def get_dose_constraints(self, site: str) -> Dict[str, Any]:
         constraints = self.dose_constraints.get(site)
         if not constraints:
-            return {"error": f"No dose constraints found for site: {site}"}
+            return {"error": f"No dose constraints found for site: {site}. Ensure site is one of {self.treatment_sites}"}
         return constraints
 
     def get_fractionation_schemes(self, site: str) -> List[Dict[str, Any]]:
         schemes = self.fractionation_schemes.get(site)
         if not schemes:
-            return [{"error": f"No fractionation schemes found for site: {site}"}]
+            return [{"error": f"No fractionation schemes found for site: {site}. Ensure site is one of {self.treatment_sites}"}]
         return schemes
 
     def generate_sbrt_writeup(self, request: SBRTGenerateRequest) -> SBRTGenerateResponse:
@@ -117,7 +117,7 @@ class SBRTService:
         motion_management = request.sbrt_data.motion_management or "standard immobilization"
         
         is_custom_lesion = request.sbrt_data.is_custom_lesion
-        custom_lesion_description = request.sbrt_data.custom_lesion_description or "specified custom location"
+        custom_lesion_description = request.sbrt_data.custom_lesion_description
         
         dose_per_fraction = dose / fractions
         
@@ -125,40 +125,43 @@ class SBRTService:
         if is_custom_lesion and custom_lesion_description:
             lesion_description_text = f"a {lesion_size} {custom_lesion_description}"
         elif is_custom_lesion:
-            lesion_description_text = f"a {lesion_size} lesion at a custom-specified site"
+            lesion_description_text = f"a {lesion_size} lesion at a custom-specified site within the {treatment_site}"
 
         writeup = f"Dr. {physician} requested a medical physics consultation for stereotactic body radiation therapy (SBRT) treatment planning. "
         writeup += f"The patient is a {patient_age}-year-old {patient_sex} with {lesion_description_text}. "
         
-        site_specific_intro_text = treatment_site
+        site_intro_text = treatment_site
         if is_custom_lesion and custom_lesion_description:
-            site_specific_intro_text = custom_lesion_description
+            site_intro_text = custom_lesion_description
         elif is_custom_lesion:
-            site_specific_intro_text = "the custom-specified lesion site"
+            site_intro_text = f"the custom-specified lesion within the {treatment_site}"
 
         if treatment_site.lower() == "lung":
-            writeup += f"Dr. {physician} has elected to treat this {site_specific_intro_text} with SBRT using {motion_management} for respiratory motion management. "
+            writeup += f"Dr. {physician} has elected to treat this {site_intro_text} with SBRT using {motion_management} for respiratory motion management. "
         elif treatment_site.lower() == "spine":
-            writeup += f"Dr. {physician} has elected to treat this {site_specific_intro_text} with SBRT using {motion_management} for precise target localization. "
+            writeup += f"Dr. {physician} has elected to treat this {site_intro_text} with SBRT using {motion_management} for precise target localization. "
         else:
-            writeup += f"Dr. {physician} has elected to treat this {site_specific_intro_text} with SBRT using {motion_management}. "
+            writeup += f"Dr. {physician} has elected to treat this {site_intro_text} with SBRT using {motion_management}. "
         
         writeup += "\n\nA high quality CT simulation was performed with thin slices (1-2mm) through the region of interest. "
-        if treatment_site.lower() in ["lung", "liver", "pancreas"] and not is_custom_lesion:
+        needs_4dct = False
+        if treatment_site.lower() in ["lung", "liver", "pancreas"]:
+            needs_4dct = True
+        if is_custom_lesion and custom_lesion_description and any(keyword in custom_lesion_description.lower() for keyword in ["lung", "liver", "pancreas"]):
+             needs_4dct = True
+        if needs_4dct:
             writeup += "A 4D-CT was also acquired to assess respiratory motion and determine the internal target volume (ITV). "
-        elif is_custom_lesion and custom_lesion_description and any(keyword in custom_lesion_description.lower() for keyword in ["lung", "liver", "pancreas"]):
-             writeup += "A 4D-CT was also acquired to assess respiratory motion and determine the internal target volume (ITV). "
 
         writeup += f"The gross tumor volume (GTV) was contoured by Dr. {physician} and expanded appropriately to create the planning target volume (PTV). "
         writeup += f"A radiation treatment plan was developed to deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose_per_fraction:.2f} Gy per fraction) "
-        writeup += f"to the PTV encompassing the {site_specific_intro_text}. "
+        writeup += f"to the PTV encompassing the {site_intro_text}. "
         
         if request.sbrt_data.dose_constraints_met:
-            writeup += "All dose constraints to nearby critical structures were met according to the protocol guidelines for the {treatment_site}. "
+            writeup += f"All dose constraints to nearby critical structures for the {treatment_site} region were met according to the protocol guidelines. "
         else:
-            writeup += f"Dose constraints for the {treatment_site} were reviewed with Dr. {physician}. "
+            writeup += f"Dose constraints for the {treatment_site} region were reviewed with Dr. {physician}. "
         if is_custom_lesion:
-            writeup += "For custom lesions, specific constraints are determined on a case-by-case basis. "
+            writeup += "For this custom-specified lesion, specific constraints and considerations are determined on a case-by-case basis by the treating physician. "
         
         writeup += "\n\nPatient-specific quality assurance measurements were performed prior to treatment. "
         writeup += "Daily pre-treatment cone-beam CT imaging will be used for precise target localization. "
@@ -174,57 +177,84 @@ class SBRTService:
         fractions = request.fractions
         
         is_valid = True
-        message = f"Validation for {site} with {dose}Gy in {fractions}fx successful."
+        message = f"Validation for {site} ({dose}Gy in {fractions}fx) successful."
         constraints_met = []
         constraints_violated = []
         
         if site not in self.fractionation_schemes:
             is_valid = False
-            message = f"Site '{site}' not found in standard schemes. Ensure frontend sends a valid site from the dropdown."
-            constraints_violated.append({"constraint": "Site validation", "detail": message})
+            message = f"Site '{site}' not found in standard fractionation schemes. Please select a valid site."
+            constraints_violated.append({"constraint": "Site Definition", "detail": message})
             return SBRTValidateResponse(
-                is_valid=is_valid,
-                message=message,
-                constraints_met=constraints_met,
-                constraints_violated=constraints_violated
+                is_valid=is_valid, message=message,
+                constraints_met=constraints_met, constraints_violated=constraints_violated
             )
         
         standard_schemes = self.fractionation_schemes.get(site, [])
+        if not standard_schemes:
+            is_valid = False
+            message = f"No standard fractionation schemes defined for site '{site}'."
+            constraints_violated.append({"constraint": "Scheme Availability", "detail": message})
+            return SBRTValidateResponse(
+                is_valid=is_valid, message=message,
+                constraints_met=constraints_met, constraints_violated=constraints_violated
+            )
+
         scheme_match = False
         for scheme in standard_schemes:
-            if scheme["dose"] == dose and scheme["fractions"] == fractions:
+            if scheme.get("dose") == dose and scheme.get("fractions") == fractions:
                 scheme_match = True
-                constraints_met.append({"constraint": "Standard protocol", "detail": f"Matches {scheme['description']}"})
+                constraints_met.append({"constraint": "Standard Protocol", "detail": f"Matches {scheme.get('description', 'standard regimen')}"})
                 break
         
         if not scheme_match:
-            alpha_beta = 10 
-            bed = dose * (1 + dose / (fractions * alpha_beta))
+            alpha_beta = 10.0
+            bed = dose * (1 + dose / (float(fractions) * alpha_beta))
+            
             closest_scheme = None
             min_diff = float('inf')
             
             for scheme in standard_schemes:
-                scheme_bed = scheme["dose"] * (1 + scheme["dose"] / (scheme["fractions"] * alpha_beta))
+                scheme_dose = scheme.get("dose")
+                scheme_fractions = scheme.get("fractions")
+                if scheme_dose is None or scheme_fractions is None or scheme_fractions == 0:
+                    continue
+                
+                scheme_bed = scheme_dose * (1 + scheme_dose / (float(scheme_fractions) * alpha_beta))
                 diff = abs(bed - scheme_bed)
                 if diff < min_diff:
                     min_diff = diff
                     closest_scheme = scheme
             
             if closest_scheme:
-                closest_bed = closest_scheme["dose"] * (1 + closest_scheme["dose"] / (closest_scheme["fractions"] * alpha_beta))
-                if abs(bed - closest_bed) / closest_bed <= 0.1:
-                    constraints_met.append({"constraint": "BED equivalent", "detail": f"BED = {bed:.2f} Gy, similar to standard protocol ({closest_scheme['description']})"})
-                else:
+                cs_dose = closest_scheme.get("dose")
+                cs_fractions = closest_scheme.get("fractions")
+                cs_desc = closest_scheme.get("description", "standard regimen")
+
+                if cs_dose is None or cs_fractions is None or cs_fractions == 0:
                     is_valid = False
-                    constraints_violated.append({
-                        "constraint": "Non-standard regimen", 
-                        "detail": f"BED = {bed:.2f} Gy. Differs significantly from {closest_scheme['description']} (BED: {closest_bed:.2f} Gy)."
-                    })
-                    message = f"Non-standard regimen for {site}. Consider {closest_scheme['dose']} Gy in {closest_scheme['fractions']} fractions."
+                    message = f"Error comparing to standard schemes for {site}. Data for closest scheme is incomplete."
+                    constraints_violated.append({"constraint": "Data Integrity", "detail": "Closest standard scheme data incomplete."})
+                else:
+                    closest_scheme_bed = cs_dose * (1 + cs_dose / (float(cs_fractions) * alpha_beta))
+                    if closest_scheme_bed == 0:
+                        is_valid = False
+                        message = f"Non-standard regimen for {site}. BED comparison issue with {cs_desc}."
+                        constraints_violated.append({"constraint": "BED Comparison", "detail": f"Proposed BED={bed:.2f}Gy. Cannot reliably compare to {cs_desc} (BED: {closest_scheme_bed:.2f}Gy)."})
+                    elif abs(bed - closest_scheme_bed) / closest_scheme_bed <= 0.1:
+                        constraints_met.append({"constraint": "BED Equivalence", "detail": f"BED = {bed:.2f} Gy, within 10% of {cs_desc} (BED: {closest_scheme_bed:.2f} Gy)"})
+                        message += f" BED is within 10% of {cs_desc}."
+                    else:
+                        is_valid = False
+                        message = f"Non-standard regimen for {site}. BED ({bed:.2f} Gy) differs >10% from {cs_desc} (BED: {closest_scheme_bed:.2f} Gy)."
+                        constraints_violated.append({
+                            "constraint": "Non-Standard Regimen (BED >10%)", 
+                            "detail": f"Proposed BED ({bed:.2f} Gy) differs by >10% from {cs_desc} ({closest_scheme_bed:.2f} Gy). Recommended: {cs_dose} Gy in {cs_fractions} fx."
+                        })
             else:
                 is_valid = False
-                message = f"Could not find a comparable standard scheme for {site}."
-                constraints_violated.append({"constraint": "Scheme comparison", "detail": message})
+                message = f"No comparable standard fractionation schemes found for {site} to evaluate BED."
+                constraints_violated.append({"constraint": "Scheme Comparability", "detail": message})
 
         return SBRTValidateResponse(
             is_valid=is_valid,

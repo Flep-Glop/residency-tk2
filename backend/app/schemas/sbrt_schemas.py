@@ -52,7 +52,7 @@ class SBRTValidateRequest(BaseModel):
 class SBRTValidateResponse(BaseModel):
     is_valid: bool = Field(..., example=True)
     message: str = Field(default="Validation successful")
-    constraints_met: List[str] = Field(default_factory=list)
+    constraints_met: List[Dict[str, Any]] = Field(default_factory=list)
     constraints_violated: List[Dict[str, Any]] = Field(default_factory=list)
 
 # Placeholder for treatment site details if needed later
