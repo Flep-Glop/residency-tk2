@@ -53,14 +53,20 @@ async def generate_sbrt_writeup(
     except Exception as e: # Catch other potential errors from service
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.post("/validate", response_model=SBRTValidateResponse)
+@router.post("/validate")
 async def validate_sbrt_dose_fractionation(
-    request: SBRTValidateRequest,
+    request: dict,
     sbrt_service: SBRTService = Depends(get_sbrt_service)
 ):
     """Validate dose and fractionation for a specific SBRT site."""
     try:
-        return sbrt_service.validate_dose_fractionation(request)
+        # Convert the simple dict to our SBRTValidateRequest
+        validate_request = SBRTValidateRequest(
+            site=request.get("site", ""),
+            dose=request.get("dose", 0),
+            fractions=request.get("fractions", 0)
+        )
+        return sbrt_service.validate_dose_fractionation(validate_request)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

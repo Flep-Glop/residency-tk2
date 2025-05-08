@@ -10,7 +10,8 @@ class SBRTService:
             "Pancreas", 
             "Adrenal", 
             "Prostate", 
-            "Lymph node"
+            "Lymph node",
+            "Custom" # Added custom option
         ]
         
         self.dose_constraints = {
@@ -54,6 +55,9 @@ class SBRTService:
             "Lymph node": {
                 "bowel_max": "< 30Gy in 5 fx",
                 "spinal_cord_max": "< 30Gy in 5 fx"
+            },
+            "Custom": {
+                "note": "Custom lesion - constraints to be determined on case-by-case basis"
             }
         }
         
@@ -86,6 +90,11 @@ class SBRTService:
             "Lymph node": [
                 {"dose": 30, "fractions": 5, "description": "Standard dose"},
                 {"dose": 24, "fractions": 3, "description": "Alternative (3fx)"}
+            ],
+            "Custom": [
+                {"dose": 30, "fractions": 5, "description": "Example regimen"},
+                {"dose": 24, "fractions": 3, "description": "Example regimen"},
+                {"dose": 36, "fractions": 3, "description": "Example regimen"}
             ]
         }
 
@@ -116,6 +125,7 @@ class SBRTService:
         fractions = request.sbrt_data.fractions
         lesion_size = request.sbrt_data.lesion_size or "unspecified size"
         lesion_location = request.sbrt_data.lesion_location or f"in the {site}"
+        custom_site_name = request.sbrt_data.custom_site_name
         motion_management = request.sbrt_data.motion_management or "standard immobilization"
         
         # Calculate dose per fraction
@@ -123,13 +133,22 @@ class SBRTService:
         
         # Format the write-up
         writeup = f"Dr. {physician} requested a medical physics consultation for stereotactic body radiation therapy (SBRT) treatment planning. "
-        writeup += f"The patient is a {patient_age}-year-old {patient_sex} with a {lesion_size} lesion {lesion_location}. "
+        
+        # Handle patient description differently for custom sites
+        if site.lower() == "custom" and custom_site_name:
+            writeup += f"The patient is a {patient_age}-year-old {patient_sex} with {custom_site_name}, a {lesion_size} lesion {lesion_location}. "
+        else:
+            writeup += f"The patient is a {patient_age}-year-old {patient_sex} with a {lesion_size} lesion {lesion_location}. "
         
         # Site-specific introduction
         if site.lower() == "lung":
             writeup += f"Dr. {physician} has elected to treat this {site} lesion with SBRT using {motion_management} for respiratory motion management. "
         elif site.lower() == "spine":
             writeup += f"Dr. {physician} has elected to treat this {site} lesion with SBRT using {motion_management} for precise target localization. "
+        elif site.lower() == "custom":
+            # For custom lesions, use custom_site_name if available
+            site_description = custom_site_name if custom_site_name else f"lesion in the {lesion_location}"
+            writeup += f"Dr. {physician} has elected to treat this {site_description} with SBRT using {motion_management}. "
         else:
             writeup += f"Dr. {physician} has elected to treat this {site} lesion with SBRT using {motion_management}. "
         
@@ -139,15 +158,20 @@ class SBRTService:
         if site.lower() in ["lung", "liver", "pancreas"]:
             writeup += "A 4D-CT was also acquired to assess respiratory motion and determine the internal target volume (ITV). "
         
-        writeup += "The gross tumor volume (GTV) was contoured by Dr. {physician} and expanded appropriately to create the planning target volume (PTV). "
+        writeup += f"The gross tumor volume (GTV) was contoured by Dr. {physician} and expanded appropriately to create the planning target volume (PTV). "
         writeup += f"A radiation treatment plan was developed to deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose_per_fraction:.2f} Gy per fraction) "
-        writeup += f"to the {site} lesion. "
+        
+        # Adjust wording for custom lesions
+        if site.lower() == "custom":
+            writeup += f"to the lesion in the {lesion_location}. "
+        else:
+            writeup += f"to the {site} lesion. "
         
         # Dose constraints
         if request.sbrt_data.dose_constraints_met:
             writeup += "All dose constraints to nearby critical structures were met according to the protocol guidelines. "
         else:
-            writeup += "Some dose constraints required careful consideration and were reviewed with Dr. {physician}. "
+            writeup += f"Some dose constraints required careful consideration and were reviewed with Dr. {physician}. "
         
         # Quality assurance and verification
         writeup += "\n\nPatient-specific quality assurance measurements were performed prior to treatment. "
@@ -168,6 +192,15 @@ class SBRTService:
         message = f"Validation for {site} with {dose}Gy in {fractions}fx successful."
         constraints_met = []
         constraints_violated = []
+        
+        # Special case for Custom site - always valid with a note
+        if site.lower() == "custom":
+            return SBRTValidateResponse(
+                is_valid=True,
+                message="Custom treatment site - dose/fractionation validation is at clinician's discretion.",
+                constraints_met=[{"constraint": "Custom site", "detail": "Manual validation required"}],
+                constraints_violated=[]
+            )
         
         # Check if site exists
         if site not in self.fractionation_schemes:

@@ -20,6 +20,7 @@ class SBRTData(BaseModel):
     fractions: int = Field(..., example=5)
     lesion_size: Optional[str] = Field(None, example="2.5 cm")
     lesion_location: Optional[str] = Field(None, example="right upper lobe")
+    custom_site_name: Optional[str] = Field(None, example="Soft tissue sarcoma of right thigh")
     motion_management: Optional[str] = Field(None, example="abdominal compression")
     dose_constraints_met: Optional[bool] = Field(True, example=True)
 
