@@ -4,7 +4,7 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "env": {
-    "API_URL": "YOUR_BACKEND_URL/api"
+    "NEXT_PUBLIC_API_URL": "https://fresh-residency-toolkit-production.up.railway.app/api"
   },
   "rewrites": [
     {
