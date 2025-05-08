@@ -4,6 +4,7 @@ from app.routers import fusion, dibh
 from app.database import engine, Base
 from app.middleware import add_error_handling, ErrorHandlerMiddleware
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +14,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for development
+# Get allowed origins from environment or use default list
+allowed_origins = [
+    "https://residency-tk2.vercel.app",  # Production frontend
+    "http://localhost:3000",            # Local frontend
+    "http://localhost:8000",            # Local backend
+    "*"                                 # For development only
+]
+
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your frontend domain
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
