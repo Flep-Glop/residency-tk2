@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Any, Optional
 
 class PersonInfo(BaseModel):
@@ -24,6 +24,12 @@ class SBRTData(BaseModel):
     motion_management: Optional[str] = Field(None, example="abdominal compression")
     dose_constraints_met: Optional[bool] = Field(True, example=True)
 
+    @validator('fractions')
+    def fractions_must_be_positive(cls, v):
+        if v <= 0:
+            raise ValueError('Fractions must be a positive integer')
+        return v
+
 class SBRTGenerateRequest(BaseModel):
     common_info: CommonInfo
     sbrt_data: SBRTData
@@ -36,6 +42,12 @@ class SBRTValidateRequest(BaseModel):
     site: str = Field(..., example="Spine")
     dose: float = Field(..., example=30.0)
     fractions: int = Field(..., example=3)
+
+    @validator('fractions')
+    def validate_fractions_positive(cls, v):
+        if v <= 0:
+            raise ValueError('Fractions must be a positive integer')
+        return v
 
 class SBRTValidateResponse(BaseModel):
     is_valid: bool = Field(..., example=True)
