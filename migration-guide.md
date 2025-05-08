@@ -69,11 +69,11 @@ A step-by-step checklist for migrating the Medical Physics Residency Toolkit fro
 - [x] Preserve business logic from original implementation
 
 ### DIBH Module
-- [ ] Create backend schemas and models
-- [ ] Implement DIBH generation service
-- [ ] Create DIBH API endpoints
-- [ ] Build frontend form interface
-- [ ] Connect to backend API
+- [x] Create backend schemas and models
+- [x] Implement DIBH generation service
+- [x] Create DIBH API endpoints
+- [x] Build frontend form interface
+- [x] Connect to backend API
 
 ### Prior Dose Module
 - [ ] Create backend schemas and models

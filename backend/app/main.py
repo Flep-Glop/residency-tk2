@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import fusion, dibh
+from app.routers import fusion, dibh, sbrt
 from app.database import engine, Base
 from app.middleware import add_error_handling, ErrorHandlerMiddleware
 import logging
@@ -38,6 +38,7 @@ add_error_handling(app)
 # Include routers
 app.include_router(fusion.router, prefix="/api/fusion", tags=["Fusion"])
 app.include_router(dibh.router, prefix="/api/dibh", tags=["DIBH"])
+app.include_router(sbrt.router, prefix="/api/sbrt", tags=["SBRT"])
 
 @app.get("/")
 async def root():

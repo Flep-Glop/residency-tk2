@@ -210,7 +210,7 @@ const DIBHForm = () => {
       writeup += `and localization. Instructions were provided and the patient was coached to reproducibly `;
       writeup += `hold their breath. Using the ${scanning_system} surface scanning system, a free breathing `;
       writeup += `and breath hold signal trace was established. After reproducing the `;
-      writeup += `breath hold pattern using visual goggles and establishing a consistent `;
+      writeup += `breath hold pattern and establishing a consistent `;
       writeup += `breathing pattern, a gating baseline and gating window was created. Subsequently, a `;
       writeup += `DIBH CT simulation scan was acquired and approved `;
       writeup += `by the Radiation Oncologist, Dr. ${physician}.\n\n`;
