@@ -80,7 +80,7 @@ class DIBHService:
         write_up += f"and localization. Instructions were provided and the patient was coached to reproducibly "
         write_up += f"hold their breath. Using the {scanning_system} surface scanning system, a free breathing "
         write_up += f"and breath hold signal trace was established. After reproducing the "
-        write_up += f"breath hold pattern using visual goggles and establishing a consistent "
+        write_up += f"breath hold pattern and establishing a consistent "
         write_up += f"breathing pattern, a gating baseline and gating window was created. Subsequently, a "
         write_up += f"DIBH CT simulation scan was acquired and approved "
         write_up += f"by the Radiation Oncologist, Dr. {physician}.\n\n"

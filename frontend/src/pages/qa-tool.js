@@ -1,9 +1,8 @@
 import React from 'react';
 import { Box, Container, Heading, Button, HStack, Alert, AlertIcon, AlertTitle, AlertDescription, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import SBRTForm from '../components/sbrt/SBRTForm';
 
-const SBRTPage = () => {
+const QAToolPage = () => {
   const router = useRouter();
 
   return (
@@ -12,21 +11,21 @@ const SBRTPage = () => {
       <Box position="absolute" top={4} right={4} zIndex={10}>
         <Button 
           onClick={() => router.push('/')} 
-          colorScheme="green" 
+          colorScheme="purple" 
           variant="outline"
-          color="green.300"
-          borderColor="green.600"
-          _hover={{ bg: "green.800", borderColor: "green.400" }}
+          color="purple.300"
+          borderColor="purple.600"
+          _hover={{ bg: "purple.800", borderColor: "purple.400" }}
         >
           ← Home
         </Button>
       </Box>
       
       {/* Header */}
-      <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
+      <Box bg="purple.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="purple.700">
         <Box>
-          <Heading size="xl" mb={2}>📝 SBRT Write-up Generator</Heading>
-          <Text opacity={0.9}>Create stereotactic body radiation therapy documentation</Text>
+          <Heading size="xl" mb={2}>🔧 Advanced QA Documentation System</Heading>
+          <Text opacity={0.9}>Comprehensive quality assurance procedures for radiation therapy equipment</Text>
         </Box>
       </Box>
 
@@ -35,9 +34,9 @@ const SBRTPage = () => {
         <Alert status="info" bg="blue.900" borderColor="blue.700" color="blue.200">
           <AlertIcon color="blue.300" />
           <Box>
-            <AlertTitle color="blue.200">🚧 SBRT Tool Under Development</AlertTitle>
+            <AlertTitle color="blue.200">🚧 QA Documentation System Under Development</AlertTitle>
             <AlertDescription color="blue.300">
-              The SBRT write-up generator is being developed. Check back soon for comprehensive stereotactic body radiation therapy documentation tools.
+              The comprehensive QA documentation system with monthly equipment checks, workflow management, and educational content is being developed. Check back soon for advanced quality assurance tools!
             </AlertDescription>
           </Box>
         </Alert>
@@ -46,4 +45,4 @@ const SBRTPage = () => {
   );
 };
 
-export default SBRTPage; 
+export default QAToolPage; 

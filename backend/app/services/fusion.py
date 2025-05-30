@@ -58,7 +58,11 @@ class FusionService:
         
         write_up += f"{fusion_type_text}\n\n"
         
-        write_up += f"The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, "
+        # Adjust conclusion based on number of registrations
+        if len(registrations) == 1:
+            write_up += f"The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, "
+        else:
+            write_up += f"The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, "
         write_up += f"Dr. {physician}, and the medical physicist, Dr. {physicist}."
         
         return FusionResponse(writeup=write_up)
@@ -77,41 +81,104 @@ class FusionService:
         # Introduction text varies based on the number and type of registrations
         intro_text = ""
         if len(registrations) == 1:
-            # Single registration
+            # Single registration - improved flow
             reg = registrations[0]
             secondary = reg.secondary
-            method = reg.method.lower()
             
             if secondary == "CT":
-                intro_text = f"Another {secondary} image study that was previously acquired was imported into the Velocity software. "
+                intro_text = f"A {secondary} study was imported into the Velocity software. "
             else:
-                intro_text = f"A {secondary} image study that was previously acquired was imported into the Velocity software. "
+                intro_text = f"A {secondary} study was imported into the Velocity software. "
                 
-            intro_text += f"A fusion study was created between the planning CT and the {secondary} image set. "
+            intro_text += f"A fusion study was created between the planning CT and the imported image set. "
             
         else:
-            # Multiple registrations
-            modality_list = ", ".join([f"{count} {mod}" for mod, count in modality_counts.items()])
-            intro_text = f"Multiple image studies including {modality_list} were imported into the Velocity software. "
-            intro_text += "Fusion studies were created between the planning CT and each of the other modality image sets. "
+            # Multiple registrations - improved plural/singular handling
+            modality_descriptions = []
+            for modality, count in modality_counts.items():
+                if count == 1:
+                    modality_descriptions.append(f"one {modality} study")
+                else:
+                    # Convert number to word for better readability
+                    number_words = {2: "two", 3: "three", 4: "four", 5: "five"}
+                    count_word = number_words.get(count, str(count))
+                    modality_descriptions.append(f"{count_word} {modality} studies")
+            
+            if len(modality_descriptions) == 1:
+                # Single modality type but potentially multiple studies
+                desc = modality_descriptions[0]
+                if desc.startswith("one"):
+                    intro_text = f"A {desc.replace('one ', '')} was imported into the Velocity software. "
+                else:
+                    # For plural like "two MRI studies"
+                    parts = desc.split(' ', 2)  # Split into ["two", "MRI", "studies"]
+                    intro_text = f"{parts[0].capitalize()} {parts[1]} {parts[2]} were imported into the Velocity software. "
+            else:
+                intro_text = f"Multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
+            intro_text += "Fusion studies were created between the planning CT and each of the imported image sets. "
         
         # Registration process description
         reg_text = ""
-        for i, reg in enumerate(registrations):
-            if i > 0:
+        
+        # Group registrations by modality for better text flow
+        mri_registrations = [reg for reg in registrations if reg.secondary == "MRI"]
+        pet_registrations = [reg for reg in registrations if reg.secondary == "PET/CT"]
+        ct_registrations = [reg for reg in registrations if reg.secondary == "CT"]
+        
+        if mri_registrations:
+            if len(mri_registrations) == 1:
+                reg_text += f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the {lesion}."
+            else:
+                reg_text += f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, then refined manually. The resulting fusions were verified for accuracy using anatomical landmarks such as the {lesion}."
+        
+        if pet_registrations:
+            if mri_registrations:
                 reg_text += "\n\n"
             
-            secondary = reg.secondary
-            method = reg.method
+            # Check if any PET/CT registrations use deformable method
+            has_deformable_pet = any(reg.method.lower() != "rigid" for reg in pet_registrations)
             
-            if method == "Rigid":
-                reg_text += f"The CT and {secondary} image sets were first registered using a rigid registration algorithm based on the {anatomical_region} anatomy and then refined manually. "
-            else:  # Deformable
-                reg_text += f"The CT and {secondary} image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy. A deformable image registration was then performed to improve registration results. "
-                
-            reg_text += f"The resulting registration of the fused images was verified for accuracy using anatomical landmarks such as the {lesion}."
+            if has_deformable_pet:
+                pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results."
+            else:
+                pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, then refined manually."
+            
+            if len(registrations) == 1:  # Total registrations, not just PET
+                pet_text += f" The accuracy of this fusion was validated using anatomical structures such as the {lesion}."
+            else:
+                pet_text += f" The accuracy of these fusions were validated using anatomical structures such as the {lesion}."
+            
+            if has_deformable_pet:
+                pet_text += f" The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
+            
+            reg_text += pet_text
         
-        # Conclusion text
-        conclusion_text = " The fused images were used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
+        if ct_registrations:
+            if mri_registrations or pet_registrations:
+                reg_text += "\n\n"
+            
+            # Check if any CT registrations use deformable method
+            has_deformable_ct = any(reg.method.lower() != "rigid" for reg in ct_registrations)
+            
+            if has_deformable_ct:
+                ct_text = f"The CT and CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results."
+            else:
+                ct_text = f"The CT and CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, then refined manually."
+            
+            if len(registrations) == 1:  # Total registrations, not just CT
+                ct_text += f" The accuracy of this fusion was validated using anatomical structures such as the {lesion}."
+            else:
+                ct_text += f" The accuracy of these fusions were validated using anatomical structures such as the {lesion}."
+            
+            if has_deformable_ct:
+                ct_text += f" The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
+            
+            reg_text += ct_text
+        
+        # Conclusion text - adjust based on number of registrations
+        if len(registrations) == 1:
+            conclusion_text = " The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
+        else:
+            conclusion_text = " The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
         
         return intro_text + reg_text + conclusion_text 

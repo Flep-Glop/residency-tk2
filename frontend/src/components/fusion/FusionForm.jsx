@@ -37,7 +37,6 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Flex,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { getLesionRegions, getModalities, getRegistrationMethods, generateFusionWriteup } from '../../services/fusionService';
 
@@ -58,9 +57,10 @@ const FusionForm = () => {
   const [indexToRemove, setIndexToRemove] = useState(null);
   const cancelRef = useRef();
   
-  const formBg = useColorModeValue('white', 'gray.700');
-  const writeupBg = useColorModeValue('gray.50', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  // Fixed dark theme colors for consistency
+  const formBg = 'gray.800';
+  const writeupBg = 'gray.800';
+  const borderColor = 'gray.600';
 
   const { register, handleSubmit, control, watch, formState: { errors }, setValue, reset } = useForm({
     defaultValues: {
@@ -188,6 +188,10 @@ const FusionForm = () => {
     // Group registrations by modality
     const mriRegistrations = formData.fusion_data.registrations.filter(reg => reg.secondary.includes('MRI'));
     const petCtRegistrations = formData.fusion_data.registrations.filter(reg => reg.secondary.includes('PET'));
+    const ctRegistrations = formData.fusion_data.registrations.filter(reg => reg.secondary === 'CT');
+    
+    // Calculate total registrations early for use throughout the function
+    const totalRegistrations = mriRegistrations.length + petCtRegistrations.length + ctRegistrations.length;
     
     // Convert numbers to words for counts
     const numberToWord = (num) => {
@@ -197,12 +201,13 @@ const FusionForm = () => {
     
     const mriCount = numberToWord(mriRegistrations.length);
     const petCtCount = numberToWord(petCtRegistrations.length);
+    const ctCount = numberToWord(ctRegistrations.length);
     
     // Create paragraphs in the new format
     const intro = `Dr. ${physician} requested a medical physics consultation for --- to perform a multimodality image fusion. The patient is a ${patientAge}-year-old ${patientSex} with a ${lesion} lesion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.`;
     
     // Only include modalities that are actually present
-    let importText = 'Multiple image studies including ';
+    let importText = '';
     const modalitiesList = [];
     
     if (mriRegistrations.length > 0) {
@@ -213,26 +218,120 @@ const FusionForm = () => {
       modalitiesList.push(`${petCtCount} PET/CT${petCtRegistrations.length > 1 ? 's' : ''}`);
     }
     
+    if (ctRegistrations.length > 0) {
+      modalitiesList.push(`${ctCount} CT${ctRegistrations.length > 1 ? 's' : ''}`);
+    }
+    
     if (modalitiesList.length === 0) {
       importText = 'Image studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the other modality image sets.';
     } else if (modalitiesList.length === 1) {
-      importText += `${modalitiesList[0]} was imported into the Velocity software. Fusion studies were created between the planning CT and the other modality image set.`;
+      const singleModality = modalitiesList[0];
+      const isPlural = singleModality.includes('MRIs') || singleModality.includes('PET/CTs') || singleModality.includes('CTs');
+      
+      if (isPlural) {
+        // Handle plural case with better flow (e.g., "two MRIs", "three PET/CTs", "two CTs")
+        let modalityType;
+        if (singleModality.includes('MRI')) {
+          modalityType = 'MRI studies';
+        } else if (singleModality.includes('PET/CT')) {
+          modalityType = 'PET/CT studies';
+        } else if (singleModality.includes('CT')) {
+          modalityType = 'CT studies';
+        }
+        const count = singleModality.split(' ')[0]; // Extract "two", "three", etc.
+        importText = `${count.charAt(0).toUpperCase() + count.slice(1)} ${modalityType} were imported into the Velocity software. Fusion studies were created between the planning CT and the imported image sets.`;
+      } else {
+        // Handle singular case with better flow
+        let modalityType;
+        if (singleModality.includes('MRI')) {
+          modalityType = 'MRI study';
+        } else if (singleModality.includes('PET/CT')) {
+          modalityType = 'PET/CT study';
+        } else if (singleModality.includes('CT')) {
+          modalityType = 'CT study';
+        }
+        importText = `A ${modalityType} was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set.`;
+      }
     } else {
-      importText += `${modalitiesList.join(' and ')} were imported into the Velocity software. Fusion studies were created between the planning CT and each of the other modality image sets.`;
+      // Handle multiple different modality types
+      const formattedModalities = modalitiesList.map(modality => {
+        if (modality.includes('MRI')) {
+          if (modality.startsWith('one')) {
+            return modality.replace(/one MRIs?/, 'one MRI study');
+          } else {
+            return modality.replace(/MRIs?/, 'MRI studies').replace('MRI studies studies', 'MRI studies');
+          }
+        } else if (modality.includes('PET/CT')) {
+          if (modality.startsWith('one')) {
+            return modality.replace(/one PET\/CTs?/, 'one PET/CT study');
+          } else {
+            return modality.replace(/PET\/CTs?/, 'PET/CT studies').replace('PET/CT studies studies', 'PET/CT studies');
+          }
+        } else if (modality.includes('CT')) {
+          if (modality.startsWith('one')) {
+            return modality.replace(/one CTs?/, 'one CT study');
+          } else {
+            return modality.replace(/CTs?/, 'CT studies').replace('CT studies studies', 'CT studies');
+          }
+        }
+        return modality;
+      });
+      importText = `Multiple image studies including ${formattedModalities.join(' and ')} were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets.`;
     }
     
     // MRI paragraph with "refined manually" - only include if MRI registrations exist
     const mriParagraph = mriRegistrations.length > 0 ? 
-      `The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the ${anatomicalRegion} anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the ${anatomicalRegion}.` : '';
+      `The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the ${anatomicalRegion} anatomy, then refined manually. The resulting ${mriRegistrations.length === 1 ? 'fusion was' : 'fusions were'} verified for accuracy using anatomical landmarks such as the ${lesion}.` : '';
     
-    // PET/CT paragraph with deformable registration - only include if PET registrations exist
-    const petCtParagraph = petCtRegistrations.length > 0 ? 
-      `The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the ${anatomicalRegion}. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.` : '';
+    // PET/CT paragraph with registration method based on actual data - only include if PET registrations exist
+    const petCtParagraph = petCtRegistrations.length > 0 ? (() => {
+      // Check if any PET/CT registrations use deformable method
+      const hasDeformablePet = petCtRegistrations.some(reg => reg.method && reg.method.toLowerCase() !== 'rigid');
+      
+      let petText;
+      if (hasDeformablePet) {
+        petText = `The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results.`;
+      } else {
+        petText = `The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the ${anatomicalRegion} anatomy, then refined manually.`;
+      }
+      
+      petText += ` The accuracy of ${totalRegistrations === 1 ? 'this fusion was' : 'these fusions were'} validated using anatomical structures such as the ${lesion}.`;
+      
+      if (hasDeformablePet) {
+        petText += ` The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.`;
+      }
+      
+      return petText;
+    })() : '';
     
-    const conclusion = `The fusion of all image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. ${physician}, and the medical physicist, Dr. ${physicist}.`;
+    // CT paragraph with registration method based on actual data - only include if CT registrations exist
+    const ctParagraph = ctRegistrations.length > 0 ? (() => {
+      // Check if any CT registrations use deformable method
+      const hasDeformableCt = ctRegistrations.some(reg => reg.method && reg.method.toLowerCase() !== 'rigid');
+      
+      let ctText;
+      if (hasDeformableCt) {
+        ctText = `The CT and CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results.`;
+      } else {
+        ctText = `The CT and CT image sets were initially aligned using a rigid registration algorithm based on the ${anatomicalRegion} anatomy, then refined manually.`;
+      }
+      
+      ctText += ` The accuracy of ${totalRegistrations === 1 ? 'this fusion was' : 'these fusions were'} validated using anatomical structures such as the ${lesion}.`;
+      
+      if (hasDeformableCt) {
+        ctText += ` The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.`;
+      }
+      
+      return ctText;
+    })() : '';
+    
+    // Adjust conclusion text based on number of registrations
+    const conclusionText = totalRegistrations === 1 ? 
+      `The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. ${physician}, and the medical physicist, Dr. ${physicist}.` :
+      `The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. ${physician}, and the medical physicist, Dr. ${physicist}.`;
     
     // Combine all paragraphs with appropriate spacing
-    const paragraphs = [intro, importText, mriParagraph, petCtParagraph, conclusion].filter(p => p !== '');
+    const paragraphs = [intro, importText, mriParagraph, petCtParagraph, ctParagraph, conclusionText].filter(p => p !== '');
     return paragraphs.join('\n\n');
   };
 
@@ -343,421 +442,484 @@ const FusionForm = () => {
 
   if (initialLoading) {
     return (
-      <Box textAlign="center" p={5}>
-        <Text>Loading form data...</Text>
+      <Box bg="gray.900" minH="100vh" textAlign="center" p={5}>
+        <Text fontSize="lg" mb={2} color="white">Loading fusion form data...</Text>
+        <Text fontSize="sm" color="gray.400">Please wait while we initialize the form</Text>
       </Box>
     );
   }
 
   return (
-    <Box>
-      <Heading size="md" mb={4}>Fusion Write-up Generator</Heading>
-      
-      <Box maxW="1200px" mx="auto">
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Grid 
-            templateColumns={{
-              base: "1fr",
-              md: "repeat(2, 1fr)",
-              lg: "repeat(3, 1fr)"
-            }} 
-            gap={4} 
-            mb={6}
-          >
-            {/* Staff & Patient Section */}
-            <GridItem 
-              as={Box} 
-              p={4} 
-              borderWidth="1px" 
-              borderRadius="md" 
-              bg={formBg}
-              borderColor={borderColor}
-              boxShadow="sm"
+    <Box bg="gray.900" minH="100vh">
+      {/* Header */}
+      <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
+        <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+          <Box>
+            <Heading size="xl" mb={2}>📝 Fusion Write-up Generator</Heading>
+            <Text opacity={0.9}>Generate standardized write-ups for multimodality image fusions</Text>
+          </Box>
+        </Flex>
+      </Box>
+
+      {/* Main Content */}
+      <Box px={6}>
+        <Box maxW="1200px" mx="auto">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid 
+              templateColumns={{
+                base: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)"
+              }} 
+              gap={4} 
+              mb={6}
             >
-              <Heading size="sm" mb={3} textAlign="center">Staff & Patient</Heading>
-              
-              <Box>
-                <Heading size="xs" mb={2}>Staff Information</Heading>
+              {/* Staff & Patient Section */}
+              <GridItem 
+                as={Box} 
+                p={4} 
+                borderWidth="1px" 
+                borderRadius="md" 
+                bg={formBg}
+                borderColor={borderColor}
+                boxShadow="sm"
+              >
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
                 
-                <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
-                  <FormLabel fontSize="sm">Physician Name</FormLabel>
-                  <Select 
-                    size="sm"
-                    {...register("common_info.physician.name", { 
-                      required: "Physician name is required" 
-                    })}
-                    aria-label="Select physician"
-                  >
-                    <option value="">Select a physician</option>
-                    {physicians.map(physician => (
-                      <option key={physician} value={physician}>{physician}</option>
-                    ))}
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.common_info?.physician?.name?.message}
-                  </FormErrorMessage>
-                </FormControl>
-                
-                <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
-                  <FormLabel fontSize="sm">Physicist Name</FormLabel>
-                  <Select 
-                    size="sm"
-                    {...register("common_info.physicist.name", { 
-                      required: "Physicist name is required" 
-                    })}
-                    aria-label="Select physicist"
-                  >
-                    <option value="">Select a physicist</option>
-                    {physicists.map(physicist => (
-                      <option key={physicist} value={physicist}>{physicist}</option>
-                    ))}
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.common_info?.physicist?.name?.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </Box>
-              
-              <Box mt={4}>
-                <Heading size="xs" mb={2}>Patient Information</Heading>
-                
-                <FormControl isInvalid={errors.common_info?.patient?.age} mb={3}>
-                  <FormLabel fontSize="sm">Patient Age</FormLabel>
-                  <Input 
-                    size="sm"
-                    type="number"
-                    {...register("common_info.patient.age", { 
-                      required: "Age is required",
-                      min: { value: 1, message: "Age must be at least 1" },
-                      max: { value: 120, message: "Age must be less than 120" }
-                    })}
-                    aria-label="Patient age"
-                  />
-                  <FormErrorMessage>
-                    {errors.common_info?.patient?.age?.message}
-                  </FormErrorMessage>
-                </FormControl>
-                
-                <FormControl isInvalid={errors.common_info?.patient?.sex} mb={3}>
-                  <FormLabel fontSize="sm">Patient Sex</FormLabel>
-                  <Select 
-                    size="sm"
-                    {...register("common_info.patient.sex", { 
-                      required: "Sex is required" 
-                    })}
-                    aria-label="Patient sex"
-                  >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.common_info?.patient?.sex?.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </Box>
-            </GridItem>
-            
-            {/* Lesion Info Section */}
-            <GridItem 
-              as={Box} 
-              p={4} 
-              borderWidth="1px" 
-              borderRadius="md" 
-              bg={formBg}
-              borderColor={borderColor}
-              boxShadow="sm"
-            >
-              <Heading size="sm" mb={3} textAlign="center">Lesion Info</Heading>
-              
-              <Box mb={2}>
-                <Checkbox 
-                  size="sm" 
-                  isChecked={isCustomLesion} 
-                  onChange={handleCustomLesionChange}
-                  colorScheme="blue"
-                >
-                  Custom Lesion?
-                </Checkbox>
-              </Box>
-              
-              {!isCustomLesion ? (
-                <FormControl isInvalid={errors.fusion_data?.lesion} mb={3}>
-                  <FormLabel fontSize="sm">Lesion</FormLabel>
-                  <Select 
-                    size="sm"
-                    {...register("fusion_data.lesion", { 
-                      required: !isCustomLesion ? "Lesion is required" : false
-                    })}
-                    isDisabled={isCustomLesion}
-                    aria-label="Select lesion"
-                  >
-                    <option value="">Select a lesion</option>
-                    {Object.keys(lesionRegions).sort().map(lesion => (
-                      <option key={lesion} value={lesion}>{lesion}</option>
-                    ))}
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.fusion_data?.lesion?.message}
-                  </FormErrorMessage>
-                </FormControl>
-              ) : (
-                <>
-                  <FormControl isInvalid={errors.fusion_data?.custom_lesion} mb={3}>
-                    <FormLabel fontSize="sm">Custom Lesion Name</FormLabel>
-                    <Input 
-                      size="sm"
-                      {...register("fusion_data.custom_lesion", { 
-                        required: isCustomLesion ? "Custom lesion name is required" : false
-                      })}
-                      aria-label="Custom lesion name"
-                    />
-                    <FormErrorMessage>
-                      {errors.fusion_data?.custom_lesion?.message}
-                    </FormErrorMessage>
-                  </FormControl>
+                <Box>
+                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
                   
-                  <FormControl isInvalid={errors.fusion_data?.anatomical_region} mb={3}>
-                    <FormLabel fontSize="sm">Anatomical Region</FormLabel>
+                  <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
                     <Select 
                       size="sm"
-                      {...register("fusion_data.anatomical_region", { 
-                        required: isCustomLesion ? "Anatomical region is required" : false
+                      {...register("common_info.physician.name", { 
+                        required: "Physician name is required" 
                       })}
-                      aria-label="Anatomical region"
+                      aria-label="Select physician"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
                     >
-                      <option value="">Select a region</option>
-                      <option value="head and neck">Head and Neck</option>
-                      <option value="brain">Brain</option>
-                      <option value="thoracic">Thoracic</option>
-                      <option value="abdominal">Abdominal</option>
-                      <option value="pelvic">Pelvic</option>
-                      <option value="spinal">Spinal</option>
+                      <option value="">Select a physician</option>
+                      {physicians.map(physician => (
+                        <option key={physician} value={physician}>{physician}</option>
+                      ))}
                     </Select>
                     <FormErrorMessage>
-                      {errors.fusion_data?.anatomical_region?.message}
+                      {errors.common_info?.physician?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
-                </>
-              )}
-            </GridItem>
-            
-            {/* Registrations Section */}
-            <GridItem 
-              as={Box} 
-              p={4} 
-              borderWidth="1px" 
-              borderRadius="md" 
-              bg={formBg}
-              borderColor={borderColor}
-              boxShadow="sm"
-            >
-              <Heading size="sm" mb={3} textAlign="center">Registrations</Heading>
-              
-              {!hasMriRegistration && !hasPetRegistration && (
-                <Alert status="info" mb={3} size="sm" borderRadius="md">
-                  <AlertIcon />
-                  <Text fontSize="xs">At least one registration is required</Text>
-                </Alert>
-              )}
-              
-              <Box mb={3}>
-                <Heading size="xs" mb={1}>Current Registrations</Heading>
+                  
+                  <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Physicist Name</FormLabel>
+                    <Select 
+                      size="sm"
+                      {...register("common_info.physicist.name", { 
+                        required: "Physicist name is required" 
+                      })}
+                      aria-label="Select physicist"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                    >
+                      <option value="">Select a physicist</option>
+                      {physicists.map(physicist => (
+                        <option key={physicist} value={physicist}>{physicist}</option>
+                      ))}
+                    </Select>
+                    <FormErrorMessage>
+                      {errors.common_info?.physicist?.name?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </Box>
                 
-                {fields.length === 0 ? (
-                  <Text fontSize="sm" mb={3} color="gray.500">No registrations configured.</Text>
+                <Box mt={4}>
+                  <Heading size="xs" mb={2} color="gray.300">Patient Information</Heading>
+                  
+                  <FormControl isInvalid={errors.common_info?.patient?.age} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Patient Age</FormLabel>
+                    <Input 
+                      size="sm"
+                      type="number"
+                      {...register("common_info.patient.age", { 
+                        required: "Age is required",
+                        min: { value: 1, message: "Age must be at least 1" },
+                        max: { value: 120, message: "Age must be less than 120" },
+                        pattern: {
+                          value: /^[0-9]+$/,
+                          message: "Age must be a whole number"
+                        }
+                      })}
+                      aria-label="Patient age"
+                      placeholder="Enter patient age"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                      _placeholder={{ color: "gray.400" }}
+                    />
+                    <FormErrorMessage>
+                      {errors.common_info?.patient?.age?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                  
+                  <FormControl isInvalid={errors.common_info?.patient?.sex} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Patient Sex</FormLabel>
+                    <Select 
+                      size="sm"
+                      {...register("common_info.patient.sex", { 
+                        required: "Sex is required" 
+                      })}
+                      aria-label="Patient sex"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </Select>
+                    <FormErrorMessage>
+                      {errors.common_info?.patient?.sex?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </Box>
+              </GridItem>
+              
+              {/* Lesion Info Section */}
+              <GridItem 
+                as={Box} 
+                p={4} 
+                borderWidth="1px" 
+                borderRadius="md" 
+                bg={formBg}
+                borderColor={borderColor}
+                boxShadow="sm"
+              >
+                <Heading size="sm" mb={3} textAlign="center" color="white">Lesion Info</Heading>
+                
+                <Box mb={2}>
+                  <Checkbox 
+                    size="sm" 
+                    isChecked={isCustomLesion} 
+                    onChange={handleCustomLesionChange}
+                    colorScheme="green"
+                    color="gray.300"
+                  >
+                    Custom Lesion?
+                  </Checkbox>
+                </Box>
+                
+                {!isCustomLesion ? (
+                  <FormControl isInvalid={errors.fusion_data?.lesion} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Lesion</FormLabel>
+                    <Select 
+                      size="sm"
+                      {...register("fusion_data.lesion", { 
+                        required: !isCustomLesion ? "Lesion is required" : false
+                      })}
+                      isDisabled={isCustomLesion}
+                      aria-label="Select lesion"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                    >
+                      <option value="">Select a lesion</option>
+                      {Object.keys(lesionRegions).sort().map(lesion => (
+                        <option key={lesion} value={lesion}>{lesion}</option>
+                      ))}
+                    </Select>
+                    <FormErrorMessage>
+                      {errors.fusion_data?.lesion?.message}
+                    </FormErrorMessage>
+                  </FormControl>
                 ) : (
-                  <List spacing={2} mb={3}>
-                    {fields.map((field, index) => (
-                      <ListItem key={field.id}>
-                        <Card size="sm" variant="outline" borderColor={borderColor}>
-                          <CardBody p={2}>
-                            <HStack justify="space-between">
-                              <Box>
-                                <Text fontSize="xs"><strong>Primary:</strong> CT</Text>
-                                <Text fontSize="xs">
-                                  <strong>Secondary:</strong> {watch(`fusion_data.registrations.${index}.secondary`)}
-                                  {watch(`fusion_data.registrations.${index}.secondary`) === 'MRI' && (
-                                    <Badge ml={1} colorScheme="blue" fontSize="0.6em">Rigid Only</Badge>
-                                  )}
-                                </Text>
-                                <Text fontSize="xs">
-                                  <strong>Method:</strong> {watch(`fusion_data.registrations.${index}.method`)}
-                                </Text>
-                              </Box>
-                              <Button 
-                                colorScheme="red" 
-                                size="xs" 
-                                onClick={() => confirmRemoveRegistration(index)}
-                                aria-label="Remove registration"
-                              >
-                                X
-                              </Button>
-                            </HStack>
-                          </CardBody>
-                        </Card>
-                      </ListItem>
-                    ))}
-                  </List>
+                  <>
+                    <FormControl isInvalid={errors.fusion_data?.custom_lesion} mb={3}>
+                      <FormLabel fontSize="sm" color="gray.300">Custom Lesion Name</FormLabel>
+                      <Input 
+                        size="sm"
+                        {...register("fusion_data.custom_lesion", { 
+                          required: isCustomLesion ? "Custom lesion name is required" : false
+                        })}
+                        aria-label="Custom lesion name"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                      />
+                      <FormErrorMessage>
+                        {errors.fusion_data?.custom_lesion?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                    
+                    <FormControl isInvalid={errors.fusion_data?.anatomical_region} mb={3}>
+                      <FormLabel fontSize="sm" color="gray.300">Anatomical Region</FormLabel>
+                      <Select 
+                        size="sm"
+                        {...register("fusion_data.anatomical_region", { 
+                          required: isCustomLesion ? "Anatomical region is required" : false
+                        })}
+                        aria-label="Anatomical region"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                      >
+                        <option value="">Select a region</option>
+                        <option value="head and neck">Head and Neck</option>
+                        <option value="brain">Brain</option>
+                        <option value="thoracic">Thoracic</option>
+                        <option value="abdominal">Abdominal</option>
+                        <option value="pelvic">Pelvic</option>
+                        <option value="spinal">Spinal</option>
+                      </Select>
+                      <FormErrorMessage>
+                        {errors.fusion_data?.anatomical_region?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                  </>
+                )}
+              </GridItem>
+              
+              {/* Registrations Section */}
+              <GridItem 
+                as={Box} 
+                p={4} 
+                borderWidth="1px" 
+                borderRadius="md" 
+                bg={formBg}
+                borderColor={borderColor}
+                boxShadow="sm"
+              >
+                <Heading size="sm" mb={3} textAlign="center" color="white">Registrations</Heading>
+                
+                {!hasMriRegistration && !hasPetRegistration && (
+                  <Alert status="info" mb={3} size="sm" borderRadius="md" bg="blue.900" borderColor="blue.700">
+                    <AlertIcon color="blue.300" />
+                    <Text fontSize="xs" color="blue.200">At least one registration is required</Text>
+                  </Alert>
                 )}
                 
-                <Heading size="xs" mb={1}>Add New Registration</Heading>
-                
-                <Grid templateColumns="repeat(2, 1fr)" gap={1} mb={3}>
-                  <GridItem>
-                    <FormControl>
-                      <FormLabel fontSize="sm">Secondary Modality</FormLabel>
-                      <Select 
-                        id="new-secondary" 
-                        size="sm"
-                        onChange={handleSecondaryModalityChange}
-                        defaultValue={modalities.length > 0 ? modalities[0] : ''}
-                        aria-label="Secondary modality"
-                      >
-                        {modalities.map(modality => (
-                          <option key={modality} value={modality}>{modality}</option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </GridItem>
+                <Box mb={3}>
+                  <Heading size="xs" mb={1} color="gray.300">Current Registrations</Heading>
                   
-                  <GridItem>
-                    <FormControl>
-                      <Tooltip 
-                        label={selectedSecondaryModality === 'MRI' ? "MRI registrations require rigid method" : ""}
-                        isDisabled={selectedSecondaryModality !== 'MRI'}
-                      >
-                        <Box>
-                          <FormLabel fontSize="sm">
-                            Registration Method
-                            {selectedSecondaryModality === 'MRI' && (
-                              <Badge ml={1} colorScheme="blue" fontSize="0.6em">Rigid Only</Badge>
-                            )}
-                          </FormLabel>
-                          <Select 
-                            id="new-method" 
-                            size="sm"
-                            isDisabled={selectedSecondaryModality === 'MRI'}
-                            defaultValue={registrationMethods.length > 0 ? registrationMethods[0] : ''}
-                            aria-label="Registration method"
-                          >
-                            {registrationMethods.map(method => (
-                              <option key={method} value={method}>{method}</option>
-                            ))}
-                          </Select>
-                        </Box>
-                      </Tooltip>
-                    </FormControl>
-                  </GridItem>
-                </Grid>
-                
+                  {fields.length === 0 ? (
+                    <Text fontSize="sm" mb={3} color="gray.400">No registrations configured.</Text>
+                  ) : (
+                    <List spacing={2} mb={3}>
+                      {fields.map((field, index) => (
+                        <ListItem key={field.id}>
+                          <Card size="sm" variant="outline" borderColor={borderColor} bg="gray.700">
+                            <CardBody p={2}>
+                              <HStack justify="space-between">
+                                <Box>
+                                  <Text fontSize="xs" color="gray.300"><strong>Primary:</strong> CT</Text>
+                                  <Text fontSize="xs" color="gray.300">
+                                    <strong>Secondary:</strong> {watch(`fusion_data.registrations.${index}.secondary`)}
+                                    {watch(`fusion_data.registrations.${index}.secondary`) === 'MRI' && (
+                                      <Badge ml={1} colorScheme="blue" fontSize="0.6em">Rigid Only</Badge>
+                                    )}
+                                  </Text>
+                                  <Text fontSize="xs" color="gray.300">
+                                    <strong>Method:</strong> {watch(`fusion_data.registrations.${index}.method`)}
+                                  </Text>
+                                </Box>
+                                <Button 
+                                  colorScheme="red" 
+                                  size="xs" 
+                                  onClick={() => confirmRemoveRegistration(index)}
+                                  aria-label="Remove registration"
+                                >
+                                  X
+                                </Button>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                  
+                  <Heading size="xs" mb={1} color="gray.300">Add New Registration</Heading>
+                  
+                  <Grid templateColumns="repeat(2, 1fr)" gap={1} mb={3}>
+                    <GridItem>
+                      <FormControl>
+                        <FormLabel fontSize="sm" color="gray.300">Secondary Modality</FormLabel>
+                        <Select 
+                          id="new-secondary" 
+                          size="sm"
+                          onChange={handleSecondaryModalityChange}
+                          defaultValue={modalities.length > 0 ? modalities[0] : ''}
+                          aria-label="Secondary modality"
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _hover={{ borderColor: "gray.500" }}
+                        >
+                          {modalities.map(modality => (
+                            <option key={modality} value={modality}>{modality}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </GridItem>
+                    
+                    <GridItem>
+                      <FormControl>
+                        <Tooltip 
+                          label={selectedSecondaryModality === 'MRI' ? "MRI registrations require rigid method" : ""}
+                          isDisabled={selectedSecondaryModality !== 'MRI'}
+                        >
+                          <Box>
+                            <FormLabel fontSize="sm" color="gray.300">
+                              Registration Method
+                              {selectedSecondaryModality === 'MRI' && (
+                                <Badge ml={1} colorScheme="blue" fontSize="0.6em">Rigid Only</Badge>
+                              )}
+                            </FormLabel>
+                            <Select 
+                              id="new-method" 
+                              size="sm"
+                              isDisabled={selectedSecondaryModality === 'MRI'}
+                              defaultValue={registrationMethods.length > 0 ? registrationMethods[0] : ''}
+                              aria-label="Registration method"
+                              bg="gray.700"
+                              borderColor="gray.600"
+                              color="white"
+                              _hover={{ borderColor: "gray.500" }}
+                            >
+                              {registrationMethods.map(method => (
+                                <option key={method} value={method}>{method}</option>
+                              ))}
+                            </Select>
+                          </Box>
+                        </Tooltip>
+                      </FormControl>
+                    </GridItem>
+                  </Grid>
+                  
+                  <Button 
+                    colorScheme="green" 
+                    size="sm" 
+                    onClick={addRegistration} 
+                    width="100%"
+                    aria-label="Add registration"
+                  >
+                    Add Registration
+                  </Button>
+                </Box>
+              </GridItem>
+            </Grid>
+            
+            <Flex gap={4} mb={6}>
+              <Button
+                colorScheme="green"
+                isLoading={loading}
+                type="submit"
+                isDisabled={fields.length === 0}
+                width="100%"
+                size="md"
+                aria-label="Generate write-up"
+                shadow="md"
+              >
+                Generate Write-up
+              </Button>
+              
+              <Button
+                variant="outline"
+                colorScheme="red"
+                onClick={handleResetForm}
+                width="auto"
+                size="md"
+                aria-label="Reset form"
+                color="red.300"
+                borderColor="red.600"
+                _hover={{ bg: "red.800", borderColor: "red.400" }}
+              >
+                Reset Form
+              </Button>
+            </Flex>
+          </form>
+          
+          {writeup && (
+            <Box mt={6}>
+              <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
+              <Box
+                p={4}
+                borderWidth={1}
+                borderRadius="md"
+                bg={writeupBg}
+                borderColor={borderColor}
+                boxShadow="md"
+              >
+                <Textarea
+                  value={writeup}
+                  height="300px"
+                  isReadOnly
+                  fontFamily="mono"
+                  fontSize="sm"
+                  resize="vertical"
+                  aria-label="Generated write-up"
+                  bg="gray.700"
+                  borderColor="gray.600"
+                  color="white"
+                  _focus={{ borderColor: "green.500" }}
+                />
                 <Button 
-                  colorScheme="blue" 
-                  size="sm" 
-                  onClick={addRegistration} 
-                  width="100%"
-                  aria-label="Add registration"
+                  mt={3} 
+                  colorScheme="green"
+                  leftIcon={<span>📋</span>}
+                  onClick={() => {
+                    navigator.clipboard.writeText(writeup);
+                    toast({
+                      title: "Copied to clipboard",
+                      status: "success",
+                      duration: 2000,
+                    });
+                  }}
+                  aria-label="Copy to clipboard"
                 >
-                  Add Registration
+                  Copy to Clipboard
                 </Button>
               </Box>
-            </GridItem>
-          </Grid>
-          
-          <Flex gap={4} mb={6}>
-            <Button
-              colorScheme="blue"
-              isLoading={loading}
-              type="submit"
-              isDisabled={fields.length === 0}
-              width="100%"
-              size="md"
-              aria-label="Generate write-up"
-              shadow="md"
-            >
-              Generate Write-up
-            </Button>
-            
-            <Button
-              variant="outline"
-              colorScheme="red"
-              onClick={handleResetForm}
-              width="auto"
-              size="md"
-              aria-label="Reset form"
-            >
-              Reset Form
-            </Button>
-          </Flex>
-        </form>
-        
-        {writeup && (
-          <Box mt={6}>
-            <Heading size="md" mb={3}>Generated Write-up</Heading>
-            <Box
-              p={4}
-              borderWidth={1}
-              borderRadius="md"
-              bg={writeupBg}
-              borderColor={borderColor}
-              boxShadow="md"
-            >
-              <Textarea
-                value={writeup}
-                height="300px"
-                isReadOnly
-                fontFamily="mono"
-                fontSize="sm"
-                resize="vertical"
-                aria-label="Generated write-up"
-              />
-              <Button 
-                mt={3} 
-                colorScheme="blue"
-                leftIcon={<span>📋</span>}
-                onClick={() => {
-                  navigator.clipboard.writeText(writeup);
-                  toast({
-                    title: "Copied to clipboard",
-                    status: "success",
-                    duration: 2000,
-                  });
-                }}
-                aria-label="Copy to clipboard"
-              >
-                Copy to Clipboard
-              </Button>
             </Box>
-          </Box>
-        )}
+          )}
+        </Box>
+        
+        {/* Delete confirmation dialog */}
+        <AlertDialog
+          isOpen={isDeleteAlertOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={() => setIsDeleteAlertOpen(false)}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent bg="gray.800" color="white" borderColor="gray.600">
+              <AlertDialogHeader fontSize="lg" fontWeight="bold" color="white">
+                Remove Registration
+              </AlertDialogHeader>
+
+              <AlertDialogBody color="gray.300">
+                Are you sure you want to remove this registration?
+              </AlertDialogBody>
+
+              <AlertDialogFooter bg="gray.700">
+                <Button ref={cancelRef} onClick={() => setIsDeleteAlertOpen(false)} variant="outline" color="gray.300" borderColor="gray.600" _hover={{ bg: "gray.600" }}>
+                  Cancel
+                </Button>
+                <Button colorScheme="red" onClick={handleRemoveRegistration} ml={3}>
+                  Delete
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
       </Box>
-      
-      {/* Delete confirmation dialog */}
-      <AlertDialog
-        isOpen={isDeleteAlertOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={() => setIsDeleteAlertOpen(false)}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Remove Registration
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure you want to remove this registration?
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={() => setIsDeleteAlertOpen(false)}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleRemoveRegistration} ml={3}>
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </Box>
   );
 };

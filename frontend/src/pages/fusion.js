@@ -7,22 +7,23 @@ const FusionPage = () => {
   const router = useRouter();
 
   return (
-    <Container maxW="container.xl" py={6}>
-      <HStack justifyContent="space-between" mb={4}>
-        <Heading as="h1" size="xl">Fusion Write-up Generator</Heading>
-        <Button onClick={() => router.push('/')}>← Home</Button>
-      </HStack>
-      
-      <Box 
-        p={4} 
-        borderWidth="1px" 
-        borderRadius="lg" 
-        boxShadow="md"
-        bg="white"
-      >
-        <FusionForm />
+    <Box bg="gray.900" minH="100vh">
+      {/* Home button positioned absolutely */}
+      <Box position="absolute" top={4} right={4} zIndex={10}>
+        <Button 
+          onClick={() => router.push('/')} 
+          colorScheme="green" 
+          variant="outline"
+          color="green.300"
+          borderColor="green.600"
+          _hover={{ bg: "green.800", borderColor: "green.400" }}
+        >
+          ← Home
+        </Button>
       </Box>
-    </Container>
+      
+      <FusionForm />
+    </Box>
   );
 };
 
