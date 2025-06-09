@@ -27,6 +27,7 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
+  Checkbox,
 } from '@chakra-ui/react';
 import { getTreatmentSites, getImmobilizationDevices, getFractionationSchemes, generateDIBHWriteup } from '../../services/dibhService';
 
@@ -57,7 +58,10 @@ const DIBHForm = () => {
         treatment_site: '',
         immobilization_device: '',
         dose: 40,
-        fractions: 15
+        fractions: 15,
+        has_boost: false,
+        boost_dose: 10,
+        boost_fractions: 4
       }
     }
   });
@@ -65,10 +69,25 @@ const DIBHForm = () => {
   const watchDose = watch('dibh_data.dose');
   const watchFractions = watch('dibh_data.fractions');
   const watchTreatmentSite = watch('dibh_data.treatment_site');
+  const watchHasBoost = watch('dibh_data.has_boost');
+  const watchBoostDose = watch('dibh_data.boost_dose');
+  const watchBoostFractions = watch('dibh_data.boost_fractions');
   
-  // Calculate dose per fraction
-  const dosePerFraction = watchDose && watchFractions ? (watchDose / watchFractions) : 0;
-  const fractionationDescription = dosePerFraction <= 2.0 ? 'conventional fractionation' : 'hypofractionated';
+  // Calculate dose per fraction for primary and boost
+  const primaryDosePerFraction = watchDose && watchFractions ? (watchDose / watchFractions) : 0;
+  const boostDosePerFraction = watchBoostDose && watchBoostFractions ? (watchBoostDose / watchBoostFractions) : 0;
+  const totalDose = watchDose + (watchHasBoost ? watchBoostDose : 0);
+  const totalFractions = watchFractions + (watchHasBoost ? watchBoostFractions : 0);
+  
+  // Check if treatment site is breast (for auto-setting immobilization device)
+  const isBreastSite = watchTreatmentSite === 'left breast' || watchTreatmentSite === 'right breast';
+  
+  // Auto-set immobilization device for breast sites
+  useEffect(() => {
+    if (isBreastSite) {
+      setValue('dibh_data.immobilization_device', 'breast board');
+    }
+  }, [isBreastSite, setValue]);
 
   // Load initial data
   useEffect(() => {
@@ -139,11 +158,18 @@ const DIBHForm = () => {
     setLoading(true);
     try {
       // Add calculated dose per fraction to data
-      data.dibh_data.dose_per_fraction = dosePerFraction;
+      data.dibh_data.dose_per_fraction = primaryDosePerFraction;
       
-      const result = await generateDIBHWriteup(data);
+      let result;
+      try {
+        result = await generateDIBHWriteup(data);
+      } catch (apiError) {
+        // If API fails, use empty result to trigger client-side generation
+        console.log('API call failed, using client-side generation:', apiError.message);
+        result = { writeup: '' };
+      }
       
-      // Format the writeup in the approved style if needed
+      // Format the writeup in the approved style
       const formattedWriteup = formatWriteup(result.writeup, data);
       setWriteup(formattedWriteup);
       
@@ -154,11 +180,15 @@ const DIBHForm = () => {
         isClosable: true,
       });
     } catch (error) {
+      // Fallback: generate writeup client-side even if there's an error
+      const formattedWriteup = formatWriteup('', data);
+      setWriteup(formattedWriteup);
+      
       toast({
-        title: 'Error generating write-up',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
+        title: 'Write-up generated (offline mode)',
+        description: 'Generated using client-side logic',
+        status: 'warning',
+        duration: 3000,
         isClosable: true,
       });
     } finally {
@@ -168,10 +198,16 @@ const DIBHForm = () => {
 
   // Format the writeup or use the backend-generated one
   const formatWriteup = (originalWriteup, formData) => {
-    // If the API is implemented, return the original writeup
-    if (originalWriteup && originalWriteup.trim()) {
-      return originalWriteup;
-    }
+    // For now, always use client-side generation to ensure our improvements are applied
+    // TODO: Update this when backend is properly implemented with boost support
+    // if (originalWriteup && originalWriteup.trim()) {
+    //   return originalWriteup;
+    // }
+    
+    // Helper function to format numbers without unnecessary decimals
+    const formatNumber = (num) => {
+      return num % 1 === 0 ? num.toString() : num.toFixed(2);
+    };
     
     // Otherwise, generate one client-side using the template from the old module
     const physician = formData.common_info?.physician?.name || 'Unknown';
@@ -183,11 +219,25 @@ const DIBHForm = () => {
     const fractions = formData.dibh_data?.fractions || 1;
     const immobilizationDevice = formData.dibh_data?.immobilization_device || 'Unknown';
     
+    // For breast sites, ensure we use "breast board" as the immobilization device
+    const actualImmobilizationDevice = (treatmentSite === 'left breast' || treatmentSite === 'right breast') 
+      ? 'breast board' 
+      : immobilizationDevice;
+    
     // Calculate dose per fraction with safety check
     const dose_per_fraction = fractions > 0 ? dose / fractions : 0;
+    const hasBoost = formData.dibh_data?.has_boost;
+    const boostDose = formData.dibh_data?.boost_dose || 0;
+    const boostFractions = formData.dibh_data?.boost_fractions || 0;
+    const boost_dose_per_fraction = boostFractions > 0 ? boostDose / boostFractions : 0;
     
-    // Determine fractionation description
-    const fractionation_description = dose_per_fraction > 2.0 ? "hypofractionation" : "conventional fractionation";
+    // Debug logging to verify boost data
+    console.log('Writeup generation - Boost data:', {
+      hasBoost,
+      boostDose,
+      boostFractions,
+      boost_dose_per_fraction
+    });
     
     // Add specific details based on treatment site
     let site_specific_text;
@@ -209,7 +259,7 @@ const DIBHForm = () => {
     writeup += `with the C-RAD positioning and gating system in conjunction with the ${machine}.\n\n`;
     
     writeup += `Days before the initial radiation delivery, the patient was simulated in the treatment `;
-    writeup += `position using a ${immobilizationDevice} to aid in immobilization `;
+    writeup += `position using a ${actualImmobilizationDevice} to aid in immobilization `;
     writeup += `and localization. Instructions were provided and the patient was coached to reproducibly `;
     writeup += `hold their breath. Using the ${scanning_system} surface scanning system, a free breathing `;
     writeup += `and breath hold signal trace was established. After reproducing the `;
@@ -218,9 +268,19 @@ const DIBHForm = () => {
     writeup += `DIBH CT simulation scan was acquired and approved `;
     writeup += `by the Radiation Oncologist, Dr. ${physician}.\n\n`;
     
-    writeup += `A radiation treatment plan was developed on the DIBH CT simulation to deliver a `;
-    writeup += `prescribed dose of ${dose} Gy in ${fractions} fractions (${dose_per_fraction.toFixed(2)} Gy per fraction) `;
-    writeup += `to the ${treatmentSite} using ${fractionation_description}. `;
+    // Generate dose description based on whether there's a boost
+    if (hasBoost && boostDose > 0 && boostFractions > 0) {
+      writeup += `A radiation treatment plan was developed on the DIBH CT simulation to deliver a `;
+      writeup += `prescribed dose of ${formatNumber(dose)} Gy in ${fractions} fractions (${formatNumber(dose_per_fraction)} Gy per fraction) `;
+      writeup += `to the ${treatmentSite}, followed by a boost of ${formatNumber(boostDose)} Gy in ${boostFractions} fractions `;
+      writeup += `(${formatNumber(boost_dose_per_fraction)} Gy per fraction) for a total dose of ${formatNumber(dose + boostDose)} Gy `;
+      writeup += `in ${fractions + boostFractions} fractions. `;
+    } else {
+      writeup += `A radiation treatment plan was developed on the DIBH CT simulation to deliver a `;
+      writeup += `prescribed dose of ${formatNumber(dose)} Gy in ${fractions} fractions (${formatNumber(dose_per_fraction)} Gy per fraction) `;
+      writeup += `to the ${treatmentSite}. `;
+    }
+    
     writeup += `The delivery of the DIBH gating technique on the linear accelerator will be performed `;
     writeup += `using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, `;
     writeup += `monitor intra-fraction motion, and gate the beam delivery. Verification of the patient `;
@@ -242,7 +302,10 @@ const DIBHForm = () => {
         treatment_site: '',
         immobilization_device: '',
         dose: 40,
-        fractions: 15
+        fractions: 15,
+        has_boost: false,
+        boost_dose: 10,
+        boost_fractions: 4
       }
     });
     setWriteup('');
@@ -316,10 +379,17 @@ const DIBHForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="">Select a physician</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physician</option>
                       {physicians.map(physician => (
-                        <option key={physician} value={physician}>{physician}</option>
+                        <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                       ))}
                     </Select>
                     <FormErrorMessage>
@@ -339,10 +409,17 @@ const DIBHForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="">Select a physicist</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physicist</option>
                       {physicists.map(physicist => (
-                        <option key={physicist} value={physicist}>{physicist}</option>
+                        <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                       ))}
                     </Select>
                     <FormErrorMessage>
@@ -393,9 +470,16 @@ const DIBHForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
+                      <option value="male" style={{ backgroundColor: '#2D3748', color: 'white' }}>Male</option>
+                      <option value="female" style={{ backgroundColor: '#2D3748', color: 'white' }}>Female</option>
                     </Select>
                     <FormErrorMessage>
                       {errors.common_info?.patient?.sex?.message}
@@ -428,10 +512,17 @@ const DIBHForm = () => {
                     borderColor="gray.600"
                     color="white"
                     _hover={{ borderColor: "gray.500" }}
+                    data-theme="dark"
+                    sx={{
+                      '& option': {
+                        backgroundColor: 'gray.700',
+                        color: 'white',
+                      }
+                    }}
                   >
-                    <option value="">Select a treatment site</option>
+                    <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a treatment site</option>
                     {treatmentSites.map(site => (
-                      <option key={site} value={site}>{site}</option>
+                      <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
                     ))}
                   </Select>
                   <FormErrorMessage>
@@ -439,28 +530,45 @@ const DIBHForm = () => {
                   </FormErrorMessage>
                 </FormControl>
                 
-                <FormControl isInvalid={errors.dibh_data?.immobilization_device} mb={3}>
-                  <FormLabel fontSize="sm" color="gray.300">Immobilization Device</FormLabel>
-                  <Select 
-                    size="sm"
-                    {...register("dibh_data.immobilization_device", { 
-                      required: "Immobilization device is required" 
-                    })}
-                    aria-label="Select immobilization device"
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    _hover={{ borderColor: "gray.500" }}
-                  >
-                    <option value="">Select a device</option>
-                    {immobilizationDevices.map(device => (
-                      <option key={device} value={device}>{device}</option>
-                    ))}
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.dibh_data?.immobilization_device?.message}
-                  </FormErrorMessage>
-                </FormControl>
+                {!isBreastSite && (
+                  <FormControl isInvalid={errors.dibh_data?.immobilization_device} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Immobilization Device</FormLabel>
+                    <Select 
+                      size="sm"
+                      {...register("dibh_data.immobilization_device", { 
+                        required: !isBreastSite ? "Immobilization device is required" : false
+                      })}
+                      aria-label="Select immobilization device"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
+                    >
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a device</option>
+                      {immobilizationDevices.map(device => (
+                        <option key={device} value={device} style={{ backgroundColor: '#2D3748', color: 'white' }}>{device}</option>
+                      ))}
+                    </Select>
+                    <FormErrorMessage>
+                      {errors.dibh_data?.immobilization_device?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                )}
+                
+                {isBreastSite && (
+                  <Box mb={3}>
+                    <Text fontSize="sm" color="gray.400">
+                      <strong>Immobilization Device:</strong> Breast board (automatically selected)
+                    </Text>
+                  </Box>
+                )}
                 
                 {watchTreatmentSite && fractionationSchemes[watchTreatmentSite] && (
                   <Box mb={3}>
@@ -580,17 +688,109 @@ const DIBHForm = () => {
                   </FormErrorMessage>
                 </FormControl>
                 
+                <FormControl mb={3}>
+                  <Checkbox 
+                    size="sm" 
+                    isChecked={watchHasBoost} 
+                    {...register("dibh_data.has_boost")}
+                    onChange={(e) => setValue('dibh_data.has_boost', e.target.checked)}
+                    colorScheme="green"
+                    color="gray.300"
+                  >
+                    Has Boost
+                  </Checkbox>
+                </FormControl>
+                
+                {watchHasBoost && (
+                  <>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                      <FormControl isInvalid={errors.dibh_data?.boost_dose}>
+                        <FormLabel fontSize="sm" color="gray.300">Boost Dose (Gy)</FormLabel>
+                        <NumberInput
+                          size="sm"
+                          min={0}
+                          step={0.1}
+                          defaultValue={10}
+                          onChange={(value) => setValue('dibh_data.boost_dose', parseFloat(value))}
+                          value={watchBoostDose}
+                        >
+                          <NumberInputField 
+                            {...register("dibh_data.boost_dose", { 
+                              required: watchHasBoost ? "Boost dose is required" : false,
+                              min: { value: 0.1, message: "Boost dose must be greater than 0" }
+                            })}
+                            bg="gray.700"
+                            borderColor="gray.600"
+                            color="white"
+                            _hover={{ borderColor: "gray.500" }}
+                            _focus={{ borderColor: "green.500" }}
+                          />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper color="gray.300" _hover={{ bg: "gray.600" }} />
+                            <NumberDecrementStepper color="gray.300" _hover={{ bg: "gray.600" }} />
+                          </NumberInputStepper>
+                        </NumberInput>
+                        <FormErrorMessage>
+                          {errors.dibh_data?.boost_dose?.message}
+                        </FormErrorMessage>
+                      </FormControl>
+                      
+                      <FormControl isInvalid={errors.dibh_data?.boost_fractions}>
+                        <FormLabel fontSize="sm" color="gray.300">Boost Fractions</FormLabel>
+                        <NumberInput
+                          size="sm"
+                          min={1}
+                          step={1}
+                          defaultValue={4}
+                          onChange={(value) => setValue('dibh_data.boost_fractions', parseInt(value))}
+                          value={watchBoostFractions}
+                        >
+                          <NumberInputField 
+                            {...register("dibh_data.boost_fractions", { 
+                              required: watchHasBoost ? "Boost fractions is required" : false,
+                              min: { value: 1, message: "Minimum 1 boost fraction" }
+                            })}
+                            bg="gray.700"
+                            borderColor="gray.600"
+                            color="white"
+                            _hover={{ borderColor: "gray.500" }}
+                            _focus={{ borderColor: "green.500" }}
+                          />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper color="gray.300" _hover={{ bg: "gray.600" }} />
+                            <NumberDecrementStepper color="gray.300" _hover={{ bg: "gray.600" }} />
+                          </NumberInputStepper>
+                        </NumberInput>
+                        <FormErrorMessage>
+                          {errors.dibh_data?.boost_fractions?.message}
+                        </FormErrorMessage>
+                      </FormControl>
+                    </Grid>
+                  </>
+                )}
+                
                 {/* Show dose per fraction calculation */}
                 {watchDose > 0 && watchFractions > 0 && (
-                  <Stat mt={4} borderWidth="1px" borderRadius="md" p={2} bg={writeupBg} borderColor={borderColor}>
-                    <StatLabel fontSize="xs" color="gray.300">Dose per Fraction</StatLabel>
-                    <StatNumber fontSize="lg" color="white">{dosePerFraction.toFixed(2)} Gy</StatNumber>
-                    <StatHelpText fontSize="xs">
-                      <Badge colorScheme={dosePerFraction <= 2.0 ? "green" : "orange"}>
-                        {fractionationDescription}
-                      </Badge>
-                    </StatHelpText>
-                  </Stat>
+                  <Box mt={4}>
+                    <Stat borderWidth="1px" borderRadius="md" p={2} bg={writeupBg} borderColor={borderColor} mb={2}>
+                      <StatLabel fontSize="xs" color="gray.300">Primary Dose per Fraction</StatLabel>
+                      <StatNumber fontSize="lg" color="white">{primaryDosePerFraction.toFixed(2)} Gy</StatNumber>
+                    </Stat>
+                    
+                    {watchHasBoost && watchBoostDose > 0 && watchBoostFractions > 0 && (
+                      <Stat borderWidth="1px" borderRadius="md" p={2} bg={writeupBg} borderColor={borderColor} mb={2}>
+                        <StatLabel fontSize="xs" color="gray.300">Boost Dose per Fraction</StatLabel>
+                        <StatNumber fontSize="lg" color="white">{boostDosePerFraction.toFixed(2)} Gy</StatNumber>
+                      </Stat>
+                    )}
+                    
+                    <Stat borderWidth="1px" borderRadius="md" p={2} bg="green.900" borderColor="green.700">
+                      <StatLabel fontSize="xs" color="green.200">Total Treatment</StatLabel>
+                      <StatNumber fontSize="lg" color="green.100">
+                        {totalDose} Gy in {totalFractions} fractions
+                      </StatNumber>
+                    </Stat>
+                  </Box>
                 )}
               </GridItem>
             </Grid>

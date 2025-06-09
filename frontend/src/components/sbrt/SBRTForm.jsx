@@ -386,17 +386,28 @@ const SBRTForm = () => {
               <Box mb={4}> {/* Added margin bottom for spacing */}
                 <Heading size="xs" mb={3} >Staff Information</Heading>
                 <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
-                  <FormLabel fontSize="sm">Physician Name</FormLabel>
+                  <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
                   <Select 
                     size="sm"
                     {...register("common_info.physician.name", { 
                       required: "Physician name is required" 
                     })}
                     aria-label="Select physician"
+                    bg="gray.700"
+                    borderColor="gray.600"
+                    color="white"
+                    _hover={{ borderColor: "gray.500" }}
+                    data-theme="dark"
+                    sx={{
+                      '& option': {
+                        backgroundColor: 'gray.700',
+                        color: 'white',
+                      }
+                    }}
                   >
-                    <option value="">Select a physician</option>
+                    <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physician</option>
                     {physicians.map(physician => (
-                      <option key={physician} value={physician}>{physician}</option>
+                      <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                     ))}
                   </Select>
                   <FormErrorMessage>
@@ -405,17 +416,28 @@ const SBRTForm = () => {
                 </FormControl>
 
                 <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
-                  <FormLabel fontSize="sm">Physicist Name</FormLabel>
+                  <FormLabel fontSize="sm" color="gray.300">Physicist Name</FormLabel>
                   <Select
                     size="sm"
                     {...register("common_info.physicist.name", {
                       required: "Physicist name is required"
                     })}
                     aria-label="Select physicist"
+                    bg="gray.700"
+                    borderColor="gray.600"
+                    color="white"
+                    _hover={{ borderColor: "gray.500" }}
+                    data-theme="dark"
+                    sx={{
+                      '& option': {
+                        backgroundColor: 'gray.700',
+                        color: 'white',
+                      }
+                    }}
                   >
-                    <option value="">Select a physicist</option>
+                    <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physicist</option>
                     {physicists.map(physicist => (
-                      <option key={physicist} value={physicist}>{physicist}</option>
+                      <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                     ))}
                   </Select>
                   <FormErrorMessage>
@@ -445,16 +467,27 @@ const SBRTForm = () => {
                 </FormControl>
                 
                 <FormControl isInvalid={errors.common_info?.patient?.sex} mb={3}>
-                  <FormLabel fontSize="sm">Patient Sex</FormLabel>
+                  <FormLabel fontSize="sm" color="gray.300">Patient Sex</FormLabel>
                   <Select 
                     size="sm"
                     {...register("common_info.patient.sex", { 
                       required: "Sex is required" 
                     })}
                     aria-label="Patient sex"
+                    bg="gray.700"
+                    borderColor="gray.600"
+                    color="white"
+                    _hover={{ borderColor: "gray.500" }}
+                    data-theme="dark"
+                    sx={{
+                      '& option': {
+                        backgroundColor: 'gray.700',
+                        color: 'white',
+                      }
+                    }}
                   >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
+                    <option value="male" style={{ backgroundColor: '#2D3748', color: 'white' }}>Male</option>
+                    <option value="female" style={{ backgroundColor: '#2D3748', color: 'white' }}>Female</option>
                   </Select>
                   <FormErrorMessage>
                     {errors.common_info?.patient?.sex?.message}
@@ -479,17 +512,28 @@ const SBRTForm = () => {
               <Box mb={4}> {/* Added margin bottom for spacing */}
                 <Heading size="xs" mb={3}>Treatment Site & Motion</Heading>
                 <FormControl isInvalid={errors.sbrt_data?.treatment_site} mb={4}>
-                  <FormLabel fontSize="sm">Treatment Site</FormLabel>
+                  <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
                   <Select 
                     size="sm"
                     {...register("sbrt_data.treatment_site", { 
                       required: "Treatment site is required" 
                     })}
                     aria-label="Select treatment site"
+                    bg="gray.700"
+                    borderColor="gray.600"
+                    color="white"
+                    _hover={{ borderColor: "gray.500" }}
+                    data-theme="dark"
+                    sx={{
+                      '& option': {
+                        backgroundColor: 'gray.700',
+                        color: 'white',
+                      }
+                    }}
                   >
-                    <option value="">Select a treatment site</option>
+                    <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a treatment site</option>
                     {treatmentSites.map(site => (
-                      <option key={site} value={site}>{site}</option>
+                      <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
                     ))}
                   </Select>
                   <FormErrorMessage>

@@ -501,10 +501,17 @@ const FusionForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="">Select a physician</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physician</option>
                       {physicians.map(physician => (
-                        <option key={physician} value={physician}>{physician}</option>
+                        <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                       ))}
                     </Select>
                     <FormErrorMessage>
@@ -524,10 +531,17 @@ const FusionForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="">Select a physicist</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physicist</option>
                       {physicists.map(physicist => (
-                        <option key={physicist} value={physicist}>{physicist}</option>
+                        <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                       ))}
                     </Select>
                     <FormErrorMessage>
@@ -578,9 +592,16 @@ const FusionForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
+                      <option value="male" style={{ backgroundColor: '#2D3748', color: 'white' }}>Male</option>
+                      <option value="female" style={{ backgroundColor: '#2D3748', color: 'white' }}>Female</option>
                     </Select>
                     <FormErrorMessage>
                       {errors.common_info?.patient?.sex?.message}
@@ -627,10 +648,17 @@ const FusionForm = () => {
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
                     >
-                      <option value="">Select a lesion</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a lesion</option>
                       {Object.keys(lesionRegions).sort().map(lesion => (
-                        <option key={lesion} value={lesion}>{lesion}</option>
+                        <option key={lesion} value={lesion} style={{ backgroundColor: '#2D3748', color: 'white' }}>{lesion}</option>
                       ))}
                     </Select>
                     <FormErrorMessage>
@@ -670,14 +698,21 @@ const FusionForm = () => {
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
+                        data-theme="dark"
+                        sx={{
+                          '& option': {
+                            backgroundColor: 'gray.700',
+                            color: 'white',
+                          }
+                        }}
                       >
-                        <option value="">Select a region</option>
-                        <option value="head and neck">Head and Neck</option>
-                        <option value="brain">Brain</option>
-                        <option value="thoracic">Thoracic</option>
-                        <option value="abdominal">Abdominal</option>
-                        <option value="pelvic">Pelvic</option>
-                        <option value="spinal">Spinal</option>
+                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a region</option>
+                        <option value="head and neck" style={{ backgroundColor: '#2D3748', color: 'white' }}>Head and Neck</option>
+                        <option value="brain" style={{ backgroundColor: '#2D3748', color: 'white' }}>Brain</option>
+                        <option value="thoracic" style={{ backgroundColor: '#2D3748', color: 'white' }}>Thoracic</option>
+                        <option value="abdominal" style={{ backgroundColor: '#2D3748', color: 'white' }}>Abdominal</option>
+                        <option value="pelvic" style={{ backgroundColor: '#2D3748', color: 'white' }}>Pelvic</option>
+                        <option value="spinal" style={{ backgroundColor: '#2D3748', color: 'white' }}>Spinal</option>
                       </Select>
                       <FormErrorMessage>
                         {errors.fusion_data?.anatomical_region?.message}
@@ -762,9 +797,16 @@ const FusionForm = () => {
                           borderColor="gray.600"
                           color="white"
                           _hover={{ borderColor: "gray.500" }}
+                          data-theme="dark"
+                          sx={{
+                            '& option': {
+                              backgroundColor: 'gray.700',
+                              color: 'white',
+                            }
+                          }}
                         >
                           {modalities.map(modality => (
-                            <option key={modality} value={modality}>{modality}</option>
+                            <option key={modality} value={modality} style={{ backgroundColor: '#2D3748', color: 'white' }}>{modality}</option>
                           ))}
                         </Select>
                       </FormControl>
@@ -793,9 +835,16 @@ const FusionForm = () => {
                               borderColor="gray.600"
                               color="white"
                               _hover={{ borderColor: "gray.500" }}
+                              data-theme="dark"
+                              sx={{
+                                '& option': {
+                                  backgroundColor: 'gray.700',
+                                  color: 'white',
+                                }
+                              }}
                             >
                               {registrationMethods.map(method => (
-                                <option key={method} value={method}>{method}</option>
+                                <option key={method} value={method} style={{ backgroundColor: '#2D3748', color: 'white' }}>{method}</option>
                               ))}
                             </Select>
                           </Box>

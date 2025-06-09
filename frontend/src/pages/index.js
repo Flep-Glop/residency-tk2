@@ -14,6 +14,8 @@ import {
   Badge
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import UpdateNotification from '../components/UpdateNotification';
+import { VERSION_INFO } from '../constants/version';
 
 const HomePage = () => {
   const router = useRouter();
@@ -149,6 +151,9 @@ const HomePage = () => {
 
   return (
     <Box bg="gray.900" minH="100vh">
+      {/* Update Notification Component */}
+      <UpdateNotification />
+      
       <Container maxW="container.xl" py={8}>
         <Box textAlign="center" mb={10}>
           <Heading as="h1" size="2xl" mb={4} color="white">
@@ -174,7 +179,7 @@ const HomePage = () => {
             workflow efficiency.
           </Text>
           <Text fontStyle="italic" color="gray.400">
-            Version 1.0 - Migrated from Streamlit to React/FastAPI
+            Version {VERSION_INFO.current} - Enhanced with boost functionality and improved UX
           </Text>
         </Box>
       </Container>

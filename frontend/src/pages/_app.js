@@ -42,6 +42,27 @@ const theme = extendTheme({
         bg: 'gray.50',
         color: 'gray.800',
       },
+      // Fix dropdown option visibility in dark theme
+      'select option': {
+        backgroundColor: '#2D3748 !important', // gray.700
+        color: 'white !important',
+        padding: '8px !important',
+      },
+      // Ensure select elements maintain dark styling
+      'select[data-theme="dark"]': {
+        backgroundColor: '#2D3748 !important',
+        color: 'white !important',
+        borderColor: '#4A5568 !important',
+      },
+      'select[data-theme="dark"] option': {
+        backgroundColor: '#2D3748 !important',
+        color: 'white !important',
+      },
+      // Alternative approach for better browser compatibility
+      '.chakra-select__wrapper select option': {
+        backgroundColor: '#2D3748 !important',
+        color: 'white !important',
+      },
     },
   },
 });
