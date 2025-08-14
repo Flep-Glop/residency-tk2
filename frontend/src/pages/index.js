@@ -178,8 +178,22 @@ const HomePage = () => {
             physicists create standardized documentation quickly and accurately, improving clinical 
             workflow efficiency.
           </Text>
+          
+          <Box mb={4} p={4} bg="green.900" borderRadius="md" border="1px" borderColor="green.700">
+            <Heading as="h4" size="sm" mb={3} color="green.200">
+              🎉 What's New in Version {VERSION_INFO.current}
+            </Heading>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+              {VERSION_INFO.updates[0].changes.map((change, index) => (
+                <Text key={index} fontSize="sm" color="green.300">
+                  • {change}
+                </Text>
+              ))}
+            </SimpleGrid>
+          </Box>
+          
           <Text fontStyle="italic" color="gray.400">
-            Version {VERSION_INFO.current} - Enhanced with boost functionality and improved UX
+            Version {VERSION_INFO.current} - Major update with complete pacemaker module and enhanced workflows
           </Text>
         </Box>
       </Container>

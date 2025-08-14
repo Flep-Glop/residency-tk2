@@ -1,10 +1,24 @@
 // Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
-  current: "1.2.0",
-  releaseDate: "2024-12-20",
+  current: "2.0.0",
+  releaseDate: "2025-01-15",
   
   // Update history - add new updates to the top of this array
   updates: [
+    {
+      version: "2.0.0",
+      date: "2025-01-15", 
+      changes: [
+        "🆕 Complete Pacemaker/CIED Module with TG-203 compliance",
+        "⚡ Enhanced SBRT with 6 core sites and anatomical clarification",
+        "🎯 DIBH custom treatment sites and auto-assigned devices",
+        "🔄 Fusion module with bladder filling studies support",
+        "🧪 Comprehensive automated testing framework",
+        "📋 Improved deployment workflow and documentation",
+        "✨ Grammar fixes and professional writeup templates",
+        "🎨 Advanced table formatting for plan quality metrics"
+      ]
+    },
     {
       version: "1.2.0",
       date: "2024-12-20", 
