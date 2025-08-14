@@ -56,6 +56,7 @@ const FusionForm = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [indexToRemove, setIndexToRemove] = useState(null);
   const cancelRef = useRef();
+  const [isBladderFillingStudy, setIsBladderFillingStudy] = useState(false);
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';
@@ -73,7 +74,8 @@ const FusionForm = () => {
         lesion: '',
         custom_lesion: '',
         anatomical_region: '',
-        registrations: []
+        registrations: [],
+        is_bladder_filling_study: false
       }
     }
   });
@@ -134,11 +136,11 @@ const FusionForm = () => {
   }, [selectedLesion, lesionRegions, setValue, isCustomLesion]);
 
   const onSubmit = async (data) => {
-    // Validate that we have at least one registration
-    if (data.fusion_data.registrations.length === 0) {
+    // Validate that we have at least one registration (unless it's a bladder filling study)
+    if (!data.fusion_data.is_bladder_filling_study && data.fusion_data.registrations.length === 0) {
       toast({
         title: 'Validation Error',
-        description: 'At least one registration is required',
+        description: 'At least one registration is required for multimodality fusion',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -175,8 +177,12 @@ const FusionForm = () => {
 
   // Format the writeup in the approved style
   const formatWriteup = (originalWriteup, formData) => {
-    // If the backend already generates the final format, just return it
-    // Otherwise, format it here
+    // If this is a bladder filling study, return the backend writeup unchanged
+    if (formData.fusion_data.is_bladder_filling_study) {
+      return originalWriteup;
+    }
+    
+    // For regular multimodality fusion, format it here
     
     const physician = formData.common_info.physician.name;
     const physicist = formData.common_info.physicist.name;
@@ -250,7 +256,8 @@ const FusionForm = () => {
         } else if (singleModality.includes('CT')) {
           modalityType = 'CT study';
         }
-        importText = `A ${modalityType} was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set.`;
+        const article = modalityType.startsWith('MRI') ? 'An' : 'A';
+        importText = `${article} ${modalityType} was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set.`;
       }
     } else {
       // Handle multiple different modality types
@@ -311,9 +318,9 @@ const FusionForm = () => {
       
       let ctText;
       if (hasDeformableCt) {
-        ctText = `The CT and CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results.`;
+        ctText = `The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results.`;
       } else {
-        ctText = `The CT and CT image sets were initially aligned using a rigid registration algorithm based on the ${anatomicalRegion} anatomy, then refined manually.`;
+        ctText = `The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the ${anatomicalRegion} anatomy, then refined manually.`;
       }
       
       ctText += ` The accuracy of ${totalRegistrations === 1 ? 'this fusion was' : 'these fusions were'} validated using anatomical structures such as the ${lesion}.`;
@@ -415,6 +422,19 @@ const FusionForm = () => {
     }
   };
 
+  const handleBladderFillingToggle = (e) => {
+    const isChecked = e.target.checked;
+    setIsBladderFillingStudy(isChecked);
+    setValue('fusion_data.is_bladder_filling_study', isChecked);
+    
+    if (isChecked) {
+      // Pre-fill with defaults for bladder filling studies
+      setValue('fusion_data.anatomical_region', 'pelvic');
+      // Clear registrations since bladder filling doesn't use the registration system
+      setValue('fusion_data.registrations', []);
+    }
+  };
+
   const handleResetForm = () => {
     reset({
       common_info: {
@@ -426,11 +446,13 @@ const FusionForm = () => {
         lesion: '',
         custom_lesion: '',
         anatomical_region: '',
-        registrations: []
+        registrations: [],
+        is_bladder_filling_study: false
       }
     });
     setWriteup('');
     setIsCustomLesion(false);
+    setIsBladderFillingStudy(false);
     
     toast({
       title: 'Form reset',
@@ -456,7 +478,7 @@ const FusionForm = () => {
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
             <Heading size="xl" mb={2}>📝 Fusion Write-up Generator</Heading>
-            <Text opacity={0.9}>Generate standardized write-ups for multimodality image fusions</Text>
+            <Text opacity={0.9}>Generate standardized write-ups for multimodality image fusions and bladder filling studies</Text>
           </Box>
         </Flex>
       </Box>
@@ -622,25 +644,76 @@ const FusionForm = () => {
               >
                 <Heading size="sm" mb={3} textAlign="center" color="white">Lesion Info</Heading>
                 
-                <Box mb={2}>
-                  <Checkbox 
-                    size="sm" 
-                    isChecked={isCustomLesion} 
-                    onChange={handleCustomLesionChange}
-                    colorScheme="green"
-                    color="gray.300"
-                  >
-                    Custom Lesion?
-                  </Checkbox>
+                <Box mb={4}>
+                  <Box mb={3}>
+                    <Checkbox 
+                      size="sm" 
+                      {...register("fusion_data.is_bladder_filling_study")}
+                      isChecked={isBladderFillingStudy} 
+                      onChange={handleBladderFillingToggle}
+                      colorScheme="blue"
+                      color="gray.300"
+                    >
+                      Full/Empty?
+                    </Checkbox>
+                  </Box>
+                  
+                  {!isBladderFillingStudy && (
+                    <Box>
+                      <Checkbox 
+                        size="sm" 
+                        isChecked={isCustomLesion} 
+                        onChange={handleCustomLesionChange}
+                        colorScheme="green"
+                        color="gray.300"
+                      >
+                        Custom Lesion?
+                      </Checkbox>
+                    </Box>
+                  )}
                 </Box>
                 
-                {!isCustomLesion ? (
+                {isBladderFillingStudy ? (
+                  <FormControl isInvalid={errors.fusion_data?.lesion} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Lesion/Treatment Site</FormLabel>
+                    <Select 
+                      size="sm"
+                      {...register("fusion_data.lesion", { 
+                        required: isBladderFillingStudy ? "Lesion/treatment site is required" : false
+                      })}
+                      aria-label="Lesion or treatment site"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                      data-theme="dark"
+                      sx={{
+                        '& option': {
+                          backgroundColor: 'gray.700',
+                          color: 'white',
+                        }
+                      }}
+                    >
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a treatment site</option>
+                      <option value="prostate" style={{ backgroundColor: '#2D3748', color: 'white' }}>Prostate</option>
+                      <option value="bladder" style={{ backgroundColor: '#2D3748', color: 'white' }}>Bladder</option>
+                      <option value="cervix" style={{ backgroundColor: '#2D3748', color: 'white' }}>Cervix</option>
+                      <option value="endometrium" style={{ backgroundColor: '#2D3748', color: 'white' }}>Endometrium</option>
+                      <option value="rectum" style={{ backgroundColor: '#2D3748', color: 'white' }}>Rectum</option>
+                      <option value="vagina" style={{ backgroundColor: '#2D3748', color: 'white' }}>Vagina</option>
+                      <option value="pelvis" style={{ backgroundColor: '#2D3748', color: 'white' }}>Pelvis</option>
+                    </Select>
+                    <FormErrorMessage>
+                      {errors.fusion_data?.lesion?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                ) : !isCustomLesion ? (
                   <FormControl isInvalid={errors.fusion_data?.lesion} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Lesion</FormLabel>
                     <Select 
                       size="sm"
                       {...register("fusion_data.lesion", { 
-                        required: !isCustomLesion ? "Lesion is required" : false
+                        required: !isCustomLesion && !isBladderFillingStudy ? "Lesion is required" : false
                       })}
                       isDisabled={isCustomLesion}
                       aria-label="Select lesion"
@@ -713,6 +786,7 @@ const FusionForm = () => {
                         <option value="abdominal" style={{ backgroundColor: '#2D3748', color: 'white' }}>Abdominal</option>
                         <option value="pelvic" style={{ backgroundColor: '#2D3748', color: 'white' }}>Pelvic</option>
                         <option value="spinal" style={{ backgroundColor: '#2D3748', color: 'white' }}>Spinal</option>
+                        <option value="extremity" style={{ backgroundColor: '#2D3748', color: 'white' }}>Extremity</option>
                       </Select>
                       <FormErrorMessage>
                         {errors.fusion_data?.anatomical_region?.message}
@@ -722,16 +796,17 @@ const FusionForm = () => {
                 )}
               </GridItem>
               
-              {/* Registrations Section */}
-              <GridItem 
-                as={Box} 
-                p={4} 
-                borderWidth="1px" 
-                borderRadius="md" 
-                bg={formBg}
-                borderColor={borderColor}
-                boxShadow="sm"
-              >
+              {/* Registrations Section - Only show for multimodality fusion */}
+              {!isBladderFillingStudy && (
+                <GridItem 
+                  as={Box} 
+                  p={4} 
+                  borderWidth="1px" 
+                  borderRadius="md" 
+                  bg={formBg}
+                  borderColor={borderColor}
+                  boxShadow="sm"
+                >
                 <Heading size="sm" mb={3} textAlign="center" color="white">Registrations</Heading>
                 
                 {!hasMriRegistration && !hasPetRegistration && (
@@ -864,6 +939,7 @@ const FusionForm = () => {
                   </Button>
                 </Box>
               </GridItem>
+              )}
             </Grid>
             
             <Flex gap={4} mb={6}>
@@ -871,7 +947,7 @@ const FusionForm = () => {
                 colorScheme="green"
                 isLoading={loading}
                 type="submit"
-                isDisabled={fields.length === 0}
+                isDisabled={!isBladderFillingStudy && fields.length === 0}
                 width="100%"
                 size="md"
                 aria-label="Generate write-up"

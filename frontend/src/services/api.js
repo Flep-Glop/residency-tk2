@@ -14,6 +14,10 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`);
+    console.log(`Full URL: ${config.baseURL}${config.url}`);
+    if (config.url === '/sbrt/generate') {
+      console.log('SBRT Generate payload:', JSON.stringify(config.data, null, 2));
+    }
     return config;
   },
   (error) => {

@@ -48,10 +48,13 @@ class DIBHService:
         patient_age = common_info.patient.age
         patient_sex = common_info.patient.sex
         
-        treatment_site = dibh_data.treatment_site
+        # Use custom treatment site if provided, otherwise use the standard treatment site
+        treatment_site = dibh_data.custom_treatment_site if dibh_data.custom_treatment_site else dibh_data.treatment_site
         dose = dibh_data.dose
         fractions = dibh_data.fractions
-        immobilization_device = dibh_data.immobilization_device
+        
+        # Auto-assign immobilization device based on treatment site
+        immobilization_device = "breast board" if treatment_site in ["left breast", "right breast"] else "wing board"
         
         # Calculate dose per fraction
         dose_per_fraction = dose / fractions

@@ -42,6 +42,10 @@ class FusionService:
         physicist = common_info.physicist.name
         patient_details = common_info.patient.get_description()
         
+        # Check if this is a bladder filling study
+        if fusion_data.is_bladder_filling_study:
+            return self._generate_bladder_filling_writeup(common_info, fusion_data)
+        
         # Use custom lesion if provided, otherwise use the standard lesion
         lesion_description = fusion_data.custom_lesion if fusion_data.custom_lesion else fusion_data.lesion
         anatomical_region = fusion_data.anatomical_region
@@ -87,6 +91,8 @@ class FusionService:
             
             if secondary == "CT":
                 intro_text = f"A {secondary} study was imported into the Velocity software. "
+            elif secondary == "MRI":
+                intro_text = f"An {secondary} study was imported into the Velocity software. "
             else:
                 intro_text = f"A {secondary} study was imported into the Velocity software. "
                 
@@ -161,9 +167,9 @@ class FusionService:
             has_deformable_ct = any(reg.method.lower() != "rigid" for reg in ct_registrations)
             
             if has_deformable_ct:
-                ct_text = f"The CT and CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results."
+                ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results."
             else:
-                ct_text = f"The CT and CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, then refined manually."
+                ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, then refined manually."
             
             if len(registrations) == 1:  # Total registrations, not just CT
                 ct_text += f" The accuracy of this fusion was validated using anatomical structures such as the {lesion}."
@@ -181,4 +187,32 @@ class FusionService:
         else:
             conclusion_text = " The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
         
-        return intro_text + reg_text + conclusion_text 
+        return intro_text + reg_text + conclusion_text
+    
+    def _generate_bladder_filling_writeup(self, common_info, fusion_data) -> FusionResponse:
+        """Generate a write-up for full/empty bladder fusion studies."""
+        physician = common_info.physician.name
+        physicist = common_info.physicist.name
+        patient_details = common_info.patient.get_description()
+        
+        # Use custom lesion if provided, otherwise use the standard lesion
+        lesion_description = fusion_data.custom_lesion if fusion_data.custom_lesion else fusion_data.lesion
+        anatomical_region = fusion_data.anatomical_region
+        immobilization_device = "Vac-Lok"
+        
+        # Generate the bladder filling write-up based on the template
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- for multimodality image fusion. "
+        write_up += f"The patient is {patient_details} with a {lesion_description} lesion. "
+        write_up += "The patient was scanned with the bladder full and again with the bladder empty to evaluate the position of the pelvic anatomy in both scans.\n\n"
+        
+        write_up += f"The patient was scanned in our CT simulator in the treatment position in a {immobilization_device} to minimize motion. "
+        write_up += "The CT studies were then exported to the Velocity imaging registration software. "
+        write_up += "A fusion study of the two CT sets (empty and full bladder) was then created. "
+        write_up += "The CT image sets were registered using non-deformable registration algorithm based on the pelvic anatomy. "
+        write_up += f"The resulting registrations of the fused image studies were verified for accuracy using anatomical landmarks such as the {anatomical_region}. "
+        write_up += "The fused images were used to improve the identification of the critical structures and targets and to accurately contour them.\n\n"
+        
+        write_up += f"The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, "
+        write_up += f"Dr. {physician} and the medical physicist, Dr. {physicist}."
+        
+        return FusionResponse(writeup=write_up) 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Heading, Button, HStack, Alert, AlertIcon, AlertTitle, AlertDescription, Text } from '@chakra-ui/react';
+import { Box, Container, Heading, Button, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import SBRTForm from '../components/sbrt/SBRTForm';
 
@@ -31,17 +31,9 @@ const SBRTPage = () => {
       </Box>
 
       {/* Main Content */}
-      <Box px={6}>
-        <Alert status="info" bg="blue.900" borderColor="blue.700" color="blue.200">
-          <AlertIcon color="blue.300" />
-          <Box>
-            <AlertTitle color="blue.200">🚧 SBRT Tool Under Development</AlertTitle>
-            <AlertDescription color="blue.300">
-              The SBRT write-up generator is being developed. Check back soon for comprehensive stereotactic body radiation therapy documentation tools.
-            </AlertDescription>
-          </Box>
-        </Alert>
-      </Box>
+      <Container maxW="7xl" px={6}>
+        <SBRTForm />
+      </Container>
     </Box>
   );
 };

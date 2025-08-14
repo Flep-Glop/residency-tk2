@@ -1,28 +1,43 @@
 from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Any, Optional
+from .common import CommonInfo
 
-class PersonInfo(BaseModel):
-    name: str = Field(..., example="Smith")
-    role: str = Field(..., example="physician")
-
-class PatientInfo(BaseModel):
-    age: str = Field(..., example="65")
-    sex: str = Field(..., example="male")
-
-class CommonInfo(BaseModel):
-    physician: PersonInfo
-    physicist: PersonInfo
-    patient: PatientInfo
+class CalculatedMetrics(BaseModel):
+    """Schema for calculated plan quality metrics from frontend."""
+    coverage: str = Field(..., description="Coverage percentage as string")
+    conformityIndex: str = Field(..., description="Conformity Index as string") 
+    r50: str = Field(..., description="R50 ratio as string")
+    gradientMeasure: str = Field(..., description="Gradient Measure as string")
+    maxDose2cmRingPercent: str = Field(..., description="Max dose in 2cm ring percentage as string")
+    homogeneityIndex: str = Field(..., description="Homogeneity Index as string")
+    conformityDeviation: str = Field(..., description="Conformity deviation status")
+    r50Deviation: str = Field(..., description="R50 deviation status")  
+    maxDose2cmDeviation: str = Field(..., description="Max dose 2cm deviation status")
+    toleranceRow: Dict[str, Any] = Field(..., description="Tolerance table row used for calculations")
 
 class SBRTData(BaseModel):
-    treatment_site: str = Field(..., example="Lung")
+    """Schema matching frontend form structure exactly."""
+    # Basic treatment parameters (match frontend form field names)
+    treatment_site: str = Field(..., example="lung")
+    anatomical_clarification: Optional[str] = Field("", description="Anatomical clarification for spine/bone sites (e.g., T11-L1, Humerus)")
     dose: float = Field(..., example=50.0)
     fractions: int = Field(..., example=5)
-    lesion_size: Optional[str] = Field(None, example="2.5 cm")
-    is_custom_lesion: Optional[bool] = Field(default=False)
-    custom_lesion_description: Optional[str] = Field(None, example="soft tissue sarcoma, right thigh, anterior compartment")
-    motion_management: Optional[str] = Field(None, example="abdominal compression")
-    dose_constraints_met: Optional[bool] = Field(True, example=True)
+    breathing_technique: str = Field(..., example="freebreathe", description="freebreathe, 4DCT, or DIBH")
+    oligomet_location: Optional[str] = Field("", description="Location for oligometastasis cases")
+    
+    # Target and plan information (match frontend form field names)
+    target_name: str = Field(..., example="PTV_50", description="Target/lesion name")
+    ptv_volume: str = Field(..., example="25.1", description="PTV volume in cc as string from form")
+    vol_ptv_receiving_rx: str = Field(..., example="95.0", description="Volume of PTV receiving Rx as string")
+    vol_100_rx_isodose: str = Field(..., example="27.6", description="100% isodose volume as string")
+    vol_50_rx_isodose: str = Field(..., example="125.0", description="50% isodose volume as string") 
+    max_dose_2cm_ring: str = Field(..., example="52.5", description="Max dose in 2cm ring as string")
+    max_dose_in_target: str = Field(..., example="55.0", description="Max dose in target as string")
+    sib_comment: str = Field("", description="SIB comment")
+    
+    # Calculated metrics and additional data from frontend
+    calculated_metrics: Optional[CalculatedMetrics] = Field(None, description="Real-time calculated metrics")
+    is_sib: bool = Field(default=False, description="SIB case flag")
 
     @validator('fractions')
     def fractions_must_be_positive(cls, v):

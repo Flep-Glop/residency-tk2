@@ -41,6 +41,7 @@ const DIBHForm = () => {
   const toast = useToast();
   const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Newman']);
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const [isCustomTreatmentSite, setIsCustomTreatmentSite] = useState(false);
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';
@@ -56,6 +57,7 @@ const DIBHForm = () => {
       },
       dibh_data: {
         treatment_site: '',
+        custom_treatment_site: '',
         immobilization_device: '',
         dose: 40,
         fractions: 15,
@@ -80,14 +82,29 @@ const DIBHForm = () => {
   const totalFractions = watchFractions + (watchHasBoost ? watchBoostFractions : 0);
   
   // Check if treatment site is breast (for auto-setting immobilization device)
-  const isBreastSite = watchTreatmentSite === 'left breast' || watchTreatmentSite === 'right breast';
+  const actualTreatmentSite = isCustomTreatmentSite ? watch('dibh_data.custom_treatment_site') : watchTreatmentSite;
+  const isBreastSite = actualTreatmentSite === 'left breast' || actualTreatmentSite === 'right breast';
   
-  // Auto-set immobilization device for breast sites
+  // Auto-set immobilization device based on treatment site
   useEffect(() => {
     if (isBreastSite) {
       setValue('dibh_data.immobilization_device', 'breast board');
+    } else if (actualTreatmentSite && actualTreatmentSite !== '') {
+      setValue('dibh_data.immobilization_device', 'wing board');
     }
-  }, [isBreastSite, setValue]);
+  }, [isBreastSite, actualTreatmentSite, setValue]);
+
+  // Add handler for custom treatment site
+  const handleCustomTreatmentSiteChange = (e) => {
+    setIsCustomTreatmentSite(e.target.checked);
+    if (e.target.checked) {
+      // Clear the standard treatment site
+      setValue('dibh_data.treatment_site', '');
+    } else {
+      // Clear the custom treatment site
+      setValue('dibh_data.custom_treatment_site', '');
+    }
+  };
 
   // Load initial data
   useEffect(() => {
@@ -214,15 +231,15 @@ const DIBHForm = () => {
     const physicist = formData.common_info?.physicist?.name || 'Unknown';
     const patientAge = formData.common_info?.patient?.age || 'Unknown';
     const patientSex = formData.common_info?.patient?.sex || 'Unknown';
-    const treatmentSite = formData.dibh_data?.treatment_site || 'Unknown';
+    const treatmentSite = (isCustomTreatmentSite ? formData.dibh_data?.custom_treatment_site : formData.dibh_data?.treatment_site) || 'Unknown';
     const dose = formData.dibh_data?.dose || 0;
     const fractions = formData.dibh_data?.fractions || 1;
     const immobilizationDevice = formData.dibh_data?.immobilization_device || 'Unknown';
     
-    // For breast sites, ensure we use "breast board" as the immobilization device
+    // Auto-assign immobilization device based on treatment site
     const actualImmobilizationDevice = (treatmentSite === 'left breast' || treatmentSite === 'right breast') 
       ? 'breast board' 
-      : immobilizationDevice;
+      : 'wing board';
     
     // Calculate dose per fraction with safety check
     const dose_per_fraction = fractions > 0 ? dose / fractions : 0;
@@ -300,7 +317,8 @@ const DIBHForm = () => {
       },
       dibh_data: {
         treatment_site: '',
-        immobilization_device: '',
+        custom_treatment_site: '',
+        immobilization_device: '', // Auto-assigned based on treatment site
         dose: 40,
         fractions: 15,
         has_boost: false,
@@ -309,6 +327,7 @@ const DIBHForm = () => {
       }
     });
     setWriteup('');
+    setIsCustomTreatmentSite(false);
     
     toast({
       title: 'Form reset',
@@ -500,49 +519,29 @@ const DIBHForm = () => {
               >
                 <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Information</Heading>
                 
-                <FormControl isInvalid={errors.dibh_data?.treatment_site} mb={3}>
-                  <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
-                  <Select 
-                    size="sm"
-                    {...register("dibh_data.treatment_site", { 
-                      required: "Treatment site is required" 
-                    })}
-                    aria-label="Select treatment site"
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    _hover={{ borderColor: "gray.500" }}
-                    data-theme="dark"
-                    sx={{
-                      '& option': {
-                        backgroundColor: 'gray.700',
-                        color: 'white',
-                      }
-                    }}
-                  >
-                    <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a treatment site</option>
-                    {treatmentSites.map(site => (
-                      <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
-                    ))}
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.dibh_data?.treatment_site?.message}
-                  </FormErrorMessage>
-                </FormControl>
-                
-                {!isBreastSite && (
-                  <FormControl isInvalid={errors.dibh_data?.immobilization_device} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Immobilization Device</FormLabel>
+                <Checkbox
+                  isChecked={isCustomTreatmentSite}
+                  onChange={handleCustomTreatmentSiteChange}
+                  mb={3}
+                  colorScheme="blue"
+                >
+                  <Text fontSize="sm" color="gray.300">Custom Treatment Site?</Text>
+                </Checkbox>
+
+                {!isCustomTreatmentSite ? (
+                  <FormControl isInvalid={errors.dibh_data?.treatment_site} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
                     <Select 
                       size="sm"
-                      {...register("dibh_data.immobilization_device", { 
-                        required: !isBreastSite ? "Immobilization device is required" : false
+                      {...register("dibh_data.treatment_site", { 
+                        required: !isCustomTreatmentSite ? "Treatment site is required" : false
                       })}
-                      aria-label="Select immobilization device"
+                      aria-label="Select treatment site"
                       bg="gray.700"
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
+                      isDisabled={isCustomTreatmentSite}
                       data-theme="dark"
                       sx={{
                         '& option': {
@@ -551,24 +550,42 @@ const DIBHForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a device</option>
-                      {immobilizationDevices.map(device => (
-                        <option key={device} value={device} style={{ backgroundColor: '#2D3748', color: 'white' }}>{device}</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a treatment site</option>
+                      {treatmentSites.map(site => (
+                        <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
                       ))}
                     </Select>
                     <FormErrorMessage>
-                      {errors.dibh_data?.immobilization_device?.message}
+                      {errors.dibh_data?.treatment_site?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                ) : (
+                  <FormControl isInvalid={errors.dibh_data?.custom_treatment_site} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Custom Treatment Site Name</FormLabel>
+                    <Input
+                      size="sm"
+                      {...register("dibh_data.custom_treatment_site", {
+                        required: isCustomTreatmentSite ? "Custom treatment site name is required" : false
+                      })}
+                      aria-label="Custom treatment site name"
+                      placeholder="Enter custom treatment site"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                      _placeholder={{ color: "gray.400" }}
+                    />
+                    <FormErrorMessage>
+                      {errors.dibh_data?.custom_treatment_site?.message}
                     </FormErrorMessage>
                   </FormControl>
                 )}
                 
-                {isBreastSite && (
-                  <Box mb={3}>
-                    <Text fontSize="sm" color="gray.400">
-                      <strong>Immobilization Device:</strong> Breast board (automatically selected)
-                    </Text>
-                  </Box>
-                )}
+                <Box mb={3}>
+                  <Text fontSize="sm" color="gray.400">
+                    <strong>Immobilization Device:</strong> {isBreastSite ? 'Breast board' : actualTreatmentSite ? 'Wing board' : 'Automatically selected based on treatment site'}
+                  </Text>
+                </Box>
                 
                 {watchTreatmentSite && fractionationSchemes[watchTreatmentSite] && (
                   <Box mb={3}>

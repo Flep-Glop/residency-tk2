@@ -43,7 +43,7 @@ const HomePage = () => {
           title: 'SBRT',
           description: 'Create stereotactic body radiation therapy documentation',
           path: '/sbrt',
-          isAvailable: false
+          isAvailable: true
         },
         {
           title: 'Prior Dose',
@@ -55,7 +55,7 @@ const HomePage = () => {
           title: 'Pacemaker',
           description: 'Document pacemaker and ICD assessments',
           path: '/pacemaker',
-          isAvailable: false
+          isAvailable: true
         }
       ]
     },
