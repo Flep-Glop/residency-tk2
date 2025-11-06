@@ -204,4 +204,22 @@ Coming soon:
 3. Create API endpoints in `backend/app/routers/`
 4. Create React components in `frontend/src/components/`
 5. Create the page in `frontend/src/pages/`
-6. Add API client services in `frontend/src/services/` 
+6. Add API client services in `frontend/src/services/`
+
+## Workflow Documentation
+
+The project includes comprehensive workflow diagrams that visualize the business logic for medical physics consultations. These are located in the `/docs` folder:
+
+### Available Workflows
+
+- **[Fusion Quickwrite Flow](docs/fusion-quickwrite-flow.mermaid)**: Decision tree for generating fusion write-ups
+  - Covers single vs multiple fusion scenarios
+  - Different imaging modalities (MRI/CT, PET/CT, CT/CT)  
+  - Registration types (rigid, deformable, combinations)
+
+- **[Medical Physics Consultation Flow](docs/mpc-quickwrite-simplified.mermaid)**: Complete consultation workflow
+  - Prior treatment assessment and overlap analysis
+  - Pacemaker risk evaluation and blocking conditions
+  - Treatment type selection and DIBH considerations
+
+These Mermaid diagrams can be viewed in GitHub or rendered using any Mermaid-compatible viewer. They provide essential context for understanding the complex decision logic implemented throughout the application. 

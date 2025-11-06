@@ -42,7 +42,9 @@ import {
   Th,
   Td,
   Switch,
-  Checkbox
+  Checkbox,
+  Card,
+  CardBody
 } from '@chakra-ui/react';
 import { getTreatmentSites, getDoseConstraints, getFractionationSchemes, generateSBRTWriteup, validateDoseFractionation } from '../../services/sbrtService';
 
@@ -87,7 +89,6 @@ const SBRTForm = () => {
       common_info: {
         physician: { name: '', role: 'physician' },
         physicist: { name: '', role: 'physicist' },
-        patient: { age: '', sex: 'male' }
       },
       sbrt_data: {
         treatment_site: '',
@@ -123,6 +124,7 @@ const SBRTForm = () => {
   const watchDose = watch('sbrt_data.dose');
   const watchFractions = watch('sbrt_data.fractions');
   const watchTreatmentSite = watch('sbrt_data.treatment_site');
+  const watchBreathingTechnique = watch('sbrt_data.breathing_technique');
   const watchTargetName = watch('sbrt_data.target_name');
   const watchPTVVolume = watch('sbrt_data.ptv_volume');
   const watchVolPTVReceivingRx = watch('sbrt_data.vol_ptv_receiving_rx');
@@ -320,10 +322,20 @@ const SBRTForm = () => {
   }
 
   return (
-    <Box>
+    <Box bg="gray.900" minH="100vh">
+      {/* Header */}
+      <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
+        <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+          <Box>
+            <Heading size="xl" mb={2}>SBRT Write-up Generator</Heading>
+            <Text opacity={0.9}>Generate standardized write-up for stereotactic body radiation therapy</Text>
+          </Box>
+        </Flex>
+      </Box>
+
       {/* Main Content */}
-      <Box>
-        <Box maxW="1400px" mx="auto">
+      <Box px={6}>
+        <Box maxW="1200px" mx="auto">
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* First Row: Three Columns */}
             <Grid 
@@ -358,10 +370,12 @@ const SBRTForm = () => {
                         {...register("common_info.physician.name", { 
                           required: "Physician name is required" 
                         })}
+                        aria-label="Select physician"
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
+                        data-theme="dark"
                         sx={{
                           '& option': {
                             backgroundColor: 'gray.700',
@@ -386,10 +400,12 @@ const SBRTForm = () => {
                         {...register("common_info.physicist.name", { 
                           required: "Physicist name is required" 
                         })}
+                        aria-label="Select physicist"
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
+                        data-theme="dark"
                         sx={{
                           '& option': {
                             backgroundColor: 'gray.700',
@@ -404,61 +420,6 @@ const SBRTForm = () => {
                       </Select>
                       <FormErrorMessage>
                         {errors.common_info?.physicist?.name?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                  </Box>
-                  
-                  <Box>
-                    <Heading size="xs" mb={2} color="gray.300">Patient Information</Heading>
-                    
-                    <FormControl isInvalid={errors.common_info?.patient?.age} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Patient Age</FormLabel>
-                      <Input 
-                        size="sm"
-                        type="number"
-                        min="0"
-                        max="120"
-                        placeholder="Enter age"
-                        {...register('common_info.patient.age', { 
-                          required: 'Age is required',
-                          pattern: {
-                            value: /^\d+$/,
-                            message: 'Age must be a whole number'
-                          }
-                        })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                      <FormErrorMessage>
-                        {errors.common_info?.patient?.age?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                    
-                    <FormControl isInvalid={errors.common_info?.patient?.sex}>
-                      <FormLabel fontSize="sm" color="gray.300">Patient Sex</FormLabel>
-                      <Select 
-                        size="sm"
-                        {...register('common_info.patient.sex', { required: 'Sex is required' })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        <option value="male" style={{ backgroundColor: '#2D3748', color: 'white' }}>Male</option>
-                        <option value="female" style={{ backgroundColor: '#2D3748', color: 'white' }}>Female</option>
-                        <option value="other" style={{ backgroundColor: '#2D3748', color: 'white' }}>Other</option>
-                      </Select>
-                      <FormErrorMessage>
-                        {errors.common_info?.patient?.sex?.message}
                       </FormErrorMessage>
                     </FormControl>
                   </Box>
@@ -487,10 +448,12 @@ const SBRTForm = () => {
                         size="sm"
                         placeholder="Select treatment site"
                         {...register('sbrt_data.treatment_site', { required: 'Treatment site is required' })}
+                        aria-label="Select treatment site"
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
+                        data-theme="dark"
                         sx={{
                           '& option': {
                             backgroundColor: 'gray.700',
@@ -584,10 +547,12 @@ const SBRTForm = () => {
                       <Select
                         size="sm"
                         {...register('sbrt_data.breathing_technique')}
+                        aria-label="Select breathing technique"
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
+                        data-theme="dark"
                         sx={{
                           '& option': {
                             backgroundColor: 'gray.700',
@@ -825,6 +790,50 @@ const SBRTForm = () => {
                       </FormErrorMessage>
                     </FormControl>
                   </Grid>
+
+                  {/* Preview Section */}
+                  <Box mt={6}>
+                    <Heading size="xs" mb={2} color="gray.300">What will be written up:</Heading>
+                    
+                    <Card size="sm" variant="outline" borderColor="green.400" bg="gray.700">
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <HStack>
+                            <Badge colorScheme="green" size="sm">✓</Badge>
+                            <Text fontSize="xs" color="gray.200">
+                              <strong>Technique:</strong> {watchBreathingTechnique === '4DCT' ? '4DCT' : watchBreathingTechnique === 'DIBH' ? 'DIBH' : 'Free Breathing'} SBRT
+                            </Text>
+                          </HStack>
+                          <HStack>
+                            <Badge colorScheme="green" size="sm">✓</Badge>
+                            <Text fontSize="xs" color="gray.200">
+                              <strong>Site:</strong> {watchTreatmentSite ? watchTreatmentSite.charAt(0).toUpperCase() + watchTreatmentSite.slice(1) : 'Not selected'}
+                            </Text>
+                          </HStack>
+                          <HStack>
+                            <Badge colorScheme="green" size="sm">✓</Badge>
+                            <Text fontSize="xs" color="gray.200">
+                              <strong>Regimen:</strong> {watchDose}Gy in {watchFractions}fx ({watchDose && watchFractions ? (watchDose/watchFractions).toFixed(1) : '—'}Gy/fx)
+                            </Text>
+                          </HStack>
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                    
+                    <Box mt={3} p={3} bg="blue.900" borderRadius="md" border="1px" borderColor="blue.600">
+                      <Text fontSize="xs" color="blue.200" fontWeight="bold" mb={1}>
+                        Expected Write-up Structure:
+                      </Text>
+                      <Text fontSize="xs" color="blue.100" lineHeight="1.3">
+                        • Medical physics consultation request<br/>
+                        • Patient demographics and lesion details<br/>
+                        • {watchBreathingTechnique === '4DCT' ? '4DCT simulation and ITV generation' : watchBreathingTechnique === 'DIBH' ? 'DIBH technique and breath hold setup' : 'CT simulation and immobilization'}<br/>
+                        • Treatment plan optimization and metrics<br/>
+                        • Quality assurance and measurements<br/>
+                        • Physician and physicist approval
+                      </Text>
+                    </Box>
+                  </Box>
                 </VStack>
               </GridItem>
             </Grid>
@@ -933,170 +942,45 @@ const SBRTForm = () => {
             </Flex>
           </form>
           
+          {/* Generated Write-up Section - Below Form */}
           {writeup && (
-            <Box
-              p={6}
-              borderWidth="1px"
-              borderRadius="md"
-              bg={writeupBg}
-              borderColor={borderColor}
-              boxShadow="lg"
-              maxW="100%"
-            >
-              <Flex justify="space-between" align="center" mb={4}>
-                <Heading size="lg" color="green.300">📋 Generated Write-up</Heading>
-                <HStack spacing={2}>
-                  <Button
-                    size="sm"
-                    colorScheme="green"
-                    variant="outline"
-                    onClick={async () => {
-                      try {
-                        // Create a temporary div with the HTML content
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = writeup;
-                        tempDiv.style.position = 'absolute';
-                        tempDiv.style.left = '-9999px';
-                        document.body.appendChild(tempDiv);
-                        
-                        // Select the content
-                        const range = document.createRange();
-                        range.selectNodeContents(tempDiv);
-                        const selection = window.getSelection();
-                        selection.removeAllRanges();
-                        selection.addRange(range);
-                        
-                        // Try modern clipboard API first
-                        if (navigator.clipboard && navigator.clipboard.write) {
-                          const clipboardItem = new ClipboardItem({
-                            'text/html': new Blob([writeup], { type: 'text/html' }),
-                            'text/plain': new Blob([writeup.replace(/<[^>]*>/g, '').replace(/\n\s*\n/g, '\n\n')], { type: 'text/plain' })
-                          });
-                          await navigator.clipboard.write([clipboardItem]);
-                          toast({
-                            title: "Copied formatted write-up!",
-                            description: "Paste into Word to see the formatted table",
-                            status: "success",
-                            duration: 3000,
-                            isClosable: true,
-                          });
-                        } else {
-                          // Fallback to document.execCommand
-                          document.execCommand('copy');
-                          toast({
-                            title: "Copied write-up!",
-                            description: "Paste into Word to see the formatted content",
-                            status: "success",
-                            duration: 3000,
-                            isClosable: true,
-                          });
-                        }
-                        
-                        // Clean up
-                        document.body.removeChild(tempDiv);
-                        selection.removeAllRanges();
-                      } catch (error) {
-                        console.error('Copy failed:', error);
-                        // Fallback to simple text copy
-                        navigator.clipboard.writeText(writeup);
-                        toast({
-                          title: "Copied as text",
-                          description: "Rich formatting not supported in this browser",
-                          status: "info",
-                          duration: 3000,
-                          isClosable: true,
-                        });
-                      }
-                    }}
-                  >
-                    Copy Formatted
-                  </Button>
-                  <Button
-                    size="sm"
-                    colorScheme="blue"
-                    variant="outline"
-                    onClick={() => {
-                      // Copy plain text version without HTML tags
-                      const plainText = writeup.replace(/<[^>]*>/g, '').replace(/\n\s*\n/g, '\n\n');
-                      navigator.clipboard.writeText(plainText);
-                      toast({
-                        title: "Copied as plain text",
-                        status: "success",
-                        duration: 2000,
-                        isClosable: true,
-                      });
-                    }}
-                  >
-                    Copy Plain Text
-                  </Button>
-                </HStack>
-              </Flex>
-              
-              {/* Rich HTML Display - Copy-friendly version */}
+            <Box mt={6}>
+              <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
               <Box
-                id="copyable-writeup"
-                mb={4}
                 p={4}
-                bg="white"
-                color="black"
+                borderWidth={1}
                 borderRadius="md"
-                fontSize="sm"
-                border="2px dashed"
-                borderColor="green.300"
-                position="relative"
-                dangerouslySetInnerHTML={{ __html: writeup }}
-                sx={{
-                  'table': {
-                    borderCollapse: 'collapse',
-                    width: '100%',
-                    margin: '1em 0',
-                    fontFamily: 'Arial, sans-serif'
-                  },
-                  'th, td': {
-                    border: '1px solid black',
-                    padding: '8px',
-                    textAlign: 'center'
-                  },
-                  'th': {
-                    backgroundColor: '#f0f0f0',
-                    fontWeight: 'bold'
-                  },
-                  'p': {
-                    marginBottom: '1em',
-                    lineHeight: '1.4'
-                  }
-                }}
-              />
-              
-              {/* Alternative Copy Method */}
-              <Box mb={4}>
-                <Text fontSize="sm" color="green.300" mb={2}>
-                  💡 <strong>Copy Tip:</strong> Select all text above (Ctrl+A/Cmd+A) and copy (Ctrl+C/Cmd+C) for best formatting in Word
-                </Text>
+                bg={writeupBg}
+                borderColor={borderColor}
+                boxShadow="md"
+              >
+                <Textarea
+                  value={writeup}
+                  height="400px"
+                  isReadOnly
+                  fontFamily="mono"
+                  fontSize="sm"
+                  resize="vertical"
+                  aria-label="Generated write-up"
+                  bg="gray.700"
+                  borderColor="gray.600"
+                  color="white"
+                  _hover={{ borderColor: "gray.500" }}
+                />
                 <Button
-                  size="sm"
-                  colorScheme="teal"
-                  variant="outline"
+                  mt={3}
+                  colorScheme="green"
                   onClick={() => {
-                    const copyableDiv = document.getElementById('copyable-writeup');
-                    if (copyableDiv) {
-                      const range = document.createRange();
-                      range.selectNodeContents(copyableDiv);
-                      const selection = window.getSelection();
-                      selection.removeAllRanges();
-                      selection.addRange(range);
-                      
-                      toast({
-                        title: "Content selected!",
-                        description: "Now press Ctrl+C (or Cmd+C) to copy with formatting",
-                        status: "info",
-                        duration: 4000,
-                        isClosable: true,
-                      });
-                    }
+                    navigator.clipboard.writeText(writeup);
+                    toast({
+                      title: 'Copied to clipboard',
+                      status: 'success',
+                      duration: 2000,
+                      isClosable: true,
+                    });
                   }}
                 >
-                  Select All Content
+                  Copy to Clipboard
                 </Button>
               </Box>
             </Box>

@@ -45,8 +45,6 @@ class DIBHService:
         
         physician = common_info.physician.name
         physicist = common_info.physicist.name
-        patient_age = common_info.patient.age
-        patient_sex = common_info.patient.sex
         
         # Use custom treatment site if provided, otherwise use the standard treatment site
         treatment_site = dibh_data.custom_treatment_site if dibh_data.custom_treatment_site else dibh_data.treatment_site
@@ -74,7 +72,6 @@ class DIBHService:
         
         # Generate the write-up
         write_up = f"Dr. {physician} requested a medical physics consultation for --- for a gated, DIBH treatment. "
-        write_up += f"The patient is a {patient_age}-year-old {patient_sex} with a {treatment_site} lesion. "
         write_up += f"Dr. {physician} has elected to treat the {site_specific_text} "
         write_up += f"with the C-RAD positioning and gating system in conjunction with the {machine}.\n\n"
         

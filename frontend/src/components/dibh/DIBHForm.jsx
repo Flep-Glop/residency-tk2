@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/router';
 import {
   Box,
   Button,
@@ -26,12 +27,18 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  StatHelpText,
   Checkbox,
+  Card,
+  CardBody,
+  HStack,
+  VStack,
+  List,
+  ListItem,
 } from '@chakra-ui/react';
 import { getTreatmentSites, getImmobilizationDevices, getFractionationSchemes, generateDIBHWriteup } from '../../services/dibhService';
 
 const DIBHForm = () => {
+  const router = useRouter();
   const [treatmentSites, setTreatmentSites] = useState([]);
   const [immobilizationDevices, setImmobilizationDevices] = useState([]);
   const [fractionationSchemes, setFractionationSchemes] = useState({});
@@ -53,7 +60,6 @@ const DIBHForm = () => {
       common_info: {
         physician: { name: '', role: 'physician' },
         physicist: { name: '', role: 'physicist' },
-        patient: { age: '', sex: 'male' }
       },
       dibh_data: {
         treatment_site: '',
@@ -313,7 +319,6 @@ const DIBHForm = () => {
       common_info: {
         physician: { name: '', role: 'physician' },
         physicist: { name: '', role: 'physicist' },
-        patient: { age: '', sex: 'male' }
       },
       dibh_data: {
         treatment_site: '',
@@ -352,8 +357,8 @@ const DIBHForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>📝 DIBH Write-up Generator</Heading>
-            <Text opacity={0.9}>Document deep inspiration breath hold procedures</Text>
+            <Heading size="xl" mb={2}>DIBH Write-up Generator</Heading>
+            <Text opacity={0.9}>Generate standardized write-up for deep inspiration breath hold procedures</Text>
           </Box>
         </Flex>
       </Box>
@@ -373,7 +378,6 @@ const DIBHForm = () => {
             >
               {/* Staff & Patient Section */}
               <GridItem 
-                as={Box} 
                 p={4} 
                 borderWidth="1px" 
                 borderRadius="md" 
@@ -446,70 +450,10 @@ const DIBHForm = () => {
                     </FormErrorMessage>
                   </FormControl>
                 </Box>
-                
-                <Box mt={4}>
-                  <Heading size="xs" mb={2} color="gray.300">Patient Information</Heading>
-                  
-                  <FormControl isInvalid={errors.common_info?.patient?.age} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Patient Age</FormLabel>
-                    <Input 
-                      size="sm"
-                      type="number"
-                      {...register("common_info.patient.age", { 
-                        required: "Age is required",
-                        min: { value: 1, message: "Age must be at least 1" },
-                        max: { value: 120, message: "Age must be less than 120" },
-                        pattern: {
-                          value: /^[0-9]+$/,
-                          message: "Age must be a whole number"
-                        }
-                      })}
-                      aria-label="Patient age"
-                      placeholder="Enter patient age"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: "gray.400" }}
-                    />
-                    <FormErrorMessage>
-                      {errors.common_info?.patient?.age?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                  
-                  <FormControl isInvalid={errors.common_info?.patient?.sex} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Patient Sex</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register("common_info.patient.sex", { 
-                        required: "Sex is required" 
-                      })}
-                      aria-label="Patient sex"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value="male" style={{ backgroundColor: '#2D3748', color: 'white' }}>Male</option>
-                      <option value="female" style={{ backgroundColor: '#2D3748', color: 'white' }}>Female</option>
-                    </Select>
-                    <FormErrorMessage>
-                      {errors.common_info?.patient?.sex?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                </Box>
               </GridItem>
               
               {/* Treatment Information */}
               <GridItem 
-                as={Box} 
                 p={4} 
                 borderWidth="1px" 
                 borderRadius="md" 
@@ -631,9 +575,8 @@ const DIBHForm = () => {
                 )}
               </GridItem>
               
-              {/* Dose Information */}
+              {/* Dose Information & Preview */}
               <GridItem 
-                as={Box} 
                 p={4} 
                 borderWidth="1px" 
                 borderRadius="md" 
@@ -809,6 +752,50 @@ const DIBHForm = () => {
                     </Stat>
                   </Box>
                 )}
+
+                {/* Preview Section */}
+                <Box mt={6}>
+                  <Heading size="xs" mb={2} color="gray.300">What will be written up:</Heading>
+                  
+                  <Card size="sm" variant="outline" borderColor="green.400" bg="gray.700">
+                    <CardBody p={3}>
+                      <VStack align="start" spacing={2}>
+                        <HStack>
+                          <Badge colorScheme="green" size="sm">✓</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            <strong>Technique:</strong> DIBH with C-RAD
+                          </Text>
+                        </HStack>
+                        <HStack>
+                          <Badge colorScheme="green" size="sm">✓</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            <strong>Site:</strong> {actualTreatmentSite || 'Not selected'}
+                          </Text>
+                        </HStack>
+                        <HStack>
+                          <Badge colorScheme="green" size="sm">✓</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            <strong>Device:</strong> {isBreastSite ? 'Breast board' : actualTreatmentSite ? 'Wing board' : 'Auto-assigned'}
+                          </Text>
+                        </HStack>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                  
+                  <Box mt={3} p={3} bg="blue.900" borderRadius="md" border="1px" borderColor="blue.600">
+                    <Text fontSize="xs" color="blue.200" fontWeight="bold" mb={1}>
+                      Expected Write-up Structure:
+                    </Text>
+                    <Text fontSize="xs" color="blue.100" lineHeight="1.3">
+                      • Medical physics consultation request<br/>
+                      • Patient demographics and lesion details<br/>
+                      • DIBH simulation and breath hold training<br/>
+                      • Treatment plan dose description<br/>
+                      • C-RAD system positioning and gating<br/>
+                      • Physician and physicist approval
+                    </Text>
+                  </Box>
+                </Box>
               </GridItem>
             </Grid>
             
@@ -841,6 +828,7 @@ const DIBHForm = () => {
             </Flex>
           </form>
           
+          {/* Generated Write-up Section - Below Form */}
           {writeup && (
             <Box mt={6}>
               <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
@@ -868,7 +856,6 @@ const DIBHForm = () => {
                 <Button 
                   mt={3} 
                   colorScheme="green"
-                  leftIcon={<span>📋</span>}
                   onClick={() => {
                     navigator.clipboard.writeText(writeup);
                     toast({

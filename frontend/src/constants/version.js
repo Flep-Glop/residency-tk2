@@ -1,10 +1,24 @@
 // Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
-  current: "2.0.0",
-  releaseDate: "2025-01-15",
+  current: "2.1.0",
+  releaseDate: "2025-11-06",
   
   // Update history - add new updates to the top of this array
   updates: [
+    {
+      version: "2.1.0",
+      date: "2025-11-06", 
+      changes: [
+        "🆕 HDR (High Dose Rate) Brachytherapy Module - complete implementation",
+        "🆕 SRS (Stereotactic Radiosurgery) Module - brain and spine treatments",
+        "🆕 TBI (Total Body Irradiation) Module - full workflow support",
+        "🆕 Prior Dose Module - comprehensive dose tracking and analysis",
+        "📚 Enhanced documentation system (DEV_LOG, VERSION_MANAGEMENT)",
+        "🏗️ Static documentation hub (ARCHITECTURE, PATTERNS, SPRITES, STACK)",
+        "✨ UI improvements across DIBH, Fusion, Pacemaker, and SBRT modules",
+        "🔧 Backend service refinements and code optimization"
+      ]
+    },
     {
       version: "2.0.0",
       date: "2025-01-15", 

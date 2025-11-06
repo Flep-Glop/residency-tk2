@@ -1,31 +1,103 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
-// Extend the theme to include custom colors, fonts, etc
+// Custom color palette - all colors from provided palette
 const theme = extendTheme({
   colors: {
     brand: {
-      50: '#f5f8fa',
-      100: '#e1eaef',
-      200: '#c7d9e3',
-      300: '#a9c7d6',
-      400: '#8db3c9',
-      500: '#6d99b0',  // Primary color - soft blue
-      600: '#5c899f',
-      700: '#4d7689',
-      800: '#3e6372',
-      900: '#2f4f5c',
+      50: '#a4dddb',
+      100: '#73bed3',
+      200: '#4f8fba',
+      300: '#3c5e8b',
+      400: '#253a5e',
+      500: '#172038',  // Primary color - dark blue
+      600: '#172038',
+      700: '#10141f',
+      800: '#090a14',
+      900: '#090a14',
     },
     gray: {
-      50: '#f7f9fa',
-      100: '#edf1f5',
-      200: '#e2e8ed',
-      300: '#d0dae3',
-      400: '#b8c8d4',
-      500: '#94a9b8',
-      600: '#7b919f',
-      700: '#657886',
-      800: '#4a5a68',
-      900: '#384551',
+      50: '#ebede9',
+      100: '#c7cfcc',
+      200: '#a8b5b2',
+      300: '#819796',
+      400: '#577277',
+      500: '#394a50',
+      600: '#202e37',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
+    },
+    blue: {
+      50: '#a4dddb',
+      100: '#73bed3',
+      200: '#4f8fba',
+      300: '#3c5e8b',
+      400: '#253a5e',
+      500: '#172038',
+      600: '#172038',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
+    },
+    purple: {
+      50: '#df84a5',
+      100: '#c65197',
+      200: '#a23e8c',
+      300: '#7a367b',
+      400: '#402751',
+      500: '#1e1d39',
+      600: '#1e1d39',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
+    },
+    green: {
+      50: '#d0da91',
+      100: '#a8ca58',
+      200: '#75a743',
+      300: '#468232',
+      400: '#25562e',
+      500: '#19332d',
+      600: '#19332d',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
+    },
+    red: {
+      50: '#da863e',
+      100: '#cf573c',
+      200: '#a53030',
+      300: '#752438',
+      400: '#411d31',
+      500: '#411d31',
+      600: '#241527',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
+    },
+    yellow: {
+      50: '#e8c170',
+      100: '#de9e41',
+      200: '#be772b',
+      300: '#884b2b',
+      400: '#602c2c',
+      500: '#341c27',
+      600: '#341c27',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
+    },
+    orange: {
+      50: '#f7cfb0',
+      100: '#edaf84',
+      200: '#e69867',
+      300: '#c97038',
+      400: '#9c4d2c',
+      500: '#62291a',
+      600: '#62291a',
+      700: '#151d28',
+      800: '#10141f',
+      900: '#090a14',
     },
   },
   fonts: {
@@ -33,35 +105,50 @@ const theme = extendTheme({
     body: 'Inter, system-ui, sans-serif',
   },
   config: {
-    initialColorMode: 'light',
+    initialColorMode: 'dark',
     useSystemColorMode: false,
   },
   styles: {
     global: {
       body: {
-        bg: 'gray.50',
-        color: 'gray.800',
+        bg: '#090a14',
+        color: '#ebede9',
+      },
+      // Custom scrollbar styling
+      '*::-webkit-scrollbar': {
+        width: '0px',
+        height: '0px',
+      },
+      '*::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '*::-webkit-scrollbar-thumb': {
+        background: 'transparent',
+      },
+      '*': {
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE and Edge
       },
       // Fix dropdown option visibility in dark theme
       'select option': {
-        backgroundColor: '#2D3748 !important', // gray.700
-        color: 'white !important',
+        backgroundColor: '#151d28 !important',
+        color: '#ebede9 !important',
         padding: '8px !important',
       },
       // Ensure select elements maintain dark styling
       'select[data-theme="dark"]': {
-        backgroundColor: '#2D3748 !important',
-        color: 'white !important',
-        borderColor: '#4A5568 !important',
+        backgroundColor: '#151d28 !important',
+        color: '#ebede9 !important',
+        borderColor: '#394a50 !important',
       },
       'select[data-theme="dark"] option': {
-        backgroundColor: '#2D3748 !important',
-        color: 'white !important',
+        backgroundColor: '#151d28 !important',
+        color: '#ebede9 !important',
       },
       // Alternative approach for better browser compatibility
       '.chakra-select__wrapper select option': {
-        backgroundColor: '#2D3748 !important',
-        color: 'white !important',
+        backgroundColor: '#151d28 !important',
+        color: '#ebede9 !important',
       },
     },
   },

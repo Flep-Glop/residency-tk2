@@ -1,0 +1,75 @@
+# Fusion Quickwrite Flow
+
+This diagram shows the decision tree for generating fusion write-ups. It covers single vs multiple fusion scenarios, different imaging modalities (MRI/CT, PET/CT, CT/CT), and registration types (rigid, deformable).
+
+**Key Notation:**
+- `r` = Rigid registration only
+- `d` = Deformable registration only
+- `r+d` = Both rigid and deformable registration
+- `n_m` = Multiple MRI/CT fusions
+- `n_p` = Multiple PET/CT fusions  
+- `n_c` = Multiple CT/CT fusions
+
+graph TD
+    Start[Fusion Quickwrite] --> SingleOrMultiple{Single or Multiple?}
+    
+    SingleOrMultiple --> Single[Single Fusion]
+    SingleOrMultiple --> Multiple[Multiple Fusions*<br/>*Assuming same site]
+    
+    %% Single Fusion Branch
+    Single --> MRI[MRI/CT]
+    Single --> PET[PET/CT]
+    Single --> CT[CT/CT]
+    
+    MRI --> MRI_r[r - Rigid]
+    PET --> PET_rd[r+d - Rigid+Deformable]
+    CT --> CT_rd[r+d - Rigid+Deformable]
+    CT --> CT_empty[Full/Empty - Bladder Status]
+    
+    %% Multiple Fusions Branch - Individual Types
+    Multiple --> nMRI[n MRI/CT]
+    Multiple --> nPET[n PET/CT]
+    Multiple --> nCT[n CT/CT]
+    
+    nMRI --> MRI_output[n_m - Multiple MRI]
+    
+    nPET --> PET_r[n_p,r - Rigid only]
+    nPET --> PET_d[n_p,d - Deformable only]
+    nPET --> PET_rd_combo["n_p,(r+d) - Both types"]
+    
+    nCT --> CT_r[n_c,r - Rigid only]
+    nCT --> CT_d[n_c,d - Deformable only]
+    nCT --> CT_rd_output["n_c,(r+d) - Both types"]
+    
+    %% Complex Combinations - Two Types
+    Multiple --> Complex1[n_m MRI/CT + n PET/CT]
+    Complex1 --> C1_out1[n_m + n_p,r]
+    Complex1 --> C1_out2[n_m + n_p,d]
+    Complex1 --> C1_out3["n_m + n_p,(r+d)"]
+    
+    Multiple --> Complex2[n_m MRI/CT + n_c CT/CT]
+    Complex2 --> C2_out1[n_m + n_c,r]
+    Complex2 --> C2_out2[n_m + n_c,d]
+    Complex2 --> C2_out3["n_m + n_c,(r+d)"]
+    
+    Multiple --> Complex3[n_p PET/CT + n_c CT/CT]
+    Complex3 --> C3_out1[n_p,r + n_c,r]
+    Complex3 --> C3_out2[n_p,d + n_c,d]
+    Complex3 --> C3_out3["n_p,(r+d) + n_c,(r+d)"]
+    
+    %% Complex Combination - All Three Types
+    Multiple --> Complex4[n_m MRI/CT + n_p PET/CT + n_c CT/CT]
+    Complex4 --> C4_out1[n_m + n_p,r + n_c,r]
+    Complex4 --> C4_out2[n_m + n_p,d + n_c,d]
+    Complex4 --> C4_out3["n_m + n_p,(r+d) + n_c,(r+d)"]
+    
+    %% Styling
+    classDef output fill:#d4af37,stroke:#333,stroke-width:2px,color:#000
+    classDef decision fill:#4a5568,stroke:#333,stroke-width:2px,color:#fff
+    classDef imaging fill:#63b3ed,stroke:#333,stroke-width:2px,color:#000
+    
+    class MRI,PET,CT,nMRI,nPET,nCT imaging
+    class MRI_r,PET_rd,CT_rd,CT_empty,MRI_output output
+    class PET_r,PET_d,PET_rd_combo,CT_r,CT_d,CT_rd_output output
+    class C1_out1,C1_out2,C1_out3,C2_out1,C2_out2,C2_out3 output
+    class C3_out1,C3_out2,C3_out3,C4_out1,C4_out2,C4_out3 output

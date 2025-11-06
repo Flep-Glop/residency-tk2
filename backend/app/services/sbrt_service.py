@@ -106,8 +106,6 @@ class SBRTService:
         # Extract common info
         physician = request.common_info.physician.name
         physicist = request.common_info.physicist.name
-        patient_age = request.common_info.patient.age
-        patient_sex = request.common_info.patient.sex
         
         # Extract SBRT data (using frontend field names directly)
         data = request.sbrt_data
@@ -141,10 +139,6 @@ class SBRTService:
             max_dose_2cm_ring = 50.0
             homogeneity_index = 1.0
         
-        # Handle patient details
-        patient_details = f"{patient_age}-year-old {patient_sex}"
-        pronoun = "his" if patient_sex.lower() == "male" else "her"
-        
         # Handle anatomical clarification for spine/bone sites
         anatomical_clarification = data.anatomical_clarification if hasattr(data, 'anatomical_clarification') else ""
         lesion_description = treatment_site
@@ -167,17 +161,17 @@ class SBRTService:
         breathing_technique_lower = breathing_technique.lower()
         if breathing_technique_lower == "4dct":
             writeup = self._generate_4dct_template(
-                physician, physicist, patient_details, pronoun, lesion_description,
+                physician, physicist, lesion_description,
                 dose, fractions, target_name, coverage, conformity_index, r50, metrics_table
             )
         elif breathing_technique_lower == "dibh":
             writeup = self._generate_dibh_template(
-                physician, physicist, patient_details, pronoun, lesion_description,
+                physician, physicist, lesion_description,
                 dose, fractions, target_name, coverage, conformity_index, r50, metrics_table
             )
         else:  # freebreathe
             writeup = self._generate_freebreathe_template(
-                physician, physicist, patient_details, pronoun, lesion_description,
+                physician, physicist, lesion_description,
                 dose, fractions, target_name, coverage, conformity_index, r50, metrics_table
             )
         
@@ -277,7 +271,7 @@ class SBRTService:
 
     def _generate_metrics_table_simple(self, target_name, ptv_volume, dose, coverage, conformity_index, 
                                       r50, gradient_measure, max_dose_2cm_ring, homogeneity_index, calculated_metrics, is_sib=False, sib_comment="") -> str:
-        """Generate simplified metrics table using frontend calculated values."""
+        """Generate simplified metrics list using frontend calculated values."""
         
         # Get deviation status from frontend calculations if available
         if calculated_metrics:
@@ -303,55 +297,77 @@ class SBRTService:
             return str(value)
         
         # Format all the numeric values cleanly
-        ptv_vol_clean = format_number(ptv_volume, 2)  # Up to 2 decimal places for volume
-        dose_clean = format_number(dose, 1)  # Up to 1 decimal place for dose 
-        coverage_clean = format_number(coverage, 1)  # Up to 1 decimal place for coverage
-        conformity_clean = format_number(conformity_index, 2)  # Up to 2 decimal places
-        r50_clean = format_number(r50, 2)  # Up to 2 decimal places
-        gradient_clean = format_number(gradient_measure, 2)  # Up to 2 decimal places
-        max_dose_clean = format_number(max_dose_2cm_ring, 1)  # Up to 1 decimal place
-        homogeneity_clean = format_number(homogeneity_index, 2)  # Up to 2 decimal places
+        ptv_vol_clean = format_number(ptv_volume, 2)
+        dose_clean = format_number(dose, 1)
+        coverage_clean = format_number(coverage, 1)
+        conformity_clean = format_number(conformity_index, 2)
+        r50_clean = format_number(r50, 2)
+        gradient_clean = format_number(gradient_measure, 2)
+        max_dose_clean = format_number(max_dose_2cm_ring, 1)
+        homogeneity_clean = format_number(homogeneity_index, 2)
         
-        # Generate HTML table optimized for Word/Office paste compatibility
-        table = f"""<p><strong>Plan Quality Metrics:</strong></p>
-
-<table border="1" cellpadding="4" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
-  <tr style="background-color: #f0f0f0; font-weight: bold;">
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Target Name</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Vol [cc]</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Prescription Dose [Gy]</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Coverage</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Conformity Index</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">R50</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Gradient Measure</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Max Dose in 2cm Ring (%)</th>
-    <th style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">Homogeneity Index</th>
-  </tr>
-  <tr>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{target_name}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{ptv_vol_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{dose_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{coverage_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{conformity_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{r50_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{gradient_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{max_dose_clean}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{homogeneity_clean}</td>
-  </tr>
-  <tr style="background-color: #f9f9f9;">""" + (f"""
-    <td style="border: 1px solid black; padding: 8px; text-align: left; font-weight: bold; mso-padding-alt: 8px 8px 8px 8px;" colspan="9">Comments: {sib_comment or "---"}</td>""" if is_sib else f"""
-    <td style="border: 1px solid black; padding: 8px; text-align: center; font-weight: bold; mso-padding-alt: 8px 8px 8px 8px;">Deviation:</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">-</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">-</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">None</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{conformity_deviation}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{r50_deviation}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">None</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">{max_dose_2cm_deviation}</td>
-    <td style="border: 1px solid black; padding: 8px; text-align: center; mso-padding-alt: 8px 8px 8px 8px;">None</td>""") + """
-  </tr>
-</table>"""
-        return table.strip()
+        # Generate plain text list of metrics with intro
+        metrics_text = f"Below are the plan statistics:\n\n"
+        metrics_text += f"• Target: {target_name}\n"
+        metrics_text += f"• Target Volume: {ptv_vol_clean} cc\n"
+        metrics_text += f"• Prescription Dose: {dose_clean} Gy\n"
+        metrics_text += f"• Coverage: {coverage_clean}%\n"
+        metrics_text += f"• Conformity Index (PITV): {conformity_clean}"
+        if not is_sib:
+            metrics_text += f" (Deviation: {conformity_deviation})"
+        metrics_text += f"\n"
+        metrics_text += f"• R50: {r50_clean}"
+        if not is_sib:
+            metrics_text += f" (Deviation: {r50_deviation})"
+        metrics_text += f"\n"
+        metrics_text += f"• Gradient Measure: {gradient_clean} cm\n"
+        metrics_text += f"• Max Dose in 2cm Ring: {max_dose_clean}%"
+        if not is_sib:
+            metrics_text += f" (Deviation: {max_dose_2cm_deviation})"
+        metrics_text += f"\n"
+        metrics_text += f"• Homogeneity Index: {homogeneity_clean}\n"
+        
+        # Add summary based on deviations
+        metrics_text += "\n"
+        if is_sib:
+            if sib_comment:
+                metrics_text += f"This is an SIB case ({sib_comment}). Deviation analysis not applicable for simultaneous integrated boost treatments.\n"
+            else:
+                metrics_text += f"This is an SIB case. Deviation analysis not applicable for simultaneous integrated boost treatments.\n"
+        else:
+            # Check if there are any deviations
+            deviations = []
+            if conformity_deviation == "Major":
+                deviations.append(("Conformity Index", conformity_clean, "indicates the prescription isodose volume significantly exceeds the target volume, suggesting poor conformality"))
+            elif conformity_deviation == "Minor":
+                deviations.append(("Conformity Index", conformity_clean, "shows acceptable conformality with minor deviation from ideal"))
+            
+            if r50_deviation == "Major":
+                deviations.append(("R50", r50_clean, "indicates excessive dose spillage to normal tissue outside the target"))
+            elif r50_deviation == "Minor":
+                deviations.append(("R50", r50_clean, "shows acceptable dose falloff with minor deviation"))
+            
+            if max_dose_2cm_deviation == "Major":
+                deviations.append(("Max Dose in 2cm Ring", f"{max_dose_clean}%", "indicates high intermediate dose spillage to adjacent normal tissue"))
+            elif max_dose_2cm_deviation == "Minor":
+                deviations.append(("Max Dose in 2cm Ring", f"{max_dose_clean}%", "shows acceptable intermediate dose with minor deviation"))
+            
+            if not deviations:
+                metrics_text += "No deviations from institutional guidelines were observed. All metrics meet RTOG 0915 compliance criteria for SBRT plan quality.\n"
+            else:
+                if len(deviations) == 1 and any("Minor" in dev[2] for dev in deviations):
+                    metrics_text += f"One minor deviation was noted: {deviations[0][0]} of {deviations[0][1]} {deviations[0][2]}. This deviation is clinically acceptable and does not compromise treatment quality.\n"
+                elif all("Minor" in dev[2] for dev in deviations):
+                    metrics_text += f"Minor deviations were noted in {len(deviations)} metrics: "
+                    metrics_text += ", ".join([f"{dev[0]}" for dev in deviations])
+                    metrics_text += ". These minor deviations are clinically acceptable and do not compromise treatment quality.\n"
+                else:
+                    metrics_text += f"The following deviation(s) were identified:\n"
+                    for dev_name, dev_value, dev_explanation in deviations:
+                        metrics_text += f"• {dev_name} of {dev_value} {dev_explanation}.\n"
+                    metrics_text += "Clinical review and justification recommended before treatment delivery.\n"
+        
+        return metrics_text
 
     def _calculate_deviation_status(self, data) -> dict:
         """Calculate deviation status based on clinical tolerance table."""
@@ -394,40 +410,40 @@ class SBRTService:
             "max_dose_2cm": get_deviation(max_dose_2cm_ring, closest_tolerance["maxDose2cmNone"], closest_tolerance["maxDose2cmMinor"])
         }
 
-    def _generate_4dct_template(self, physician, physicist, patient_details, pronoun, lesion_description, 
+    def _generate_4dct_template(self, physician, physicist, lesion_description, 
                                dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate 4DCT template write-up."""
-        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for a 4D CT simulation study and SBRT delivery. The patient is {patient_details} with a {lesion_description} lesion. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
+        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for a 4D CT simulation study and SBRT delivery. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
 
 <p>The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. A 4D kVCT simulation scan was performed with the patient immobilized and their breathing limited to reduce tumor motion. Using the 4D dataset, an AIP CT image set and 10 phase CT image sets were reconstructed by the radiation oncology physicist and fused together to regenerate an ITV in order to assess the motion envelope. Dr. {physician} segmented and approved both the PTVs and OARs.</p>
 
-<p>In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. The treatment plan covered {coverage:.1f}% of the PTV with the prescribed isodose volume. The PITV (Vpres iso / VPTV) was {conformity_index:.2f} and the R50 (Vol50% pres iso / VolPTV) was {r50:.2f}. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
+<p>In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
 
 {metrics_table}
 
 <p>A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements. Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}.</p>"""
 
-    def _generate_freebreathe_template(self, physician, physicist, patient_details, pronoun, lesion_description, 
+    def _generate_freebreathe_template(self, physician, physicist, lesion_description, 
                                      dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate free breathing template write-up."""
-        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for SBRT delivery. The patient is {patient_details} with a {lesion_description} lesion. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
+        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for SBRT delivery. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
 
 <p>The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. Dr. {physician} segmented and approved both the PTVs and OARs.</p>
 
-<p>In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. The treatment plan covered {coverage:.1f}% of the PTV with the prescribed isodose volume. The PITV (Vpres iso / VPTV) was {conformity_index:.2f} and the R50 (Vol50% pres iso / VolPTV) was {r50:.2f}. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
+<p>In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
 
 {metrics_table}
 
 <p>A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements. Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}.</p>"""
 
-    def _generate_dibh_template(self, physician, physicist, patient_details, pronoun, lesion_description, 
+    def _generate_dibh_template(self, physician, physicist, lesion_description, 
                                dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate DIBH template write-up."""
-        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for SBRT delivery with DIBH technique. The patient is {patient_details} with a {lesion_description} lesion. Dr. {physician} has elected to treat the {lesion_description} using a DIBH technique to significantly reduce cardiac dose with the C-RAD positioning and gating system in conjunction with the linear accelerator. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
+        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for SBRT delivery with DIBH technique. Dr. {physician} has elected to treat the {lesion_description} using a DIBH technique to significantly reduce cardiac dose with the C-RAD positioning and gating system in conjunction with the linear accelerator. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
 
 <p>Days before the initial radiation delivery, the patient was simulated in the treatment position using a wing board to aid in immobilization and localization. Instructions were provided and the patient was coached to reproducibly hold their breath. Using the C-RAD surface scanning system, a free breathing and breath hold signal trace was established. After reproducing the breath hold pattern and establishing a consistent breathing pattern, a gating baseline and gating window was created. Subsequently, a DIBH CT simulation scan was acquired and approved by the Radiation Oncologist, Dr. {physician}.</p>
 
-<p>A radiation treatment plan was developed on the DIBH CT simulation to deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the {target_name}. The delivery of the DIBH gating technique on the linear accelerator will be performed using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, monitor intra-fraction motion, and gate the beam delivery. Verification of the patient position will be validated with a DIBH kV-CBCT. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. The treatment plan covered {coverage:.1f}% of the PTV with the prescribed isodose volume. The PITV (Vpres iso / VPTV) was {conformity_index:.2f} and the R50 (Vol50% pres iso / VolPTV) was {r50:.2f}. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
+<p>A radiation treatment plan was developed on the DIBH CT simulation to deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the {target_name}. The delivery of the DIBH gating technique on the linear accelerator will be performed using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, monitor intra-fraction motion, and gate the beam delivery. Verification of the patient position will be validated with a DIBH kV-CBCT. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
 
 {metrics_table}
 

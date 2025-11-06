@@ -1,0 +1,74 @@
+graph TD
+    Start[Prior Dose Writeup] --> CollectCurrent[Current Treatment Info]
+    
+    CollectCurrent --> CurrentInfo["rx_c (Current Rx)<br/>ls_c (Current Location)<br/>dt_c (Current Date - implied)"]
+    
+    CurrentInfo --> NumPrior{Number of<br/>Prior Doses?}
+    
+    NumPrior -->|0| NoPrior[No Prior Treatment]
+    NoPrior --> GenerateBasic[Generate Basic Writeup]
+    
+    NumPrior -->|1| SinglePrior[Single Prior Dose]
+    NumPrior -->|n>1| MultiplePrior[Multiple Prior Doses]
+    
+    %% Single Prior Dose Branch
+    SinglePrior --> CollectSingle["rx_o1 (Prior Rx)<br/>dt_o1 (Prior Date)<br/>ls_o1 (Prior Location)"]
+    
+    CollectSingle --> CheckOverlap1{Overlap with<br/>Current Treatment?}
+    
+    CheckOverlap1 -->|No| NoOverlap1[Document:<br/>No Overlap]
+    CheckOverlap1 -->|Yes| HasOverlap1[Overlap Detected]
+    
+    HasOverlap1 --> EQD2Decision1{Calculate EQD2?}
+    
+    EQD2Decision1 -->|No| StandardSum1[Standard Dose<br/>Summation]
+    EQD2Decision1 -->|Yes| CalculateEQD21[Calculate EQD2<br/>Summation]
+    
+    NoOverlap1 --> GenerateSingle[Generate Writeup<br/>with Prior Dose]
+    StandardSum1 --> GenerateSingle
+    CalculateEQD21 --> GenerateSingle
+    
+    %% Multiple Prior Doses Branch
+    MultiplePrior --> CollectMultiple["For each n:<br/>rx_on (Prior Rx n)<br/>dt_on (Prior Date n)<br/>ls_on (Prior Location n)"]
+    
+    CollectMultiple --> LoopStart{Process Each<br/>Prior Dose}
+    
+    LoopStart --> CheckOverlapN{Overlap with<br/>Current Treatment?}
+    
+    CheckOverlapN -->|No| NoOverlapN[Document:<br/>No Overlap for Dose n]
+    CheckOverlapN -->|Yes| HasOverlapN[Overlap Detected<br/>for Dose n]
+    
+    HasOverlapN --> EQD2DecisionN{Calculate EQD2<br/>for Dose n?}
+    
+    EQD2DecisionN -->|No| StandardSumN[Standard Dose<br/>Summation for n]
+    EQD2DecisionN -->|Yes| CalculateEQD2N[Calculate EQD2<br/>Summation for n]
+    
+    NoOverlapN --> NextDose{More Prior<br/>Doses?}
+    StandardSumN --> NextDose
+    CalculateEQD2N --> NextDose
+    
+    NextDose -->|Yes| CheckOverlapN
+    NextDose -->|No| CompileAll[Compile All<br/>Prior Doses]
+    
+    CompileAll --> GenerateMultiple[Generate Writeup<br/>with All Prior Doses]
+    
+    %% Final outputs converge
+    GenerateBasic --> FinalWriteup[Final Prior Dose<br/>Documentation]
+    GenerateSingle --> FinalWriteup
+    GenerateMultiple --> FinalWriteup
+    
+    %% Styling
+    classDef input fill:#63b3ed,stroke:#333,stroke-width:2px,color:#000
+    classDef decision fill:#4a5568,stroke:#333,stroke-width:2px,color:#fff
+    classDef process fill:#805ad5,stroke:#333,stroke-width:2px,color:#fff
+    classDef overlap fill:#f6ad55,stroke:#333,stroke-width:2px,color:#000
+    classDef eqd2 fill:#9f7aea,stroke:#333,stroke-width:2px,color:#fff
+    classDef output fill:#d4af37,stroke:#333,stroke-width:2px,color:#000
+    classDef final fill:#48bb78,stroke:#333,stroke-width:2px,color:#000
+    
+    class CurrentInfo,CollectSingle,CollectMultiple input
+    class NumPrior,CheckOverlap1,EQD2Decision1,CheckOverlapN,EQD2DecisionN,LoopStart,NextDose decision
+    class HasOverlap1,HasOverlapN overlap
+    class CalculateEQD21,CalculateEQD2N eqd2
+    class GenerateBasic,GenerateSingle,GenerateMultiple,NoOverlap1,StandardSum1,NoOverlapN,StandardSumN output
+    class FinalWriteup final

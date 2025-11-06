@@ -33,7 +33,8 @@ export const getRegistrationMethods = async () => {
 // Generate fusion write-up
 export const generateFusionWriteup = async (formData) => {
   try {
-    const response = await apiClient.post('/fusion/generate', formData);
+    // Add timestamp to make each request unique
+    const response = await apiClient.post(`/fusion/generate?t=${Date.now()}`, formData);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to generate fusion write-up');

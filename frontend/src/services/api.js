@@ -18,6 +18,9 @@ apiClient.interceptors.request.use(
     if (config.url === '/sbrt/generate') {
       console.log('SBRT Generate payload:', JSON.stringify(config.data, null, 2));
     }
+    if (config.url === '/fusion/generate') {
+      console.log('FUSION Generate payload:', JSON.stringify(config.data, null, 2));
+    }
     return config;
   },
   (error) => {
@@ -29,6 +32,9 @@ apiClient.interceptors.request.use(
 // Response interceptor for better error handling
 apiClient.interceptors.response.use(
   (response) => {
+    if (response.config.url?.includes('/fusion/generate')) {
+      console.log('FUSION Generate response:', JSON.stringify(response.data, null, 2));
+    }
     return response;
   },
   (error) => {

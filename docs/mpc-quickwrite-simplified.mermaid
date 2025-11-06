@@ -1,0 +1,89 @@
+# Medical Physics Consultation (MPC) Quickwrite Flow
+
+This diagram illustrates the complete workflow for medical physics consultations, from initial plan review through final write-up generation. It includes decision points for prior treatments, pacemaker risk assessment, treatment type selection, and DIBH considerations.
+
+**Key Decision Points:**
+- Prior treatment history and overlap assessment
+- Pacemaker risk levels (low/medium = proceed, high = cannot proceed)
+- Treatment type selection (3D/IMRT, SBRT, SRS/SRT, TBI, HDR)
+- DIBH (Deep Inspiration Breath Hold) applicability
+
+graph TB
+    Start[Plan Review] --> Prior{Prior?}
+    
+    %% Prior Treatment Branch
+    Prior -->|no| Pacemaker
+    Prior -->|yes| Overlap{Overlap?}
+    
+    Overlap -->|no| AddPriorNoOverlap[Add Prior<br/>No Overlap]
+    Overlap -->|yes| EQD2{EQD2?}
+    
+    AddPriorNoOverlap --> Pacemaker
+    
+    EQD2 -->|yes| Where
+    EQD2 -->|no| Where[Where]
+    
+    Where --> Constraints[Constraints]
+    Constraints --> AddPrior[Add Prior]
+    AddPrior --> Pacemaker
+    
+    %% Pacemaker Branch
+    Pacemaker{Pacemaker?} -->|no| TreatmentType
+    Pacemaker -->|yes| RiskLevel{Risk Level}
+    
+    RiskLevel --> Low[low]
+    RiskLevel --> Medium[medium]  
+    RiskLevel --> High[high]
+    
+    Low --> AddPacemaker[Add<br/>Pacemaker]
+    Medium --> AddPacemaker
+    High --> DeadEnd[X Cannot Proceed]
+    
+    %% Force horizontal layout for risk levels
+    Low ~~~ Medium
+    Medium ~~~ High
+    
+    AddPacemaker --> TreatmentType
+    
+    %% Treatment Type Branch
+    TreatmentType{Treatment<br/>Type?} --> ThreeD[3D/IMRT]
+    TreatmentType --> SBRT[Add SBRT]
+    TreatmentType --> SRS[Add SRS/SRT]
+    TreatmentType --> TBI[Add TBI]
+    TreatmentType --> HDR[Add HDR]
+    
+    %% Routes to DIBH or Write up
+    ThreeD --> DIBH{DIBH?}
+    SBRT --> DIBH
+    
+    DIBH -->|no| WriteUp
+    DIBH -->|yes| AddDIBH_Decision{Add DIBH?}
+    
+    AddDIBH_Decision -->|no| WriteUp
+    AddDIBH_Decision -->|yes| AddDIBH[Add DIBH]
+    
+    AddDIBH --> WriteUp[Write up]
+    
+    SRS --> WriteUp
+    TBI --> WriteUp
+    HDR --> WriteUp
+    
+    %% Styling
+    classDef process fill:#4a5568,stroke:#333,stroke-width:2px,color:#fff
+    classDef decision fill:#2d3748,stroke:#333,stroke-width:2px,color:#fff
+    classDef treatment fill:#d69e2e,stroke:#333,stroke-width:2px,color:#000
+    classDef riskLow fill:#48bb78,stroke:#333,stroke-width:2px,color:#000
+    classDef riskMed fill:#ecc94b,stroke:#333,stroke-width:2px,color:#000
+    classDef riskHigh fill:#f56565,stroke:#333,stroke-width:2px,color:#fff
+    classDef output fill:#d4af37,stroke:#333,stroke-width:2px,color:#000
+    classDef deadEnd fill:#e53e3e,stroke:#333,stroke-width:3px,color:#fff
+    classDef start fill:#805ad5,stroke:#333,stroke-width:2px,color:#fff
+    
+    class Start start
+    class SBRT,SRS,TBI,HDR,ThreeD treatment
+    class Low riskLow
+    class Medium riskMed
+    class High riskHigh
+    class DeadEnd deadEnd
+    class WriteUp,AddPacemaker,AddDIBH,AddPrior,AddPriorNoOverlap output
+    class Constraints,Where process

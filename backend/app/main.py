@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import fusion, dibh, sbrt, pacemaker
+from app.routers import fusion, dibh, sbrt, pacemaker, prior_dose, srs, tbi, hdr
 from app.database import engine, Base
 from app.middleware import add_error_handling, ErrorHandlerMiddleware
 import logging
@@ -39,7 +39,11 @@ add_error_handling(app)
 app.include_router(fusion.router, prefix="/api/fusion", tags=["Fusion"])
 app.include_router(dibh.router, prefix="/api/dibh", tags=["DIBH"])
 app.include_router(sbrt.router, prefix="/api/sbrt", tags=["SBRT"])
+app.include_router(srs.router, prefix="/api/srs", tags=["SRS"])
 app.include_router(pacemaker.router, prefix="/api/pacemaker", tags=["Pacemaker"])
+app.include_router(prior_dose.router, prefix="/api/prior-dose", tags=["Prior Dose"])
+app.include_router(tbi.router, prefix="/api/tbi", tags=["TBI"])
+app.include_router(hdr.router, prefix="/api/hdr", tags=["HDR"])
 
 @app.get("/")
 async def root():

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Box, Button } from '@chakra-ui/react';
+import { Box, Container, Heading, Button, HStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import SBRTForm from '../components/sbrt/SBRTForm';
+import PriorDoseForm from '../components/prior-dose/PriorDoseForm';
 
-const SBRTPage = () => {
+const PriorDosePage = () => {
   const router = useRouter();
 
   return (
@@ -22,9 +22,9 @@ const SBRTPage = () => {
         </Button>
       </Box>
       
-      <SBRTForm />
+      <PriorDoseForm />
     </Box>
   );
 };
 
-export default SBRTPage; 
+export default PriorDosePage;

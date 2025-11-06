@@ -182,11 +182,6 @@ class PacemakerService:
         # Extract common information
         physician = common_info.physician.name
         physicist = common_info.physicist.name
-        patient_age = common_info.patient.age
-        patient_sex = common_info.patient.sex
-        
-        # Create patient details string
-        patient_details = f"a {patient_age}-year-old {patient_sex}" if patient_age else "---"
         
         # Extract pacemaker data
         treatment_site = pacemaker_data.treatment_site
@@ -222,8 +217,8 @@ class PacemakerService:
             pacing_text = ""
         
         # Use the clinical template structure
-        write_up = f"Dr. {physician} requested a medical physics consultation for ---. --- is a {patient_age}-year-old {patient_sex} undergoing radiation treatment to their {treatment_site} for the dose of {dose} Gy in {fractions} fractions. "
-        write_up += f"--- has a {device_info} from {device_vendor}. {pacing_text}\n\n"
+        write_up = f"Dr. {physician} requested a medical physics consultation for ---. The patient is undergoing radiation treatment to their {treatment_site} for the dose of {dose} Gy in {fractions} fractions. "
+        write_up += f"The patient has a {device_info} from {device_vendor}. {pacing_text}\n\n"
         
         write_up += "Our treatment plan follows the guidelines of the manufacturer for radiation therapy. "
         write_up += "No primary radiation fields intercept the pacemaker. The device was contoured in the treatment planning system. "

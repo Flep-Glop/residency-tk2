@@ -34,7 +34,9 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  StatHelpText
+  StatHelpText,
+  Card,
+  CardBody
 } from '@chakra-ui/react';
 import { WarningIcon, CheckIcon } from '@chakra-ui/icons';
 import { 
@@ -72,7 +74,6 @@ const PacemakerForm = () => {
       common_info: {
         physician: { name: '', role: 'physician' },
         physicist: { name: '', role: 'physicist' },
-        patient: { age: '', sex: 'male' }
       },
       pacemaker_data: {
         treatment_site: '',
@@ -315,55 +316,6 @@ const PacemakerForm = () => {
                       ))}
                     </Select>
                     <FormErrorMessage>{errors.common_info?.physicist?.name?.message}</FormErrorMessage>
-                  </FormControl>
-                </Box>
-                
-                <Box mt={4}>
-                  <Heading size="xs" mb={2} color="gray.300">Patient Information</Heading>
-                  
-                  <FormControl isInvalid={errors.common_info?.patient?.age} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Patient Age</FormLabel>
-                    <Input 
-                      size="sm"
-                      type="number"
-                      {...register('common_info.patient.age', { 
-                        pattern: {
-                          value: /^[0-9]+$/,
-                          message: "Age must be a whole number"
-                        }
-                      })}
-                      placeholder="Enter patient age"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: "gray.400" }}
-                    />
-                    <FormErrorMessage>{errors.common_info?.patient?.age?.message}</FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.common_info?.patient?.sex} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Patient Sex</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register('common_info.patient.sex')}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value="male" style={{ backgroundColor: '#2D3748', color: 'white' }}>Male</option>
-                      <option value="female" style={{ backgroundColor: '#2D3748', color: 'white' }}>Female</option>
-                      <option value="other" style={{ backgroundColor: '#2D3748', color: 'white' }}>Other</option>
-                    </Select>
-                    <FormErrorMessage>{errors.common_info?.patient?.sex?.message}</FormErrorMessage>
                   </FormControl>
                 </Box>
               </GridItem>
@@ -703,6 +655,68 @@ const PacemakerForm = () => {
                     )}
                   </Box>
                 )}
+
+                {/* Preview Section */}
+                <Box mt={6}>
+                  <Heading size="xs" mb={2} color="gray.300">What will be written up:</Heading>
+                  
+                  <Card size="sm" variant="outline" borderColor="green.400" bg="gray.700">
+                    <CardBody p={3}>
+                      <VStack align="start" spacing={2}>
+                        <HStack>
+                          <Badge colorScheme="green" fontSize="2xs">Treatment Site</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            {pacemakerData.treatment_site || '---'}
+                          </Text>
+                        </HStack>
+                        
+                        <HStack>
+                          <Badge colorScheme="blue" fontSize="2xs">Prescription</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            {pacemakerData.dose ? `${pacemakerData.dose} Gy` : '---'} in {pacemakerData.fractions || '---'} fractions
+                          </Text>
+                        </HStack>
+                        
+                        <HStack>
+                          <Badge colorScheme="purple" fontSize="2xs">Device</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            {pacemakerData.device_vendor || '---'} {pacemakerData.device_model ? `(${pacemakerData.device_model})` : ''}
+                          </Text>
+                        </HStack>
+
+                        <HStack>
+                          <Badge colorScheme="orange" fontSize="2xs">Pacing Dependent</Badge>
+                          <Text fontSize="xs" color="gray.200">
+                            {pacemakerData.pacing_dependent || '---'}
+                          </Text>
+                        </HStack>
+                        
+                        {riskAssessment && (
+                          <HStack>
+                            <Badge 
+                              colorScheme={
+                                riskAssessment.risk_level === 'High' ? 'red' :
+                                riskAssessment.risk_level === 'Medium' ? 'yellow' : 'green'
+                              } 
+                              fontSize="2xs"
+                            >
+                              Risk Level
+                            </Badge>
+                            <Text fontSize="xs" color="gray.200">
+                              {riskAssessment.risk_level} ({riskAssessment.dose_category})
+                            </Text>
+                          </HStack>
+                        )}
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                  
+                  <Box mt={2} p={2} bg="blue.900" borderRadius="md" border="1px" borderColor="blue.700">
+                    <Text fontSize="2xs" color="blue.200">
+                      Write-up will include TG-203 risk assessment, device details, dosimetry analysis, and clinical recommendations based on risk level.
+                    </Text>
+                  </Box>
+                </Box>
               </GridItem>
             </Grid>
 

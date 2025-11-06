@@ -24,7 +24,7 @@ const GuidesPage = () => {
       {/* Header */}
       <Box bg="teal.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="teal.700">
         <Box>
-          <Heading size="xl" mb={2}>📚 Clinical Procedures & How-To Guides</Heading>
+          <Heading size="xl" mb={2}>Clinical Procedures & How-To Guides</Heading>
           <Text opacity={0.9}>Step-by-step guidance for radiation therapy procedures</Text>
         </Box>
       </Box>
@@ -34,7 +34,7 @@ const GuidesPage = () => {
         <Alert status="info" bg="blue.900" borderColor="blue.700" color="blue.200">
           <AlertIcon color="blue.300" />
           <Box>
-            <AlertTitle color="blue.200">🚧 Clinical Procedure Guides Under Development</AlertTitle>
+            <AlertTitle color="blue.200">Clinical Procedure Guides Under Development</AlertTitle>
             <AlertDescription color="blue.300">
               Comprehensive step-by-step guides for plan review, TBI simulation, image fusion workflows, SBRT planning, brachytherapy procedures, and emergency protocols are being developed. Check back soon!
             </AlertDescription>

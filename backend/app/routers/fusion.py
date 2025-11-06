@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Response
 from app.schemas.fusion import FusionRequest, FusionResponse, Registration
 from app.services.fusion import FusionService
 
@@ -24,9 +24,15 @@ async def get_fusion_info():
 
 @router.post("/generate", response_model=FusionResponse)
 async def generate_fusion_writeup(request: FusionRequest, 
+                                 response: Response,
                                  fusion_service: FusionService = Depends(get_fusion_service)):
     """Generate a fusion write-up based on the provided data."""
     try:
+        # Add no-cache headers to prevent frontend caching issues
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        
         return fusion_service.generate_fusion_writeup(request)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
