@@ -10,6 +10,9 @@ class DIBHData(BaseModel):
     dose: float = Field(..., gt=0, description="Prescription dose in Gy")
     fractions: int = Field(..., gt=0, description="Number of treatment fractions")
     dose_per_fraction: Optional[float] = Field(None, description="Calculated dose per fraction")
+    has_boost: Optional[bool] = Field(False, description="Whether the treatment includes a boost")
+    boost_dose: Optional[float] = Field(None, description="Boost dose in Gy")
+    boost_fractions: Optional[int] = Field(None, description="Number of boost fractions")
 
 class DIBHRequest(BaseModel):
     """Schema for DIBH write-up request."""

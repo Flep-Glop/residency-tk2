@@ -115,11 +115,25 @@ const HomePage = () => {
   
   const toggleMpcItem = (section, item) => {
     if (section === 'dibh') {
-      // DIBH is a simple boolean
-      setMpcChecklist(prev => ({
-        ...prev,
-        dibh: !prev.dibh
-      }));
+      // DIBH is a simple boolean - TEMPORARY: mutually exclusive with SBRT
+      setMpcChecklist(prev => {
+        // If DIBH is already selected, just deselect it
+        if (prev.dibh) {
+          return {
+            ...prev,
+            dibh: false
+          };
+        }
+        // If DIBH is not selected, select it and clear SBRT
+        return {
+          ...prev,
+          dibh: true,
+          specialTreatmentTypes: {
+            ...prev.specialTreatmentTypes,
+            sbrt: false
+          }
+        };
+      });
     } else if (section === 'prior') {
       // Prior is now a simple boolean
       setMpcChecklist(prev => ({
@@ -152,8 +166,8 @@ const HomePage = () => {
             [item]: true
           };
           
-          // Disable DIBH if selecting SRS, TBI, or HDR
-          const shouldDisableDibh = item === 'srs' || item === 'tbi' || item === 'hdr';
+          // TEMPORARY: Disable DIBH if selecting SBRT (and switch from DIBH if it was active)
+          const shouldDisableDibh = item === 'sbrt' || item === 'srs' || item === 'tbi' || item === 'hdr';
           
           return {
             ...prev,
@@ -195,7 +209,9 @@ const HomePage = () => {
 
   // Helper function to determine if DIBH should be disabled
   const isDibhDisabled = () => {
-    return mpcChecklist.specialTreatmentTypes.srs || 
+    // TEMPORARY: SBRT also disables DIBH (mutually exclusive)
+    return mpcChecklist.specialTreatmentTypes.sbrt ||
+           mpcChecklist.specialTreatmentTypes.srs || 
            mpcChecklist.specialTreatmentTypes.tbi || 
            mpcChecklist.specialTreatmentTypes.hdr;
   };
@@ -317,9 +333,37 @@ const HomePage = () => {
           <Heading as="h1" size="2xl" mb={4} color="white">
             Medical Physics Toolkit
           </Heading>
-          <Text fontSize="xl" maxW="container.md" mx="auto" color="gray.300">
+          <Text fontSize="xl" maxW="container.md" mx="auto" color="gray.300" mb={6}>
             Streamlining documentation and procedures for radiation oncology workflows
           </Text>
+          
+          {/* MPC Writeup Time Submission Button */}
+          <Center>
+            <Button
+              as="a"
+              href="https://forms.gle/yYw77opkcSFx1CS36"
+              target="_blank"
+              rel="noopener noreferrer"
+              colorScheme="green"
+              size="lg"
+              px={8}
+              py={6}
+              fontSize="md"
+              fontWeight="bold"
+              leftIcon={
+                <Box as="span" fontSize="xl">
+                  📊
+                </Box>
+              }
+              _hover={{
+                transform: "scale(1.05)",
+                boxShadow: "lg"
+              }}
+              transition="all 0.2s"
+            >
+              Submit MPC Writeup Time
+            </Button>
+          </Center>
         </Box>
 
         {/* Tabbed Interface */}
@@ -531,8 +575,9 @@ const HomePage = () => {
             <CardBody>
               <SimpleGrid columns={2} spacing={3}>
                 
+                {/* TEMPORARY: Disabled modules commented out */}
                 {/* Prior Dose */}
-                <Button
+                {/* <Button
                   size="md"
                   variant={mpcChecklist.prior ? "solid" : "outline"}
                   colorScheme={mpcChecklist.prior ? "purple" : "gray"}
@@ -545,10 +590,10 @@ const HomePage = () => {
                   }}
                 >
                   Prior Dose
-                </Button>
+                </Button> */}
 
                 {/* Pacemaker/ICD */}
-                <Button
+                {/* <Button
                   size="md"
                   variant={mpcChecklist.pacemaker.enabled ? "solid" : "outline"}
                   colorScheme={mpcChecklist.pacemaker.enabled ? "purple" : "gray"}
@@ -561,9 +606,9 @@ const HomePage = () => {
                   }}
                 >
                   Pacemaker
-                </Button>
+                </Button> */}
 
-                {/* SBRT */}
+                {/* SBRT - TEMPORARY: Mutually exclusive with DIBH */}
                 <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.sbrt ? "solid" : "outline"}
@@ -580,7 +625,7 @@ const HomePage = () => {
                 </Button>
 
                 {/* SRS/SRT */}
-                <Button
+                {/* <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.srs ? "solid" : "outline"}
                   colorScheme={mpcChecklist.specialTreatmentTypes.srs ? "orange" : "gray"}
@@ -593,10 +638,10 @@ const HomePage = () => {
                   }}
                 >
                   SRS/SRT
-                </Button>
+                </Button> */}
 
                 {/* TBI */}
-                <Button
+                {/* <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.tbi ? "solid" : "outline"}
                   colorScheme={mpcChecklist.specialTreatmentTypes.tbi ? "orange" : "gray"}
@@ -609,10 +654,10 @@ const HomePage = () => {
                   }}
                 >
                   TBI
-                </Button>
+                </Button> */}
 
                 {/* HDR */}
-                <Button
+                {/* <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.hdr ? "solid" : "outline"}
                   colorScheme={mpcChecklist.specialTreatmentTypes.hdr ? "orange" : "gray"}
@@ -625,20 +670,19 @@ const HomePage = () => {
                   }}
                 >
                   HDR
-                </Button>
+                </Button> */}
 
-                {/* DIBH */}
+                {/* DIBH - TEMPORARY: Mutually exclusive with SBRT */}
                 <Button
                   size="md"
                   variant={mpcChecklist.dibh ? "solid" : "outline"}
                   colorScheme={mpcChecklist.dibh ? "teal" : "gray"}
                   onClick={() => toggleMpcItem('dibh')}
-                  isDisabled={isDibhDisabled()}
                   borderColor="gray.600"
-                  color={mpcChecklist.dibh ? "white" : isDibhDisabled() ? "gray.600" : "gray.300"}
+                  color={mpcChecklist.dibh ? "white" : "gray.300"}
                   _hover={{ 
-                    bg: mpcChecklist.dibh ? "teal.600" : isDibhDisabled() ? undefined : "gray.700",
-                    borderColor: mpcChecklist.dibh ? "teal.300" : isDibhDisabled() ? undefined : "gray.500"
+                    bg: mpcChecklist.dibh ? "teal.600" : "gray.700",
+                    borderColor: mpcChecklist.dibh ? "teal.300" : "gray.500"
                   }}
                 >
                   DIBH

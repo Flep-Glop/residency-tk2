@@ -18,11 +18,6 @@ import {
   AlertIcon,
   Badge,
   Flex,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   RadioGroup,
   Radio,
   Stack,
@@ -62,6 +57,7 @@ const SBRTForm = () => {
   const toast = useToast();
   const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Newman']);
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const [isCustomTreatmentSite, setIsCustomTreatmentSite] = useState(false);
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';
@@ -92,10 +88,11 @@ const SBRTForm = () => {
       },
       sbrt_data: {
         treatment_site: '',
+        custom_treatment_site: '',
         anatomical_clarification: '',
-        dose: 50,
-        fractions: 5,
-        breathing_technique: 'freebreathe',
+        dose: '',
+        fractions: '',
+        breathing_technique: '',
         oligomet_location: '',
         target_name: '',
         ptv_volume: '',
@@ -124,6 +121,7 @@ const SBRTForm = () => {
   const watchDose = watch('sbrt_data.dose');
   const watchFractions = watch('sbrt_data.fractions');
   const watchTreatmentSite = watch('sbrt_data.treatment_site');
+  const watchCustomTreatmentSite = watch('sbrt_data.custom_treatment_site');
   const watchBreathingTechnique = watch('sbrt_data.breathing_technique');
   const watchTargetName = watch('sbrt_data.target_name');
   const watchPTVVolume = watch('sbrt_data.ptv_volume');
@@ -132,6 +130,9 @@ const SBRTForm = () => {
   const watchVol50RxIsodose = watch('sbrt_data.vol_50_rx_isodose');
   const watchMaxDose2cmRing = watch('sbrt_data.max_dose_2cm_ring');
   const watchMaxDoseInTarget = watch('sbrt_data.max_dose_in_target');
+  
+  // Get actual treatment site (custom or dropdown)
+  const actualTreatmentSite = isCustomTreatmentSite ? watchCustomTreatmentSite : watchTreatmentSite;
   
   // Calculate derived values and tolerance check
   useEffect(() => {
@@ -212,6 +213,16 @@ const SBRTForm = () => {
 
     fetchInitialData();
   }, [toast]);
+
+  // Handler for custom treatment site checkbox
+  const handleCustomTreatmentSiteChange = (e) => {
+    setIsCustomTreatmentSite(e.target.checked);
+    if (e.target.checked) {
+      setValue('sbrt_data.treatment_site', '');
+    } else {
+      setValue('sbrt_data.custom_treatment_site', '');
+    }
+  };
 
   // Update constraints and schemes when treatment site changes
   useEffect(() => {
@@ -300,6 +311,7 @@ const SBRTForm = () => {
     setFractionationSchemes([]);
     setCalculatedMetrics(null);
     setIsSIB(false);
+    setIsCustomTreatmentSite(false);
   };
 
   const getDeviationColor = (deviation) => {
@@ -383,12 +395,12 @@ const SBRTForm = () => {
                           }
                         }}
                       >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physician</option>
+                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                         {physicians.map(physician => (
                           <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                         ))}
                       </Select>
-                      <FormErrorMessage>
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.common_info?.physician?.name?.message}
                       </FormErrorMessage>
                     </FormControl>
@@ -413,12 +425,12 @@ const SBRTForm = () => {
                           }
                         }}
                       >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physicist</option>
+                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                         {physicists.map(physicist => (
                           <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                         ))}
                       </Select>
-                      <FormErrorMessage>
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.common_info?.physicist?.name?.message}
                       </FormErrorMessage>
                     </FormControl>
@@ -440,37 +452,69 @@ const SBRTForm = () => {
                 
                 <VStack spacing={3} align="stretch">
                   <Box>
-                    <Heading size="xs" mb={2} color="gray.300">Treatment Site</Heading>
+                    {!isCustomTreatmentSite ? (
+                      <FormControl isInvalid={errors.sbrt_data?.treatment_site} mb={3}>
+                        <FormLabel fontSize="sm" color="gray.300" fontWeight="bold">Treatment Site</FormLabel>
+                        <Select
+                          size="sm"
+                          placeholder=""
+                          {...register('sbrt_data.treatment_site', { 
+                            required: !isCustomTreatmentSite ? 'Treatment site is required' : false 
+                          })}
+                          aria-label="Select treatment site"
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _hover={{ borderColor: "gray.500" }}
+                          isDisabled={isCustomTreatmentSite}
+                          data-theme="dark"
+                          sx={{
+                            '& option': {
+                              backgroundColor: 'gray.700',
+                              color: 'white',
+                            }
+                          }}
+                        >
+                          {treatmentSites.map((site) => (
+                            <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>
+                              {site.charAt(0).toUpperCase() + site.slice(1)}
+                            </option>
+                          ))}
+                        </Select>
+                        <FormErrorMessage sx={{ color: 'red.300' }}>
+                          {errors.sbrt_data?.treatment_site?.message}
+                        </FormErrorMessage>
+                      </FormControl>
+                    ) : (
+                      <FormControl isInvalid={errors.sbrt_data?.custom_treatment_site} mb={3}>
+                        <FormLabel fontSize="sm" color="gray.300">Custom Treatment Site Name</FormLabel>
+                        <Input
+                          size="sm"
+                          {...register('sbrt_data.custom_treatment_site', {
+                            required: isCustomTreatmentSite ? 'Custom treatment site name is required' : false
+                          })}
+                          aria-label="Custom treatment site name"
+                          placeholder="Enter custom treatment site"
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _hover={{ borderColor: "gray.500" }}
+                          _placeholder={{ color: "gray.400" }}
+                        />
+                        <FormErrorMessage sx={{ color: 'red.300' }}>
+                          {errors.sbrt_data?.custom_treatment_site?.message}
+                        </FormErrorMessage>
+                      </FormControl>
+                    )}
                     
-                    <FormControl isInvalid={errors.sbrt_data?.treatment_site} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
-                      <Select
-                        size="sm"
-                        placeholder="Select treatment site"
-                        {...register('sbrt_data.treatment_site', { required: 'Treatment site is required' })}
-                        aria-label="Select treatment site"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        {treatmentSites.map((site) => (
-                          <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                            {site.charAt(0).toUpperCase() + site.slice(1)}
-                          </option>
-                        ))}
-                      </Select>
-                      <FormErrorMessage>
-                        {errors.sbrt_data?.treatment_site?.message}
-                      </FormErrorMessage>
-                    </FormControl>
+                    <Checkbox
+                      isChecked={isCustomTreatmentSite}
+                      onChange={handleCustomTreatmentSiteChange}
+                      mb={3}
+                      colorScheme="blue"
+                    >
+                      <Text fontSize="sm" color="gray.300">Custom Treatment Site?</Text>
+                    </Checkbox>
 
                     {/* Anatomical clarification for spine/bone */}
                     {(watchTreatmentSite === 'spine' || watchTreatmentSite === 'bone') && (
@@ -495,10 +539,13 @@ const SBRTForm = () => {
                   <Box>
                     <Heading size="xs" mb={2} color="gray.300">Treatment Parameters</Heading>
                     
-                    <FormControl isInvalid={errors.sbrt_data?.dose} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Prescription Dose (Gy)</FormLabel>
-                      <NumberInput min={0} step={0.1} size="sm">
-                        <NumberInputField
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                      <FormControl isInvalid={errors.sbrt_data?.dose}>
+                        <FormLabel fontSize="sm" color="gray.300">Prescription Dose (Gy)</FormLabel>
+                        <Input
+                          size="sm"
+                          type="number"
+                          step="0.1"
                           {...register('sbrt_data.dose', { 
                             required: 'Dose is required',
                             min: { value: 0.1, message: 'Dose must be greater than 0' }
@@ -507,21 +554,19 @@ const SBRTForm = () => {
                           borderColor="gray.600"
                           color="white"
                           _hover={{ borderColor: "gray.500" }}
+                          _placeholder={{ color: "gray.400" }}
                         />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
-                        {errors.sbrt_data?.dose?.message}
-                      </FormErrorMessage>
-                    </FormControl>
+                        <FormErrorMessage sx={{ color: 'red.300' }}>
+                          {errors.sbrt_data?.dose?.message}
+                        </FormErrorMessage>
+                      </FormControl>
 
-                    <FormControl isInvalid={errors.sbrt_data?.fractions} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Number of Fractions</FormLabel>
-                      <NumberInput min={1} max={10} size="sm">
-                        <NumberInputField
+                      <FormControl isInvalid={errors.sbrt_data?.fractions}>
+                        <FormLabel fontSize="sm" color="gray.300">Number of Fractions</FormLabel>
+                        <Input
+                          size="sm"
+                          type="number"
+                          step="1"
                           {...register('sbrt_data.fractions', { 
                             required: 'Fractions is required',
                             min: { value: 1, message: 'Must be at least 1 fraction' },
@@ -531,39 +576,83 @@ const SBRTForm = () => {
                           borderColor="gray.600"
                           color="white"
                           _hover={{ borderColor: "gray.500" }}
+                          _placeholder={{ color: "gray.400" }}
                         />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
-                        {errors.sbrt_data?.fractions?.message}
-                      </FormErrorMessage>
-                    </FormControl>
+                        <FormErrorMessage sx={{ color: 'red.300' }}>
+                          {errors.sbrt_data?.fractions?.message}
+                        </FormErrorMessage>
+                      </FormControl>
+                    </Grid>
 
-                    <FormControl mb={3}>
+                    <FormControl isInvalid={errors.sbrt_data?.breathing_technique} mb={3}>
                       <FormLabel fontSize="sm" color="gray.300">Breathing/Imaging Technique</FormLabel>
-                      <Select
-                        size="sm"
-                        {...register('sbrt_data.breathing_technique')}
-                        aria-label="Select breathing technique"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
+                      <RadioGroup
+                        value={watchBreathingTechnique}
+                        onChange={(value) => setValue('sbrt_data.breathing_technique', value)}
                       >
-                        <option value="freebreathe" style={{ backgroundColor: '#2D3748', color: 'white' }}>Free Breathing</option>
-                        <option value="4DCT" style={{ backgroundColor: '#2D3748', color: 'white' }}>4DCT</option>
-                        <option value="DIBH" style={{ backgroundColor: '#2D3748', color: 'white' }}>DIBH</option>
-                      </Select>
+                        <HStack spacing={2}>
+                          <Box
+                            as="label"
+                            flex="1"
+                            cursor="pointer"
+                          >
+                            <Radio value="freebreathe" display="none" {...register('sbrt_data.breathing_technique', { required: 'Breathing technique is required' })} />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchBreathingTechnique === 'freebreathe' ? 'blue' : 'gray'}
+                              variant={watchBreathingTechnique === 'freebreathe' ? 'solid' : 'outline'}
+                              onClick={() => setValue('sbrt_data.breathing_technique', 'freebreathe')}
+                              color={watchBreathingTechnique === 'freebreathe' ? 'white' : 'gray.300'}
+                              borderColor={watchBreathingTechnique === 'freebreathe' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchBreathingTechnique === 'freebreathe' ? 'blue.400' : 'gray.500' }}
+                            >
+                              Free Breathing
+                            </Button>
+                          </Box>
+                          <Box
+                            as="label"
+                            flex="1"
+                            cursor="pointer"
+                          >
+                            <Radio value="4DCT" display="none" />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchBreathingTechnique === '4DCT' ? 'blue' : 'gray'}
+                              variant={watchBreathingTechnique === '4DCT' ? 'solid' : 'outline'}
+                              onClick={() => setValue('sbrt_data.breathing_technique', '4DCT')}
+                              color={watchBreathingTechnique === '4DCT' ? 'white' : 'gray.300'}
+                              borderColor={watchBreathingTechnique === '4DCT' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchBreathingTechnique === '4DCT' ? 'blue.400' : 'gray.500' }}
+                            >
+                              4DCT
+                            </Button>
+                          </Box>
+                          <Box
+                            as="label"
+                            flex="1"
+                            cursor="pointer"
+                          >
+                            <Radio value="DIBH" display="none" />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchBreathingTechnique === 'DIBH' ? 'blue' : 'gray'}
+                              variant={watchBreathingTechnique === 'DIBH' ? 'solid' : 'outline'}
+                              onClick={() => setValue('sbrt_data.breathing_technique', 'DIBH')}
+                              color={watchBreathingTechnique === 'DIBH' ? 'white' : 'gray.300'}
+                              borderColor={watchBreathingTechnique === 'DIBH' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchBreathingTechnique === 'DIBH' ? 'blue.400' : 'gray.500' }}
+                            >
+                              DIBH
+                            </Button>
+                          </Box>
+                        </HStack>
+                      </RadioGroup>
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
+                        {errors.sbrt_data?.breathing_technique?.message}
+                      </FormErrorMessage>
                     </FormControl>
                   </Box>
 
@@ -627,7 +716,7 @@ const SBRTForm = () => {
                       _hover={{ borderColor: "gray.500" }}
                       _placeholder={{ color: 'gray.400' }}
                     />
-                    <FormErrorMessage>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>
                       {errors.sbrt_data?.target_name?.message}
                     </FormErrorMessage>
                   </FormControl>
@@ -636,50 +725,42 @@ const SBRTForm = () => {
                   <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.ptv_volume}>
                       <FormLabel fontSize="sm" color="gray.300">PTV Volume (cc)</FormLabel>
-                      <NumberInput min={0.01} step={0.1} size="sm">
-                        <NumberInputField
-                          {...register('sbrt_data.ptv_volume', { 
-                            required: 'PTV volume is required',
-                            min: { value: 0.01, message: 'PTV volume must be greater than 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          placeholder="0.0"
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="0.1"
+                        {...register('sbrt_data.ptv_volume', { 
+                          required: 'PTV volume is required',
+                          min: { value: 0.01, message: 'PTV volume must be greater than 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.sbrt_data?.ptv_volume?.message}
                       </FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
                       <FormLabel fontSize="sm" color="gray.300">PTV receiving Rx (cc)</FormLabel>
-                      <NumberInput min={0} step={0.1} size="sm">
-                        <NumberInputField
-                          {...register('sbrt_data.vol_ptv_receiving_rx', { 
-                            required: 'Volume of PTV receiving Rx is required',
-                            min: { value: 0, message: 'Volume must be ≥ 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          placeholder="0.0"
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="0.1"
+                        {...register('sbrt_data.vol_ptv_receiving_rx', { 
+                          required: 'Volume of PTV receiving Rx is required',
+                          min: { value: 0, message: 'Volume must be ≥ 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.sbrt_data?.vol_ptv_receiving_rx?.message}
                       </FormErrorMessage>
                     </FormControl>
@@ -689,50 +770,42 @@ const SBRTForm = () => {
                   <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.vol_100_rx_isodose}>
                       <FormLabel fontSize="sm" color="gray.300">100% Isodose Vol (cc)</FormLabel>
-                      <NumberInput min={0} step={0.1} size="sm">
-                        <NumberInputField
-                          {...register('sbrt_data.vol_100_rx_isodose', { 
-                            required: '100% Rx isodose volume is required',
-                            min: { value: 0, message: 'Volume must be ≥ 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          placeholder="0.0"
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="0.1"
+                        {...register('sbrt_data.vol_100_rx_isodose', { 
+                          required: '100% Rx isodose volume is required',
+                          min: { value: 0, message: 'Volume must be ≥ 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.sbrt_data?.vol_100_rx_isodose?.message}
                       </FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.vol_50_rx_isodose}>
                       <FormLabel fontSize="sm" color="gray.300">50% Isodose Vol (cc)</FormLabel>
-                      <NumberInput min={0} step={0.1} size="sm">
-                        <NumberInputField
-                          {...register('sbrt_data.vol_50_rx_isodose', { 
-                            required: '50% Rx isodose volume is required',
-                            min: { value: 0, message: 'Volume must be ≥ 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          placeholder="0.0"
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="0.1"
+                        {...register('sbrt_data.vol_50_rx_isodose', { 
+                          required: '50% Rx isodose volume is required',
+                          min: { value: 0, message: 'Volume must be ≥ 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.sbrt_data?.vol_50_rx_isodose?.message}
                       </FormErrorMessage>
                     </FormControl>
@@ -742,98 +815,47 @@ const SBRTForm = () => {
                   <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_2cm_ring}>
                       <FormLabel fontSize="sm" color="gray.300">Max Dose 2cm (Gy)</FormLabel>
-                      <NumberInput min={0} step={0.1} size="sm">
-                        <NumberInputField
-                          {...register('sbrt_data.max_dose_2cm_ring', { 
-                            required: 'Max dose in 2cm ring is required',
-                            min: { value: 0, message: 'Dose must be ≥ 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          placeholder="0.0"
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="0.1"
+                        {...register('sbrt_data.max_dose_2cm_ring', { 
+                          required: 'Max dose in 2cm ring is required',
+                          min: { value: 0, message: 'Dose must be ≥ 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.sbrt_data?.max_dose_2cm_ring?.message}
                       </FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_in_target}>
                       <FormLabel fontSize="sm" color="gray.300">Max Dose Target (Gy)</FormLabel>
-                      <NumberInput min={0} step={0.1} size="sm">
-                        <NumberInputField
-                          {...register('sbrt_data.max_dose_in_target', { 
-                            required: 'Max dose in target is required',
-                            min: { value: 0, message: 'Dose must be ≥ 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          placeholder="0.0"
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <FormErrorMessage>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="0.1"
+                        {...register('sbrt_data.max_dose_in_target', { 
+                          required: 'Max dose in target is required',
+                          min: { value: 0, message: 'Dose must be ≥ 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.sbrt_data?.max_dose_in_target?.message}
                       </FormErrorMessage>
                     </FormControl>
                   </Grid>
 
-                  {/* Preview Section */}
-                  <Box mt={6}>
-                    <Heading size="xs" mb={2} color="gray.300">What will be written up:</Heading>
-                    
-                    <Card size="sm" variant="outline" borderColor="green.400" bg="gray.700">
-                      <CardBody p={3}>
-                        <VStack align="start" spacing={2}>
-                          <HStack>
-                            <Badge colorScheme="green" size="sm">✓</Badge>
-                            <Text fontSize="xs" color="gray.200">
-                              <strong>Technique:</strong> {watchBreathingTechnique === '4DCT' ? '4DCT' : watchBreathingTechnique === 'DIBH' ? 'DIBH' : 'Free Breathing'} SBRT
-                            </Text>
-                          </HStack>
-                          <HStack>
-                            <Badge colorScheme="green" size="sm">✓</Badge>
-                            <Text fontSize="xs" color="gray.200">
-                              <strong>Site:</strong> {watchTreatmentSite ? watchTreatmentSite.charAt(0).toUpperCase() + watchTreatmentSite.slice(1) : 'Not selected'}
-                            </Text>
-                          </HStack>
-                          <HStack>
-                            <Badge colorScheme="green" size="sm">✓</Badge>
-                            <Text fontSize="xs" color="gray.200">
-                              <strong>Regimen:</strong> {watchDose}Gy in {watchFractions}fx ({watchDose && watchFractions ? (watchDose/watchFractions).toFixed(1) : '—'}Gy/fx)
-                            </Text>
-                          </HStack>
-                        </VStack>
-                      </CardBody>
-                    </Card>
-                    
-                    <Box mt={3} p={3} bg="blue.900" borderRadius="md" border="1px" borderColor="blue.600">
-                      <Text fontSize="xs" color="blue.200" fontWeight="bold" mb={1}>
-                        Expected Write-up Structure:
-                      </Text>
-                      <Text fontSize="xs" color="blue.100" lineHeight="1.3">
-                        • Medical physics consultation request<br/>
-                        • Patient demographics and lesion details<br/>
-                        • {watchBreathingTechnique === '4DCT' ? '4DCT simulation and ITV generation' : watchBreathingTechnique === 'DIBH' ? 'DIBH technique and breath hold setup' : 'CT simulation and immobilization'}<br/>
-                        • Treatment plan optimization and metrics<br/>
-                        • Quality assurance and measurements<br/>
-                        • Physician and physicist approval
-                      </Text>
-                    </Box>
-                  </Box>
                 </VStack>
               </GridItem>
             </Grid>
@@ -851,7 +873,9 @@ const SBRTForm = () => {
               <Heading size="sm" mb={3} textAlign="center" color="white">Calculated Plan Metrics</Heading>
               
               <Box overflowX="auto">
-                <Table size="sm" variant="simple">
+                <Table size="sm" variant="simple" sx={{ 
+                  'th, td': { borderColor: 'gray.600' }
+                }}>
                   <Thead>
                     <Tr>
                       <Th color="gray.300" fontSize="xs">Name</Th>
@@ -867,11 +891,11 @@ const SBRTForm = () => {
                   </Thead>
                   <Tbody>
                     <Tr>
-                      <Td color="white" fontSize="xs">{watchTargetName || '---'}</Td>
-                      <Td color="white" fontSize="xs">{formatNumber(watchPTVVolume, 2)}</Td>
-                      <Td color="white" fontSize="xs">{formatNumber(watchDose, 1)}</Td>
-                      <Td color="white" fontSize="xs">{formatNumber(calculatedMetrics?.coverage, 1)}</Td>
-                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.conformityDeviation) : "white"} fontSize="xs">
+                      <Td color={watchTargetName ? "white" : "gray.500"} fontSize="xs">{watchTargetName || '---'}</Td>
+                      <Td color={watchPTVVolume ? "white" : "gray.500"} fontSize="xs">{formatNumber(watchPTVVolume, 2)}</Td>
+                      <Td color={watchDose ? "white" : "gray.500"} fontSize="xs">{formatNumber(watchDose, 1)}</Td>
+                      <Td color={calculatedMetrics?.coverage ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.coverage, 1)}</Td>
+                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.conformityDeviation) : "gray.500"} fontSize="xs">
                         {formatNumber(calculatedMetrics?.conformityIndex, 2)}
                         {calculatedMetrics && (
                           <>
@@ -880,7 +904,7 @@ const SBRTForm = () => {
                           </>
                         )}
                       </Td>
-                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.r50Deviation) : "white"} fontSize="xs">
+                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.r50Deviation) : "gray.500"} fontSize="xs">
                         {formatNumber(calculatedMetrics?.r50, 2)}
                         {calculatedMetrics && (
                           <>
@@ -889,8 +913,8 @@ const SBRTForm = () => {
                           </>
                         )}
                       </Td>
-                      <Td color="white" fontSize="xs">{formatNumber(calculatedMetrics?.gradientMeasure, 2)}</Td>
-                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "white"} fontSize="xs">
+                      <Td color={calculatedMetrics?.gradientMeasure ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.gradientMeasure, 2)}</Td>
+                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "gray.500"} fontSize="xs">
                         {formatNumber(calculatedMetrics?.maxDose2cmRingPercent, 1)}
                         {calculatedMetrics && (
                           <>
@@ -899,7 +923,7 @@ const SBRTForm = () => {
                           </>
                         )}
                       </Td>
-                      <Td color="white" fontSize="xs">{formatNumber(calculatedMetrics?.homogeneityIndex, 2)}</Td>
+                      <Td color={calculatedMetrics?.homogeneityIndex ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.homogeneityIndex, 2)}</Td>
                     </Tr>
                   </Tbody>
                 </Table>

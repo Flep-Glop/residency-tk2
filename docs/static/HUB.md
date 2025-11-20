@@ -77,4 +77,5 @@ Log every session in DEV_LOG.md:
 - SPRITES: v1.0 (Oct 2025)
 - STACK: v1.0 (Oct 2025)
 - DEV_LOG: Rolling (wiped periodically)
+- Last updated: November 20, 2025
 

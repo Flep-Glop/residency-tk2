@@ -85,8 +85,7 @@ class SBRTTester:
             response = self.session.get(f"{BASE_URL}/treatment-sites", timeout=TIMEOUT)
             if response.status_code == 200:
                 sites = response.json()
-                expected_sites = ["lung", "liver", "spine", "adrenal", "pancreas", 
-                                "kidney", "prostate", "lymph node", "bone", "oligometastasis"]
+                expected_sites = ["bone", "kidney", "liver", "lung", "prostate", "spine"]
                 
                 if all(site in sites for site in expected_sites):
                     self.log_result(
@@ -237,8 +236,7 @@ class SBRTTester:
         
         base_common_info = {
             "physician": {"name": "Smith"},
-            "physicist": {"name": "Johnson"},
-            "patient": {"age": 65, "sex": "male"}
+            "physicist": {"name": "Johnson"}
         }
         
         scenarios = {
@@ -304,33 +302,33 @@ class SBRTTester:
                     "is_sib": False
                 }
             },
-            "oligomets_liver": {
+            "kidney_standard": {
                 "common_info": base_common_info,
                 "sbrt_data": {
-                    "treatment_site": "oligometastasis",
-                    "dose": 50.0,
+                    "treatment_site": "kidney",
+                    "dose": 40.0,
                     "fractions": 5,
-                    "breathing_technique": "DIBH",
-                    "oligomet_location": "liver",
-                    "target_name": "PTV_liver_met",
-                    "ptv_volume": "8.7",
-                    "vol_ptv_receiving_rx": "97.0",
-                    "vol_100_rx_isodose": "9.2",
-                    "vol_50_rx_isodose": "45.1",
-                    "max_dose_2cm_ring": "51.8",
-                    "max_dose_in_target": "55.0",
+                    "breathing_technique": "4DCT",
+                    "oligomet_location": "",
+                    "target_name": "PTV_kidney",
+                    "ptv_volume": "18.3",
+                    "vol_ptv_receiving_rx": "96.0",
+                    "vol_100_rx_isodose": "19.8",
+                    "vol_50_rx_isodose": "95.2",
+                    "max_dose_2cm_ring": "52.0",
+                    "max_dose_in_target": "44.0",
                     "sib_comment": "",
                     "calculated_metrics": {
-                        "coverage": "97.0",
-                        "conformityIndex": "1.06",
-                        "r50": "5.18",
-                        "gradientMeasure": "0.79",
-                        "maxDose2cmRingPercent": "51.8",
+                        "coverage": "96.0",
+                        "conformityIndex": "1.08",
+                        "r50": "5.20",
+                        "gradientMeasure": "0.82",
+                        "maxDose2cmRingPercent": "52.0",
                         "homogeneityIndex": "1.10",
                         "conformityDeviation": "None",
-                        "r50Deviation": "None",
+                        "r50Deviation": "Minor",
                         "maxDose2cmDeviation": "None",
-                        "toleranceRow": {"ptvVol": 8.7, "conformityNone": 1.2}
+                        "toleranceRow": {"ptvVol": 18.3, "conformityNone": 1.2}
                     },
                     "is_sib": False
                 }
@@ -372,7 +370,7 @@ class SBRTTester:
     
     def test_writeup_generation(self):
         """Test SBRT write-up generation for various scenarios."""
-        scenarios = ["lung_standard", "spine_high_dose", "oligomets_liver", "prostate_sib"]
+        scenarios = ["lung_standard", "spine_high_dose", "kidney_standard", "prostate_sib"]
         
         for scenario in scenarios:
             try:

@@ -215,3 +215,10 @@ NEXT_PUBLIC_API_URL=https://residency-tk2-production.up.railway.app/api
 - **Symptom:** Validation disconnected, state bugs
 - **Solution:** Use useFieldArray for dynamic lists
 
+---
+
+## DOCUMENTATION VERSIONS
+- ARCHITECTURE: v1.0 (Oct 2025)
+- Last updated: November 20, 2025
+- Next review: When architectural decisions change or new patterns emerge
+

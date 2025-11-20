@@ -18,7 +18,8 @@ class CalculatedMetrics(BaseModel):
 class SBRTData(BaseModel):
     """Schema matching frontend form structure exactly."""
     # Basic treatment parameters (match frontend form field names)
-    treatment_site: str = Field(..., example="lung")
+    treatment_site: str = Field("", example="lung")
+    custom_treatment_site: Optional[str] = Field("", description="Custom treatment site name if not in standard list")
     anatomical_clarification: Optional[str] = Field("", description="Anatomical clarification for spine/bone sites (e.g., T11-L1, Humerus)")
     dose: float = Field(..., example=50.0)
     fractions: int = Field(..., example=5)

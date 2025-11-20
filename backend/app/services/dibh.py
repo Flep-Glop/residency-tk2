@@ -50,13 +50,21 @@ class DIBHService:
         treatment_site = dibh_data.custom_treatment_site if dibh_data.custom_treatment_site else dibh_data.treatment_site
         dose = dibh_data.dose
         fractions = dibh_data.fractions
+        has_boost = dibh_data.has_boost or False
+        boost_dose = dibh_data.boost_dose or 0
+        boost_fractions = dibh_data.boost_fractions or 0
         
         # Auto-assign immobilization device based on treatment site
         immobilization_device = "breast board" if treatment_site in ["left breast", "right breast"] else "wing board"
         
         # Calculate dose per fraction
         dose_per_fraction = dose / fractions
+        boost_dose_per_fraction = boost_dose / boost_fractions if boost_fractions > 0 else 0
         fractionation_description = "hypofractionation" if dose_per_fraction > 2.0 else "conventional fractionation"
+        
+        # Helper function to format numbers without unnecessary decimals
+        def format_number(num):
+            return str(int(num)) if num % 1 == 0 else f"{num:.2f}"
         
         # Add specific details based on treatment site
         if treatment_site == "left breast":
@@ -81,13 +89,22 @@ class DIBHService:
         write_up += f"hold their breath. Using the {scanning_system} surface scanning system, a free breathing "
         write_up += f"and breath hold signal trace was established. After reproducing the "
         write_up += f"breath hold pattern and establishing a consistent "
-        write_up += f"breathing pattern, a gating baseline and gating window was created. Subsequently, a "
+        write_up += f"breathing pattern, a gating baseline and gating window were created. Subsequently, a "
         write_up += f"DIBH CT simulation scan was acquired and approved "
         write_up += f"by the Radiation Oncologist, Dr. {physician}.\n\n"
         
-        write_up += f"A radiation treatment plan was developed on the DIBH CT simulation to deliver a "
-        write_up += f"prescribed dose of {dose} Gy in {fractions} fractions ({dose_per_fraction:.2f} Gy per fraction) "
-        write_up += f"to the {treatment_site} using {fractionation_description}. "
+        # Generate dose description based on whether there's a boost
+        if has_boost and boost_dose > 0 and boost_fractions > 0:
+            write_up += f"A radiation treatment plan was developed on the DIBH CT simulation to deliver a "
+            write_up += f"prescribed dose of {format_number(dose)} Gy in {fractions} fractions ({format_number(dose_per_fraction)} Gy per fraction) "
+            write_up += f"to the {treatment_site}, followed by a boost of {format_number(boost_dose)} Gy in {boost_fractions} fractions "
+            write_up += f"({format_number(boost_dose_per_fraction)} Gy per fraction) for a total dose of {format_number(dose + boost_dose)} Gy "
+            write_up += f"in {fractions + boost_fractions} fractions. "
+        else:
+            write_up += f"A radiation treatment plan was developed on the DIBH CT simulation to deliver a "
+            write_up += f"prescribed dose of {format_number(dose)} Gy in {fractions} fractions ({format_number(dose_per_fraction)} Gy per fraction) "
+            write_up += f"to the {treatment_site}. "
+        
         write_up += f"The delivery of the DIBH gating technique on the linear accelerator will be performed "
         write_up += f"using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, "
         write_up += f"monitor intra-fraction motion, and gate the beam delivery. Verification of the patient "

@@ -1,0 +1,211 @@
+{
+  "test_date": "2025-11-20T09:58:20.181029",
+  "api_base_url": "http://localhost:8000/api/sbrt",
+  "summary": {
+    "total_tests": 15,
+    "passed_tests": 15,
+    "failed_tests": 0
+  },
+  "detailed_results": [
+    {
+      "test_name": "Server Connectivity",
+      "passed": true,
+      "message": "Connected successfully. Found 6 treatment sites: bone, kidney, liver, lung, prostate, spine",
+      "error": null,
+      "response_data": null
+    },
+    {
+      "test_name": "Treatment Sites Endpoint",
+      "passed": true,
+      "message": "All expected sites found: ['bone', 'kidney', 'liver', 'lung', 'prostate', 'spine']",
+      "error": null,
+      "response_data": [
+        "bone",
+        "kidney",
+        "liver",
+        "lung",
+        "prostate",
+        "spine"
+      ]
+    },
+    {
+      "test_name": "Dose Constraints Testing",
+      "passed": true,
+      "message": "Skipped dose constraints testing per user request",
+      "error": null,
+      "response_data": null
+    },
+    {
+      "test_name": "Fractionation Schemes - lung",
+      "passed": true,
+      "message": "Retrieved 3 valid schemes",
+      "error": null,
+      "response_data": [
+        {
+          "dose": 50,
+          "fractions": 5,
+          "description": "Standard dose"
+        },
+        {
+          "dose": 54,
+          "fractions": 3,
+          "description": "High dose/3fx"
+        },
+        {
+          "dose": 60,
+          "fractions": 8,
+          "description": "Moderate dose/8fx"
+        }
+      ]
+    },
+    {
+      "test_name": "Fractionation Schemes - spine",
+      "passed": true,
+      "message": "Retrieved 3 valid schemes",
+      "error": null,
+      "response_data": [
+        {
+          "dose": 24,
+          "fractions": 3,
+          "description": "Standard dose"
+        },
+        {
+          "dose": 27,
+          "fractions": 3,
+          "description": "High dose"
+        },
+        {
+          "dose": 30,
+          "fractions": 5,
+          "description": "Moderate dose/5fx"
+        }
+      ]
+    },
+    {
+      "test_name": "Fractionation Schemes - prostate",
+      "passed": true,
+      "message": "Retrieved 1 valid schemes",
+      "error": null,
+      "response_data": [
+        {
+          "dose": 36.25,
+          "fractions": 5,
+          "description": "Standard dose"
+        }
+      ]
+    },
+    {
+      "test_name": "Validation Test 1",
+      "passed": true,
+      "message": "Site: lung, 50.0Gy/5fx - Validation for lung (50.0Gy in 5fx) successful.",
+      "error": null,
+      "response_data": {
+        "is_valid": true,
+        "message": "Validation for lung (50.0Gy in 5fx) successful.",
+        "constraints_met": [
+          {
+            "constraint": "Standard Protocol",
+            "detail": "Matches Standard dose"
+          }
+        ],
+        "constraints_violated": []
+      }
+    },
+    {
+      "test_name": "Validation Test 2",
+      "passed": true,
+      "message": "Site: spine, 24.0Gy/3fx - Validation for spine (24.0Gy in 3fx) successful.",
+      "error": null,
+      "response_data": {
+        "is_valid": true,
+        "message": "Validation for spine (24.0Gy in 3fx) successful.",
+        "constraints_met": [
+          {
+            "constraint": "Standard Protocol",
+            "detail": "Matches Standard dose"
+          }
+        ],
+        "constraints_violated": []
+      }
+    },
+    {
+      "test_name": "Validation Test 3",
+      "passed": true,
+      "message": "Site: liver, 45.0Gy/3fx - Validation for liver (45.0Gy in 3fx) successful.",
+      "error": null,
+      "response_data": {
+        "is_valid": true,
+        "message": "Validation for liver (45.0Gy in 3fx) successful.",
+        "constraints_met": [
+          {
+            "constraint": "Standard Protocol",
+            "detail": "Matches Standard dose"
+          }
+        ],
+        "constraints_violated": []
+      }
+    },
+    {
+      "test_name": "Validation Test 4",
+      "passed": true,
+      "message": "Site: lung, 100.0Gy/1fx - Non-standard regimen for lung. BED (1100.00 Gy) differs >10% from High dose/3fx (BED: 151.20 Gy).",
+      "error": null,
+      "response_data": {
+        "is_valid": false,
+        "message": "Non-standard regimen for lung. BED (1100.00 Gy) differs >10% from High dose/3fx (BED: 151.20 Gy).",
+        "constraints_met": [],
+        "constraints_violated": [
+          {
+            "constraint": "Non-Standard Regimen (BED >10%)",
+            "detail": "Proposed BED (1100.00 Gy) differs by >10% from High dose/3fx (151.20 Gy). Recommended: 54 Gy in 3 fx."
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Validation Test 5",
+      "passed": true,
+      "message": "Site: invalid_site, 50.0Gy/5fx - Site 'invalid_site' not found in standard fractionation schemes. Please select a valid site.",
+      "error": null,
+      "response_data": {
+        "is_valid": false,
+        "message": "Site 'invalid_site' not found in standard fractionation schemes. Please select a valid site.",
+        "constraints_met": [],
+        "constraints_violated": [
+          {
+            "constraint": "Site Definition",
+            "detail": "Site 'invalid_site' not found in standard fractionation schemes. Please select a valid site."
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Write-up Generation - lung_standard",
+      "passed": true,
+      "message": "Generated 2458 character write-up with all key elements",
+      "error": null,
+      "response_data": null
+    },
+    {
+      "test_name": "Write-up Generation - spine_high_dose",
+      "passed": true,
+      "message": "Generated 2102 character write-up with all key elements",
+      "error": null,
+      "response_data": null
+    },
+    {
+      "test_name": "Write-up Generation - kidney_standard",
+      "passed": true,
+      "message": "Generated 2513 character write-up with all key elements",
+      "error": null,
+      "response_data": null
+    },
+    {
+      "test_name": "Write-up Generation - prostate_sib",
+      "passed": true,
+      "message": "Generated 2077 character write-up with all key elements",
+      "error": null,
+      "response_data": null
+    }
+  ]
+}

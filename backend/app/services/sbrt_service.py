@@ -109,7 +109,8 @@ class SBRTService:
         
         # Extract SBRT data (using frontend field names directly)
         data = request.sbrt_data
-        treatment_site = data.treatment_site
+        # Use custom treatment site if provided, otherwise use standard site
+        treatment_site = data.custom_treatment_site if data.custom_treatment_site else data.treatment_site
         dose = data.dose
         fractions = data.fractions
         breathing_technique = data.breathing_technique
@@ -269,6 +270,13 @@ class SBRTService:
             constraints_violated=constraints_violated
         )
 
+    def _format_fractions(self, fractions: int) -> str:
+        """Format fractions with correct singular/plural grammar."""
+        if fractions == 1:
+            return "1 fraction"
+        else:
+            return f"{fractions} fractions"
+    
     def _generate_metrics_table_simple(self, target_name, ptv_volume, dose, coverage, conformity_index, 
                                       r50, gradient_measure, max_dose_2cm_ring, homogeneity_index, calculated_metrics, is_sib=False, sib_comment="") -> str:
         """Generate simplified metrics list using frontend calculated values."""
@@ -365,7 +373,7 @@ class SBRTService:
                     metrics_text += f"The following deviation(s) were identified:\n"
                     for dev_name, dev_value, dev_explanation in deviations:
                         metrics_text += f"• {dev_name} of {dev_value} {dev_explanation}.\n"
-                    metrics_text += "Clinical review and justification recommended before treatment delivery.\n"
+                    metrics_text += "These deviations were evaluated and accepted during the treatment planning process.\n"
         
         return metrics_text
 
@@ -413,40 +421,43 @@ class SBRTService:
     def _generate_4dct_template(self, physician, physicist, lesion_description, 
                                dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate 4DCT template write-up."""
-        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for a 4D CT simulation study and SBRT delivery. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
+        fractions_text = self._format_fractions(fractions)
+        return f"""Dr. {physician} requested a medical physics consultation for --- for a 4D CT simulation study and SBRT delivery. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.
 
-<p>The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. A 4D kVCT simulation scan was performed with the patient immobilized and their breathing limited to reduce tumor motion. Using the 4D dataset, an AIP CT image set and 10 phase CT image sets were reconstructed by the radiation oncology physicist and fused together to regenerate an ITV in order to assess the motion envelope. Dr. {physician} segmented and approved both the PTVs and OARs.</p>
+The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. A 4D kVCT simulation scan was performed with the patient immobilized and their breathing limited to reduce tumor motion. Using the 4D dataset, an AIP CT image set and 10 phase CT image sets were reconstructed by the radiation oncology physicist and fused together to regenerate an ITV in order to assess the motion envelope. Dr. {physician} segmented and approved both the PTVs and OARs.
 
-<p>In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
+In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
 
 {metrics_table}
 
-<p>A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements. Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}.</p>"""
+A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements. Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}."""
 
     def _generate_freebreathe_template(self, physician, physicist, lesion_description, 
                                      dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate free breathing template write-up."""
-        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for SBRT delivery. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
+        fractions_text = self._format_fractions(fractions)
+        return f"""Dr. {physician} requested a medical physics consultation for --- for SBRT delivery. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.
 
-<p>The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. Dr. {physician} segmented and approved both the PTVs and OARs.</p>
+The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. Dr. {physician} segmented and approved both the PTVs and OARs.
 
-<p>In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
+In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
 
 {metrics_table}
 
-<p>A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements. Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}.</p>"""
+A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements. Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}."""
 
     def _generate_dibh_template(self, physician, physicist, lesion_description, 
                                dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate DIBH template write-up."""
-        return f"""<p>Dr. {physician} requested a medical physics consultation for --- for SBRT delivery with DIBH technique. Dr. {physician} has elected to treat the {lesion_description} using a DIBH technique to significantly reduce cardiac dose with the C-RAD positioning and gating system in conjunction with the linear accelerator. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.</p>
+        fractions_text = self._format_fractions(fractions)
+        return f"""Dr. {physician} requested a medical physics consultation for --- for SBRT delivery with DIBH technique. Dr. {physician} has elected to treat the {lesion_description} using a DIBH technique to significantly reduce cardiac dose with the C-RAD positioning and gating system in conjunction with the linear accelerator. Dr. {physician} has elected to treat with a stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning system in conjunction with the VersaHD linear accelerator equipped with the kV-CBCT system.
 
-<p>Days before the initial radiation delivery, the patient was simulated in the treatment position using a wing board to aid in immobilization and localization. Instructions were provided and the patient was coached to reproducibly hold their breath. Using the C-RAD surface scanning system, a free breathing and breath hold signal trace was established. After reproducing the breath hold pattern and establishing a consistent breathing pattern, a gating baseline and gating window was created. Subsequently, a DIBH CT simulation scan was acquired and approved by the Radiation Oncologist, Dr. {physician}.</p>
+Days before the initial radiation delivery, the patient was simulated in the treatment position using a wing board to aid in immobilization and localization. Instructions were provided and the patient was coached to reproducibly hold their breath. Using the C-RAD surface scanning system, a free breathing and breath hold signal trace was established. After reproducing the breath hold pattern and establishing a consistent breathing pattern, a gating baseline and gating window was created. Subsequently, a DIBH CT simulation scan was acquired and approved by the radiation oncologist, Dr. {physician}.
 
-<p>A radiation treatment plan was developed on the DIBH CT simulation to deliver a prescribed dose of {dose} Gy in {fractions} fractions ({dose/fractions:.1f} Gy per fraction) to the {target_name}. The delivery of the DIBH gating technique on the linear accelerator will be performed using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, monitor intra-fraction motion, and gate the beam delivery. Verification of the patient position will be validated with a DIBH kV-CBCT. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.</p>
+A radiation treatment plan was developed on the DIBH CT simulation to deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the {target_name}. The delivery of the DIBH gating technique on the linear accelerator will be performed using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, monitor intra-fraction motion, and gate the beam delivery. Verification of the patient position will be validated with a DIBH kV-CBCT. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
 
 {metrics_table}
 
-<p>A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements.</p>
+A quality assurance plan was developed that was subsequently delivered to a phantom geometry. Measurements within the phantom were obtained and compared against the calculated plan to verify the accuracy of the radiation treatment plan. The data analysis showed good agreement between the plan and measurements.
 
-<p>These findings were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}.</p>""" 
+These findings were reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}.""" 

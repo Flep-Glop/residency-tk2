@@ -1,10 +1,24 @@
 // Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
-  current: "2.1.0",
-  releaseDate: "2025-11-06",
+  current: "2.2.0",
+  releaseDate: "2025-11-20",
   
   // Update history - add new updates to the top of this array
   updates: [
+    {
+      version: "2.2.0",
+      date: "2025-11-20", 
+      changes: [
+        "✅ DIBH Module - comprehensive QA testing with 20/20 tests passing",
+        "✅ SBRT Module - comprehensive QA testing and validation",
+        "🎨 UI refinements - improved input formatting and error visibility",
+        "🔘 Button group controls for breathing technique selection",
+        "📊 Enhanced table styling with color hierarchy for metrics",
+        "🎯 Side-by-side dose/fractions layout across modules",
+        "🔧 Backend writeup generation improvements",
+        "📋 Automated quality checks for demographics, grammar, formatting"
+      ]
+    },
     {
       version: "2.1.0",
       date: "2025-11-06", 

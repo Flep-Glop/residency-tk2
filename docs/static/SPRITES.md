@@ -482,3 +482,10 @@ Located in `/docs`:
 - SBRT module: Gold standard for quality metrics tables
 - DIBH module: Gold standard for simple forms
 
+---
+
+## DOCUMENTATION VERSIONS
+- SPRITES: v1.0 (Oct 2025)
+- Last updated: November 20, 2025
+- Next review: When new modules are added or module specifications change
+
