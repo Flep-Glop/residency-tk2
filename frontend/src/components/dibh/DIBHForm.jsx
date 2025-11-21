@@ -145,6 +145,20 @@ const DIBHForm = () => {
       // Add calculated dose per fraction to data
       data.dibh_data.dose_per_fraction = primaryDosePerFraction;
       
+      // Clean up boost fields - convert empty strings to null when has_boost is false
+      if (!data.dibh_data.has_boost) {
+        data.dibh_data.boost_dose = null;
+        data.dibh_data.boost_fractions = null;
+      } else {
+        // Convert string values to numbers when has_boost is true
+        data.dibh_data.boost_dose = parseFloat(data.dibh_data.boost_dose);
+        data.dibh_data.boost_fractions = parseInt(data.dibh_data.boost_fractions);
+      }
+      
+      // Convert main dose/fractions to numbers
+      data.dibh_data.dose = parseFloat(data.dibh_data.dose);
+      data.dibh_data.fractions = parseInt(data.dibh_data.fractions);
+      
       const result = await generateDIBHWriteup(data);
       
       // Use the backend-generated writeup directly
