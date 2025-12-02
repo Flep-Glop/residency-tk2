@@ -48,7 +48,7 @@ def test_dibh_with_boost():
     
     payload = {
         "common_info": {
-            "physician": {"name": "Newman", "role": "physician"},
+            "physician": {"name": "Tuli", "role": "physician"},
             "physicist": {"name": "Paschal", "role": "physicist"}
         },
         "dibh_data": {

@@ -5,25 +5,15 @@ class HDRService:
     def __init__(self):
         # Applicator types with their typical characteristics
         self.applicators = {
-            "Vaginal Cylinder (single-channel)": {
-                "position": "supine",
+            "VC": {
+                "position": "lithotomy",
                 "channels": 1,
-                "description": "single-channel vaginal cylinder"
+                "description": "vaginal cylinder"
             },
-            "Vaginal Cylinder (multi-channel)": {
-                "position": "supine",
-                "channels": 3,
-                "description": "multi-channel vaginal cylinder"
-            },
-            "Tandem & Ovoid": {
-                "position": "supine",
+            "T&O": {
+                "position": "lithotomy",
                 "channels": 3,
                 "description": "tandem and ovoid applicator"
-            },
-            "SYED": {
-                "position": "supine",
-                "channels": 18,
-                "description": "SYED applicator"
             },
             "Utrecht": {
                 "position": "lithotomy",
@@ -31,9 +21,19 @@ class HDRService:
                 "description": "Utrecht applicator"
             },
             "GENEVA": {
-                "position": "supine",
+                "position": "lithotomy",
                 "channels": 3,
                 "description": "GENEVA applicator"
+            },
+            "SYED-Gyn": {
+                "position": "lithotomy",
+                "channels": 18,
+                "description": "SYED applicator"
+            },
+            "SYED-Prostate": {
+                "position": "lithotomy",
+                "channels": 18,
+                "description": "SYED applicator"
             }
         }
         
@@ -77,21 +77,29 @@ class HDRService:
         applicator_info = self.get_applicator_info(data.applicator_type)
         applicator_description = applicator_info.get("description", data.applicator_type.lower())
         
+        # Fixed values
+        patient_position = "lithotomy"
+        ct_slice_thickness = 3.0
+        afterloader = "ELEKTA Ir-192 remote afterloader"
+        planning_system = "Oncentra"
+        critical_structures = ["bladder", "rectum", "intestines", "sigmoid"]
+        survey_reading = "0.2"
+        
         # Generate the write-up
         writeup = self._generate_intro_paragraph(
-            physician, applicator_description, data.afterloader
+            physician, applicator_description, afterloader
         )
         
         writeup += "\n\n"
         writeup += self._generate_implant_paragraph(
-            physician, data.implant_date, data.patient_position,
-            data.ct_slice_thickness, data.critical_structures,
-            data.planning_system, data.number_of_channels
+            physician, patient_position,
+            ct_slice_thickness, critical_structures,
+            planning_system, data.number_of_channels
         )
         
         writeup += "\n\n"
         writeup += self._generate_survey_paragraph(
-            data.survey_reading, physician, physicist
+            survey_reading, physician, physicist
         )
         
         return HDRGenerateResponse(writeup=writeup)
@@ -102,25 +110,23 @@ class HDRService:
         text = f"Dr. {physician} requested a medical physics consultation for ---. "
         
         # Handle article grammar (a vs an)
-        article = "an" if applicator_description[0].lower() in ['a', 'e', 'i', 'o', 'u'] else "a"
+        # Utrecht starts with vowel letter but consonant sound (YOO-trekt), so uses "a"
+        if applicator_description.lower().startswith("utrecht"):
+            article = "a"
+        else:
+            article = "an" if applicator_description[0].lower() in ['a', 'e', 'i', 'o', 'u'] else "a"
         
         text += f"The patient elected to be treated with a temporary HDR implant using {article} "
         text += f"{applicator_description} connected to a remote afterloader containing Ir-192."
         
         return text
 
-    def _generate_implant_paragraph(self, physician: str, implant_date: str,
+    def _generate_implant_paragraph(self, physician: str,
                                      patient_position: str, ct_slice_thickness: float,
                                      critical_structures: List[str],
                                      planning_system: str, num_channels: int) -> str:
         """Generate implant and planning paragraph."""
-        # Determine applicator terminology
-        if "cylinder" in patient_position.lower() or num_channels == 1:
-            applicator_term = "applicator was"
-        else:
-            applicator_term = "applicator was"
-        
-        text = f"On {implant_date}, the applicator was implanted in our clinic with the patient "
+        text = f"The applicator was implanted in our clinic with the patient "
         text += f"in the {patient_position} position. Once the applicator was implanted and fixed to the patient, "
         text += f"a CT scan of {self._format_number(ct_slice_thickness)} mm slice thickness was acquired. "
         

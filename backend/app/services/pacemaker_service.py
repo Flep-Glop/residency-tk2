@@ -107,46 +107,28 @@ class PacemakerService:
         """
         Calculate the risk level based on the TG-203 algorithm.
         
-        According to TG-203 flowchart:
-        1. If dose > 5 Gy OR neutron producing therapy:
-           - If pacing-independent patient AND dose on CIED < 2 Gy: LOW-RISK
-           - Otherwise: MEDIUM-RISK (if not pacing dependent) or HIGH-RISK (if pacing dependent or both conditions)
-        2. If dose 0-5 Gy:
-           - If pacing-independent patient: LOW-RISK  
-           - If pacing-dependent: depends on dose level (LOW for <2Gy, MEDIUM for 2-5Gy)
+        Per TG-203 AAPM Report 203:
+        - HIGH RISK: Dose > 5 Gy (regardless of pacing status) OR neutron-producing therapy
+        - MEDIUM RISK: Dose 2-5 Gy OR pacing-dependent with dose < 2 Gy
+        - LOW RISK: Pacing-independent AND dose < 2 Gy
         """
-        # Step 1: High risk conditions - neutron producing AND dose > 5 Gy
-        if neutron_producing and dose_category == "> 5 Gy":
+        # HIGH RISK: Dose > 5 Gy is always high risk (critical correction)
+        if dose_category == "> 5 Gy":
             return "High"
         
-        # Step 2: If neutron producing OR dose > 5 Gy (but not both)
-        if neutron_producing or dose_category == "> 5 Gy":
-            # For pacing-independent patients with dose < 2 Gy, it's still Low risk per TG-203
-            if not is_pacing_dependent and dose_category == "< 2 Gy":
-                return "Low"
-            # For pacing-dependent patients, it becomes High risk
-            elif is_pacing_dependent:
-                return "High"
-            # For pacing-independent with higher doses, it's Medium risk
-            else:
-                return "Medium"
+        # HIGH RISK: Neutron-producing therapy
+        if neutron_producing:
+            return "High"
         
-        # Step 3: For doses 0-5 Gy without neutron producing therapy
-        # Per TG-203: "Pacing-independent patient and Dose on CIED < 2 Gy"
+        # For doses 0-5 Gy, non-neutron therapy:
+        # LOW RISK: Pacing-independent AND dose < 2 Gy
         if not is_pacing_dependent and dose_category == "< 2 Gy":
-            # YES branch: Pacing-independent AND dose < 2 Gy → LOW-RISK
             return "Low"
-        else:
-            # NO branch: Pacing-dependent OR dose ≥ 2 Gy → goes to MEDIUM-RISK box
-            # The MEDIUM-RISK box has its own logic based on formal consultation needs
-            if dose_category == "< 2 Gy":
-                # Pacing-dependent with dose < 2 Gy → MEDIUM-RISK (per flowchart NO branch)
-                return "Medium"
-            elif dose_category == "2-5 Gy":
-                return "Medium"
-            else:
-                # This shouldn't happen as > 5 Gy is handled above, but for safety
-                return "High"
+        
+        # MEDIUM RISK: Everything else in 0-5 Gy range
+        # - Dose 2-5 Gy (any pacing status)
+        # - Pacing-dependent with dose < 2 Gy
+        return "Medium"
     
     def _get_recommendations(self, risk_level: str) -> List[str]:
         """Get clinical recommendations based on risk level."""
@@ -191,13 +173,33 @@ class PacemakerService:
         device_model = pacemaker_data.device_model
         device_serial = pacemaker_data.device_serial
         pacing_dependent = pacemaker_data.pacing_dependent
-        risk_level = pacemaker_data.risk_level or "Low"
         tps_max_dose = pacemaker_data.tps_max_dose
         tps_mean_dose = pacemaker_data.tps_mean_dose
         osld_mean_dose = pacemaker_data.osld_mean_dose
         
+        # Calculate risk level if not provided (critical for accurate writeup)
+        if pacemaker_data.risk_level:
+            risk_level = pacemaker_data.risk_level
+        else:
+            # Calculate risk using TG-203 algorithm
+            from app.schemas.pacemaker_schemas import PacemakerRiskAssessmentRequest
+            risk_request = PacemakerRiskAssessmentRequest(
+                pacing_dependent=pacing_dependent,
+                field_distance=pacemaker_data.field_distance,
+                neutron_producing=pacemaker_data.neutron_producing,
+                tps_max_dose=tps_max_dose
+            )
+            risk_assessment = self.calculate_risk_assessment(risk_request)
+            risk_level = risk_assessment.risk_level
+        
         # Format device information
-        model_text = f"model number {device_model}" if device_model else "implanted cardiac device"
+        if device_model:
+            model_text = f"model number {device_model}"
+            model_unknown = False
+        else:
+            model_text = "implanted cardiac device"
+            model_unknown = True
+        
         serial_text = f"serial number {device_serial}" if device_serial else ""
         if model_text and serial_text:
             device_info = f"{model_text}, {serial_text},"
@@ -208,6 +210,9 @@ class PacemakerService:
         else:
             device_info = ""
         
+        # Determine correct article (a vs an) based on device_info
+        article = "an" if device_info.startswith("implanted") else "a"
+        
         # Format pacing dependent information
         if pacing_dependent == "Yes":
             pacing_text = "It is noted that they are pacing dependent."
@@ -217,35 +222,60 @@ class PacemakerService:
             pacing_text = ""
         
         # Use the clinical template structure
-        write_up = f"Dr. {physician} requested a medical physics consultation for ---. The patient is undergoing radiation treatment to their {treatment_site} for the dose of {dose} Gy in {fractions} fractions. "
-        write_up += f"The patient has a {device_info} from {device_vendor}. {pacing_text}\n\n"
+        write_up = f"Dr. {physician} requested a medical physics consultation for ---. The patient is undergoing radiation treatment to their {treatment_site} at a dose of {dose} Gy in {fractions} fractions. "
+        write_up += f"The patient has {article} {device_info} from {device_vendor}. {pacing_text}\n\n"
         
         write_up += "Our treatment plan follows the guidelines of the manufacturer for radiation therapy. "
-        write_up += "No primary radiation fields intercept the pacemaker. The device was contoured in the treatment planning system. "
-        write_up += f"The maximum dose to the device was {tps_max_dose} Gy, with a mean dose of {tps_mean_dose} Gy, "
-        write_up += "which is well below the AAPM recommended total dose of 2Gy. "
-        write_up += "It is noted that no specific dose tolerance was provided by the manufacturer.\n\n"
+        
+        # Field intercept statement - conditional based on field distance (CRITICAL SAFETY)
+        field_distance = pacemaker_data.field_distance
+        if "direct beam" in field_distance.lower():
+            write_up += "The CIED is located within the direct treatment beam. "
+        else:
+            write_up += "No primary radiation fields intercept the pacemaker. "
+        
+        write_up += "The device was contoured in the treatment planning system. "
+        write_up += f"The maximum dose to the device was {tps_max_dose} Gy, with a mean dose of {tps_mean_dose} Gy"
+        
+        # Conditional dose comparison based on actual dose value
+        if tps_max_dose < 2.0:
+            write_up += ", which is well below the AAPM recommended total dose of 2 Gy. "
+        elif tps_max_dose == 2.0:
+            write_up += ", which meets the AAPM recommended total dose limit of 2 Gy. "
+        else:
+            write_up += ", which exceeds the AAPM recommended total dose of 2 Gy. "
+        
+        # Unknown model documentation (TG-203 recommendation)
+        if model_unknown:
+            write_up += "The specific device model was not available at the time of planning. "
+            write_up += "Manufacturer-specific recommendations could not be fully assessed. "
+        else:
+            write_up += "It is noted that no specific dose tolerance was provided by the manufacturer. "
+        
+        write_up += "\n\n"
         
         write_up += "One potential complication with any pacemaker is that radiation could induce an increased sensor rate. "
         
-        # Risk-level specific content
+        # Risk-level specific content with TG-203 interrogation timing
         if risk_level == "Low":
             write_up += f"However, our dosimetry analysis puts this patient at a {risk_level.lower()} risk for any radiation induced cardiac complications. "
             write_up += "A defibrillator is always available during treatment in case of emergency. "
             write_up += "A heart rate monitor is then used to monitor for events that would require the defibrillator. "
-            write_up += "The patient had their device interrogated before the start of treatment."
+            write_up += "The patient had their device interrogated before the start of treatment. "
+            write_up += "Per TG-203 guidelines, a follow-up device interrogation will be performed within 6 months after treatment completion."
         elif risk_level == "Medium":
             write_up += f"However, our dosimetry analysis puts this patient at a {risk_level.lower()} risk for any radiation induced cardiac complications. "
             write_up += "A defibrillator is always available during treatment in case of emergency. "
             write_up += "A heart rate monitor is then used to monitor for events that would require the defibrillator. "
-            write_up += "The patient had their device interrogated before the start of treatment and will have it "
-            write_up += "interrogated again in the middle of treatment and after the end of treatment."
+            write_up += "The patient had their device interrogated before the start of treatment. "
+            write_up += "Per TG-203 guidelines, the device will be interrogated at mid-treatment and again after completion, "
+            write_up += "with a follow-up interrogation within 1 month of treatment end."
         elif risk_level == "High":
             write_up += f"However, our dosimetry analysis puts this patient at a {risk_level.lower()} risk for any radiation induced cardiac complications. "
             write_up += "A defibrillator is always available during treatment in case of emergency. "
             write_up += "A heart rate monitor is then used to monitor for events that would require the defibrillator. "
-            write_up += "The patient had their device interrogated before the start of treatment and will have it "
-            write_up += "interrogated again in the middle of treatment and after the end of treatment. "
+            write_up += "Per TG-203 guidelines for high-risk cases, the device will be interrogated before each fraction "
+            write_up += "and immediately after each treatment delivery. "
             write_up += "Due to the high risk nature of this case, a cardiologist will be on standby during treatment."
         
         # Diode measurements (replaced OSLD per clinical practice)

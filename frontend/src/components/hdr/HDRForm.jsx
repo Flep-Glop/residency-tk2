@@ -14,27 +14,20 @@ import {
   Text,
   Textarea,
   useToast,
-  Badge,
   Flex,
-  NumberInput,
-  NumberInputField,
   VStack,
   HStack,
-  Card,
-  CardBody,
-  Checkbox,
-  Tag
+  RadioGroup,
+  Radio
 } from '@chakra-ui/react';
 import hdrService from '../../services/hdrService';
 
 const HDRForm = () => {
   // State variables
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [writeup, setWriteup] = useState('');
-  const [applicators, setApplicators] = useState([]);
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Newman']);
+  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
   
   // Fixed dark theme colors for consistency
@@ -51,64 +44,14 @@ const HDRForm = () => {
       },
       hdr_data: {
         applicator_type: '',
-        treatment_site: 'gynecological',
-        patient_position: 'supine',
-        implant_date: '',
-        ct_slice_thickness: 2.5,
-        number_of_channels: 1,
-        afterloader: 'ELEKTA Ir-192 remote afterloader',
-        source_type: 'Ir-192',
-        planning_system: 'Oncentra',
-        critical_structures: ['bladder', 'rectum', 'intestines', 'sigmoid'],
-        survey_reading: '0.2'
+        treatment_site: '',
+        number_of_channels: ''
       }
     }
   });
 
-  // Watch values for preview and auto-updates
+  // Watch values
   const watchApplicator = watch('hdr_data.applicator_type');
-  const watchPosition = watch('hdr_data.patient_position');
-  const watchChannels = watch('hdr_data.number_of_channels');
-  const watchTreatmentSite = watch('hdr_data.treatment_site');
-  
-  // Load initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setInitialLoading(true);
-      try {
-        const applicatorsData = await hdrService.getApplicators();
-        setApplicators(applicatorsData);
-      } catch (error) {
-        toast({
-          title: 'Error loading data',
-          description: error.message,
-          status: 'error',
-          duration: 5000,
-        });
-      } finally {
-        setInitialLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, []);
-  
-  // Update position and channels when applicator changes
-  useEffect(() => {
-    const updateApplicatorDefaults = async () => {
-      if (watchApplicator) {
-        try {
-          const info = await hdrService.getApplicatorInfo(watchApplicator);
-          setValue('hdr_data.patient_position', info.position || 'supine');
-          setValue('hdr_data.number_of_channels', info.channels || 1);
-        } catch (error) {
-          console.error('Error fetching applicator info:', error);
-        }
-      }
-    };
-
-    updateApplicatorDefaults();
-  }, [watchApplicator, setValue]);
   
   // Handle form submission
   const onSubmit = async (data) => {
@@ -160,25 +103,6 @@ const HDRForm = () => {
     });
   };
 
-  // Helper function to format numbers cleanly
-  const formatNumber = (value, decimals = 1) => {
-    if (value === null || value === undefined || value === '') return '---';
-    const num = parseFloat(value);
-    if (isNaN(num)) return '---';
-    
-    let formatted = num.toFixed(decimals).replace(/\.?0+$/, '');
-    return formatted;
-  };
-
-  if (initialLoading) {
-    return (
-      <Box bg="gray.900" minH="100vh" textAlign="center" p={5}>
-        <Text fontSize="lg" mb={2} color="white">Loading HDR form data...</Text>
-        <Text fontSize="sm" color="gray.400">Please wait while we initialize the form</Text>
-      </Box>
-    );
-  }
-
   return (
     <Box bg="gray.900" minH="100vh">
       {/* Header */}
@@ -205,7 +129,7 @@ const HDRForm = () => {
               gap={4}
               mb={6}
             >
-              {/* Staff & Patient Section */}
+              {/* Staff Information Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -214,17 +138,16 @@ const HDRForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Information</Heading>
 
-                <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
+                <VStack spacing={3} align="stretch">
 
                   <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
                     <Select
                       size="sm"
                       {...register('common_info.physician.name', { required: 'Physician is required' })}
-                      placeholder="Select physician"
+                      placeholder=""
                       aria-label="Select physician"
                       bg="gray.700"
                       borderColor="gray.600"
@@ -235,11 +158,11 @@ const HDRForm = () => {
                     >
                       {physicians.map((physician) => (
                         <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                          Dr. {physician}
+                          {physician}
                         </option>
                       ))}
                     </Select>
-                    <FormErrorMessage fontSize="xs">
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.common_info?.physician?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
@@ -249,7 +172,7 @@ const HDRForm = () => {
                     <Select
                       size="sm"
                       {...register('common_info.physicist.name', { required: 'Physicist is required' })}
-                      placeholder="Select physicist"
+                      placeholder=""
                       aria-label="Select physicist"
                       bg="gray.700"
                       borderColor="gray.600"
@@ -260,159 +183,18 @@ const HDRForm = () => {
                     >
                       {physicists.map((physicist) => (
                         <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                          Dr. {physicist}
+                          {physicist}
                         </option>
                       ))}
                     </Select>
-                    <FormErrorMessage fontSize="xs">
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.common_info?.physicist?.name?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                </Box>
-              </GridItem>
-
-              {/* Treatment Details Section */}
-              <GridItem
-                p={4}
-                borderWidth="1px"
-                borderRadius="md"
-                bg={formBg}
-                borderColor={borderColor}
-                boxShadow="sm"
-              >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Details</Heading>
-
-                <VStack spacing={3} align="stretch">
-                  <FormControl isInvalid={errors.hdr_data?.applicator_type}>
-                    <FormLabel fontSize="sm" color="gray.300">Applicator Type</FormLabel>
-                    <Select
-                      size="sm"
-                      {...register('hdr_data.applicator_type', { required: 'Applicator is required' })}
-                      placeholder="Select applicator"
-                      aria-label="Applicator type"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      data-theme="dark"
-                      sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
-                    >
-                      {applicators.map((applicator) => (
-                        <option key={applicator} value={applicator} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                          {applicator}
-                        </option>
-                      ))}
-                    </Select>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.hdr_data?.applicator_type?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.hdr_data?.treatment_site}>
-                    <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
-                    <Select
-                      size="sm"
-                      {...register('hdr_data.treatment_site', { required: 'Treatment site is required' })}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      data-theme="dark"
-                      aria-label="Treatment site"
-                      sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
-                    >
-                      <option value="gynecological" style={{ backgroundColor: '#2D3748', color: 'white' }}>Gynecological</option>
-                      <option value="prostate" style={{ backgroundColor: '#2D3748', color: 'white' }}>Prostate</option>
-                    </Select>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.hdr_data?.treatment_site?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.hdr_data?.implant_date}>
-                    <FormLabel fontSize="sm" color="gray.300">Implant Date</FormLabel>
-                    <Input
-                      size="sm"
-                      {...register('hdr_data.implant_date', { required: 'Implant date is required' })}
-                      placeholder="e.g., October 17 or XXXX"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      _placeholder={{ color: 'gray.400' }}
-                    />
-                    <FormErrorMessage fontSize="xs">
-                      {errors.hdr_data?.implant_date?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.hdr_data?.patient_position}>
-                    <FormLabel fontSize="sm" color="gray.300">Patient Position</FormLabel>
-                    <Select
-                      size="sm"
-                      {...register('hdr_data.patient_position', { required: 'Position is required' })}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      data-theme="dark"
-                      aria-label="Patient position"
-                      sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
-                    >
-                      <option value="supine" style={{ backgroundColor: '#2D3748', color: 'white' }}>Supine</option>
-                      <option value="lithotomy" style={{ backgroundColor: '#2D3748', color: 'white' }}>Lithotomy</option>
-                    </Select>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.hdr_data?.patient_position?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.hdr_data?.number_of_channels}>
-                    <FormLabel fontSize="sm" color="gray.300">Number of Channels</FormLabel>
-                    <NumberInput size="sm" min={1} max={30}>
-                      <NumberInputField
-                        {...register('hdr_data.number_of_channels', {
-                          required: 'Number of channels is required',
-                          min: { value: 1, message: 'Must be at least 1' },
-                          max: { value: 30, message: 'Must be 30 or less' }
-                        })}
-                        placeholder="Enter channels"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: 'gray.500' }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </NumberInput>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.hdr_data?.number_of_channels?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.hdr_data?.ct_slice_thickness}>
-                    <FormLabel fontSize="sm" color="gray.300">CT Slice Thickness (mm)</FormLabel>
-                    <NumberInput size="sm" min={0.5} max={10} step={0.5}>
-                      <NumberInputField
-                        {...register('hdr_data.ct_slice_thickness', {
-                          required: 'CT slice thickness is required',
-                          min: { value: 0.5, message: 'Must be at least 0.5 mm' }
-                        })}
-                        placeholder="Enter thickness"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: 'gray.500' }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </NumberInput>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.hdr_data?.ct_slice_thickness?.message}
                     </FormErrorMessage>
                   </FormControl>
                 </VStack>
               </GridItem>
 
-              {/* Preview Section */}
+              {/* Applicator Selection Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -421,124 +203,185 @@ const HDRForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Preview</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Applicator Selection</Heading>
 
-                <Card bg="green.800" borderColor="green.600" mb={3}>
-                  <CardBody>
-                    <VStack align="start" spacing={2}>
-                      <HStack>
-                        <Text fontSize="sm" color="gray.300" fontWeight="bold">Applicator:</Text>
-                        <Badge colorScheme="blue" fontSize="xs">
-                          {watchApplicator || 'Not selected'}
-                        </Badge>
-                      </HStack>
-                      
-                      <HStack>
-                        <Text fontSize="sm" color="gray.300" fontWeight="bold">Site:</Text>
-                        <Badge colorScheme="purple" fontSize="xs">
-                          {watchTreatmentSite || '---'}
-                        </Badge>
-                      </HStack>
-                      
-                      <HStack>
-                        <Text fontSize="sm" color="gray.300" fontWeight="bold">Position:</Text>
-                        <Badge colorScheme="orange" fontSize="xs">
-                          {watchPosition || '---'}
-                        </Badge>
-                      </HStack>
-                      
-                      <HStack>
-                        <Text fontSize="sm" color="gray.300" fontWeight="bold">Channels:</Text>
-                        <Badge colorScheme="teal" fontSize="xs">
-                          {formatNumber(watchChannels, 0)}
-                        </Badge>
-                      </HStack>
-                    </VStack>
-                  </CardBody>
-                </Card>
+                <VStack spacing={3} align="stretch">
+                  <FormControl isInvalid={errors.hdr_data?.applicator_type}>
+                    <FormLabel fontSize="sm" color="gray.300">Select Applicator & Site</FormLabel>
+                    <RadioGroup value={watchApplicator}>
+                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                        {/* First Row */}
+                        <Button
+                          size="sm"
+                          variant={watchApplicator === 'VC' ? 'solid' : 'outline'}
+                          colorScheme={watchApplicator === 'VC' ? 'blue' : 'gray'}
+                          onClick={() => {
+                            setValue('hdr_data.applicator_type', 'VC');
+                            setValue('hdr_data.treatment_site', 'gynecological');
+                            setValue('hdr_data.number_of_channels', 1);
+                          }}
+                          color={watchApplicator === 'VC' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{
+                            bg: watchApplicator === 'VC' ? 'blue.600' : 'gray.700',
+                            borderColor: watchApplicator === 'VC' ? 'blue.300' : 'gray.500'
+                          }}
+                        >
+                          <Radio value="VC" isChecked={watchApplicator === 'VC'} display="none" {...register('hdr_data.applicator_type', { required: 'Applicator is required' })} />
+                          VC
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={watchApplicator === 'T&O' ? 'solid' : 'outline'}
+                          colorScheme={watchApplicator === 'T&O' ? 'blue' : 'gray'}
+                          onClick={() => {
+                            setValue('hdr_data.applicator_type', 'T&O');
+                            setValue('hdr_data.treatment_site', 'gynecological');
+                            setValue('hdr_data.number_of_channels', 3);
+                          }}
+                          color={watchApplicator === 'T&O' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{
+                            bg: watchApplicator === 'T&O' ? 'blue.600' : 'gray.700',
+                            borderColor: watchApplicator === 'T&O' ? 'blue.300' : 'gray.500'
+                          }}
+                        >
+                          <Radio value="T&O" isChecked={watchApplicator === 'T&O'} display="none" />
+                          T&O
+                        </Button>
 
-                <Box
-                  p={3}
-                  bg="blue.900"
-                  borderRadius="md"
-                  borderWidth="1px"
-                  borderColor="blue.700"
-                >
-                  <Text fontSize="sm" color="white" fontStyle="italic">
-                    Write-up will include implant procedure, CT imaging, contouring, planning with customized dwell weightings, 
-                    independent calculation verification, treatment delivery, and radiation surveys.
-                  </Text>
-                </Box>
+                        {/* Second Row */}
+                        <Button
+                          size="sm"
+                          variant={watchApplicator === 'Utrecht' ? 'solid' : 'outline'}
+                          colorScheme={watchApplicator === 'Utrecht' ? 'blue' : 'gray'}
+                          onClick={() => {
+                            setValue('hdr_data.applicator_type', 'Utrecht');
+                            setValue('hdr_data.treatment_site', 'gynecological');
+                            setValue('hdr_data.number_of_channels', '');
+                          }}
+                          color={watchApplicator === 'Utrecht' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{
+                            bg: watchApplicator === 'Utrecht' ? 'blue.600' : 'gray.700',
+                            borderColor: watchApplicator === 'Utrecht' ? 'blue.300' : 'gray.500'
+                          }}
+                        >
+                          <Radio value="Utrecht" isChecked={watchApplicator === 'Utrecht'} display="none" />
+                          Utrecht
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={watchApplicator === 'GENEVA' ? 'solid' : 'outline'}
+                          colorScheme={watchApplicator === 'GENEVA' ? 'blue' : 'gray'}
+                          onClick={() => {
+                            setValue('hdr_data.applicator_type', 'GENEVA');
+                            setValue('hdr_data.treatment_site', 'gynecological');
+                            setValue('hdr_data.number_of_channels', '');
+                          }}
+                          color={watchApplicator === 'GENEVA' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{
+                            bg: watchApplicator === 'GENEVA' ? 'blue.600' : 'gray.700',
+                            borderColor: watchApplicator === 'GENEVA' ? 'blue.300' : 'gray.500'
+                          }}
+                        >
+                          <Radio value="GENEVA" isChecked={watchApplicator === 'GENEVA'} display="none" />
+                          GENEVA
+                        </Button>
+
+                        {/* Third Row - SYED options */}
+                        <Button
+                          size="sm"
+                          variant={watchApplicator === 'SYED-Gyn' ? 'solid' : 'outline'}
+                          colorScheme={watchApplicator === 'SYED-Gyn' ? 'blue' : 'gray'}
+                          onClick={() => {
+                            setValue('hdr_data.applicator_type', 'SYED-Gyn');
+                            setValue('hdr_data.treatment_site', 'gynecological');
+                            setValue('hdr_data.number_of_channels', '');
+                          }}
+                          color={watchApplicator === 'SYED-Gyn' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{
+                            bg: watchApplicator === 'SYED-Gyn' ? 'blue.600' : 'gray.700',
+                            borderColor: watchApplicator === 'SYED-Gyn' ? 'blue.300' : 'gray.500'
+                          }}
+                        >
+                          <Radio value="SYED-Gyn" isChecked={watchApplicator === 'SYED-Gyn'} display="none" />
+                          SYED Gyn
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={watchApplicator === 'SYED-Prostate' ? 'solid' : 'outline'}
+                          colorScheme={watchApplicator === 'SYED-Prostate' ? 'blue' : 'gray'}
+                          onClick={() => {
+                            setValue('hdr_data.applicator_type', 'SYED-Prostate');
+                            setValue('hdr_data.treatment_site', 'prostate');
+                            setValue('hdr_data.number_of_channels', '');
+                          }}
+                          color={watchApplicator === 'SYED-Prostate' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{
+                            bg: watchApplicator === 'SYED-Prostate' ? 'blue.600' : 'gray.700',
+                            borderColor: watchApplicator === 'SYED-Prostate' ? 'blue.300' : 'gray.500'
+                          }}
+                        >
+                          <Radio value="SYED-Prostate" isChecked={watchApplicator === 'SYED-Prostate'} display="none" />
+                          SYED Prostate
+                        </Button>
+                      </Grid>
+                    </RadioGroup>
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
+                      {errors.hdr_data?.applicator_type?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </VStack>
+              </GridItem>
+
+              {/* Third Column - Treatment Parameters */}
+              <GridItem
+                p={4}
+                borderWidth="1px"
+                borderRadius="md"
+                bg={formBg}
+                borderColor={borderColor}
+                boxShadow="sm"
+              >
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Parameters</Heading>
+
+                <VStack spacing={3} align="stretch">
+                  <FormControl isInvalid={errors.hdr_data?.number_of_channels}>
+                    <FormLabel fontSize="sm" color="gray.300">Number of Channels</FormLabel>
+                    <Input
+                      type="number"
+                      size="sm"
+                      {...register('hdr_data.number_of_channels', {
+                        required: 'Number of channels is required',
+                        min: { value: 1, message: 'Must be at least 1' },
+                        max: { value: 30, message: 'Must be 30 or less' }
+                      })}
+                      placeholder={
+                        !watchApplicator 
+                          ? 'Choose applicator first' 
+                          : (watchApplicator === 'VC' || watchApplicator === 'T&O') 
+                            ? '' 
+                            : 'Enter channels'
+                      }
+                      readOnly={watchApplicator === 'VC' || watchApplicator === 'T&O'}
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'gray.500' : 'white'}
+                      _hover={{ borderColor: 'gray.500' }}
+                      _placeholder={{ color: 'gray.400' }}
+                      cursor={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'not-allowed' : 'text'}
+                    />
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
+                      {errors.hdr_data?.number_of_channels?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </VStack>
               </GridItem>
             </Grid>
-
-            {/* Equipment & Settings Section */}
-            <Box
-              p={4}
-              borderWidth="1px"
-              borderRadius="md"
-              bg={formBg}
-              borderColor={borderColor}
-              boxShadow="sm"
-              mb={6}
-            >
-              <Heading size="sm" mb={3} textAlign="center" color="white">Equipment & Settings</Heading>
-
-              <Grid
-                templateColumns={{
-                  base: '1fr',
-                  md: 'repeat(2, 1fr)',
-                  lg: 'repeat(3, 1fr)'
-                }}
-                gap={4}
-              >
-                <FormControl>
-                  <FormLabel fontSize="sm" color="gray.300">Afterloader</FormLabel>
-                  <Input
-                    size="sm"
-                    {...register('hdr_data.afterloader')}
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    _hover={{ borderColor: 'gray.500' }}
-                    _placeholder={{ color: 'gray.400' }}
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" color="gray.300">Planning System</FormLabel>
-                  <Select
-                    size="sm"
-                    {...register('hdr_data.planning_system')}
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    _hover={{ borderColor: 'gray.500' }}
-                    data-theme="dark"
-                    aria-label="Planning system"
-                    sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
-                  >
-                    <option value="Oncentra" style={{ backgroundColor: '#2D3748', color: 'white' }}>Oncentra</option>
-                    <option value="Oncentra Brachy" style={{ backgroundColor: '#2D3748', color: 'white' }}>Oncentra Brachy</option>
-                    <option value="BrachyVision" style={{ backgroundColor: '#2D3748', color: 'white' }}>BrachyVision</option>
-                    <option value="Sagiplan" style={{ backgroundColor: '#2D3748', color: 'white' }}>Sagiplan</option>
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" color="gray.300">Survey Reading (mR/hr)</FormLabel>
-                  <Input
-                    size="sm"
-                    {...register('hdr_data.survey_reading')}
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    _hover={{ borderColor: 'gray.500' }}
-                    _placeholder={{ color: 'gray.400' }}
-                  />
-                </FormControl>
-              </Grid>
-            </Box>
 
             {/* Buttons */}
             <Flex gap={4} mb={6}>
@@ -560,6 +403,9 @@ const HDRForm = () => {
                 width="auto"
                 size="md"
                 onClick={handleReset}
+                color="red.300"
+                borderColor="red.600"
+                _hover={{ bg: "red.900", borderColor: "red.500" }}
               >
                 Reset Form
               </Button>

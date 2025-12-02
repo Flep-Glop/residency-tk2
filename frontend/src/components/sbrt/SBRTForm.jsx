@@ -55,7 +55,7 @@ const SBRTForm = () => {
   const [isSIB, setIsSIB] = useState(false);
   const [calculatedMetrics, setCalculatedMetrics] = useState(null);
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Newman']);
+  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
   const [isCustomTreatmentSite, setIsCustomTreatmentSite] = useState(false);
   

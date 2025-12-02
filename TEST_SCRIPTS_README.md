@@ -1,6 +1,6 @@
-# Fusion Module QA Test Scripts
+# Module QA Test Scripts
 
-This directory contains automated test scripts for comprehensive QA testing of the Fusion module before clinical use.
+This directory contains automated test scripts for comprehensive QA testing of modules before clinical use.
 
 ## Prerequisites
 
@@ -65,6 +65,103 @@ python3 test_fusion_lesions.py
 
 ---
 
+### 3. `test_dibh_comprehensive.py` - DIBH Module Comprehensive Testing
+
+Tests all treatment sites, boost/no boost combinations, custom sites, and edge cases for DIBH module.
+
+**What it tests:**
+- Standard treatment sites without boost (7 tests)
+- Boost combinations (4 tests)
+- Custom treatment sites (3 tests)
+- Edge cases and unusual fractionation (6 tests)
+
+**Automated quality checks:**
+- No patient demographics (age/sex)
+- Correct grammar ("were created" not "was created")
+- Proper treatment site mention
+- Boost formatting
+- Immobilization device assignment
+- Cardiac dose mention for left breast
+
+**Standardized inputs:**
+- Physician: Dr. Galvan
+- Physicist: Dr. Kirby
+
+**Usage:**
+```bash
+python3 test_dibh_comprehensive.py
+```
+
+**Output:** `dibh_qa_results.md` (20 test cases)
+
+---
+
+### 4. `test_tbi_comprehensive.py` - TBI Module Comprehensive Testing
+
+Tests all fractionation regimens, setup types, and lung block options for TBI module.
+
+**What it tests:**
+- Standard fractionation regimens with AP/PA setup (4 tests)
+- Lung block variations with 12 Gy regimen (3 tests)
+- Lateral setup variations (3 tests)
+- Complex combinations (3 tests)
+
+**Automated quality checks:**
+- No patient demographics (age/sex)
+- No diagnosis/indication mentioned
+- Proper Dr. prefix for physician names
+- Correct fraction grammar (singular/plural)
+- HVL specification in lung blocks text
+- Setup description (two AP/PA vs two lateral)
+- Aluminum filters and diode dosimeters mentioned
+
+**Standardized inputs:**
+- Physician: Dr. Galvan
+- Physicist: Dr. Kirby
+
+**Usage:**
+```bash
+python3 test_tbi_comprehensive.py
+```
+
+**Output:** `tbi_qa_results.md` (13 test cases)
+
+---
+
+### 5. `test_hdr_comprehensive.py` - HDR Module Comprehensive Testing
+
+Tests all applicator types, channel variations, treatment sites, and edge cases for HDR brachytherapy module.
+
+**What it tests:**
+- Standard applicator types with default configurations (6 tests: VC, T&O, Utrecht, GENEVA, SYED-Gyn, SYED-Prostate)
+- Channel variations for grammar testing (5 tests: 1-25 channels)
+- Treatment site variations (3 tests: gynecological vs prostate)
+- Edge cases and custom configurations (4 tests)
+
+**Automated quality checks:**
+- No patient demographics (age/sex)
+- Proper Dr. prefix for physician and physicist names
+- Correct channel grammar (one/two/three/N channels)
+- HDR-specific content (Ir-192 source, lithotomy position, CT scan)
+- Critical structures mentioned (bladder, rectum, intestines, sigmoid)
+- Planning system (Oncentra) mentioned
+- Applicator digitization described
+- Radiation survey with proper reading (0.2 mR/hr)
+- Proper article usage (a vs an)
+
+**Standardized inputs:**
+- Physician: Dr. Galvan
+- Physicist: Dr. Kirby
+
+**Usage:**
+```bash
+python3 test_hdr_comprehensive.py
+```
+
+**Output:** `hdr_qa_results.md` (18 test cases)
+
+---
+
 ## QA Review Workflow
 
 ### Step 1: Run Tests
@@ -77,13 +174,25 @@ python3 test_fusion_combinations.py
 
 # Run lesion variation tests
 python3 test_fusion_lesions.py
+
+# Run DIBH comprehensive tests
+python3 test_dibh_comprehensive.py
+
+# Run TBI comprehensive tests
+python3 test_tbi_comprehensive.py
+
+# Run HDR comprehensive tests
+python3 test_hdr_comprehensive.py
 ```
 
 ### Step 2: Review Output Files
 
-Both scripts generate markdown files with all test results:
+All scripts generate markdown files with test results:
 - `fusion_writeup_test_results.md`
 - `fusion_lesion_test_results.md`
+- `dibh_qa_results.md`
+- `tbi_qa_results.md`
+- `hdr_qa_results.md`
 
 ### Step 3: QA Checklist
 

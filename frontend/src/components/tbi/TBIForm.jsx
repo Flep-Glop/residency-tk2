@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
-  Input,
   Select,
   FormErrorMessage,
   Heading,
@@ -14,27 +13,20 @@ import {
   Text,
   Textarea,
   useToast,
-  Badge,
   Flex,
-  NumberInput,
-  NumberInputField,
   VStack,
   HStack,
-  Card,
-  CardBody,
-  Switch
+  RadioGroup,
+  Radio
 } from '@chakra-ui/react';
 import tbiService from '../../services/tbiService';
 
 const TBIForm = () => {
   // State variables
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [writeup, setWriteup] = useState('');
-  const [fractionationSchemes, setFractionationSchemes] = useState([]);
-  const [setupOptions, setSetupOptions] = useState([]);
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Newman']);
+  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
   
   // Fixed dark theme colors for consistency
@@ -50,12 +42,11 @@ const TBIForm = () => {
         physicist: { name: '', role: 'physicist' },
       },
       tbi_data: {
-        diagnosis: '',
-        indication: 'preparation for allogeneic stem cell transplant',
-        prescription_dose: 12.0,
-        fractions: 6,
-        setup: 'AP/PA',
-        lung_blocks: false,
+        regimen: '',
+        prescription_dose: '',
+        fractions: '',
+        setup: '',
+        lung_blocks: '',
         energy: '6 MV',
         dose_rate_range: '10 - 15 cGy/min',
         machine_dose_rate: '200 MU/min'
@@ -63,37 +54,10 @@ const TBIForm = () => {
     }
   });
 
-  // Watch values for preview
-  const watchPrescriptionDose = watch('tbi_data.prescription_dose');
-  const watchFractions = watch('tbi_data.fractions');
+  // Watch values for button styling
   const watchSetup = watch('tbi_data.setup');
+  const watchRegimen = watch('tbi_data.regimen');
   const watchLungBlocks = watch('tbi_data.lung_blocks');
-  
-  // Load initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setInitialLoading(true);
-      try {
-        const [schemesData, setupData] = await Promise.all([
-          tbiService.getFramentationSchemes(),
-          tbiService.getSetupOptions()
-        ]);
-        setFractionationSchemes(schemesData);
-        setSetupOptions(setupData);
-      } catch (error) {
-        toast({
-          title: 'Error loading data',
-          description: error.message,
-          status: 'error',
-          duration: 5000,
-        });
-      } finally {
-        setInitialLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, []);
   
   // Handle form submission
   const onSubmit = async (data) => {
@@ -145,36 +109,23 @@ const TBIForm = () => {
     });
   };
 
-  // Quick preset buttons for fractionation
-  const applyPreset = (preset) => {
-    setValue('tbi_data.prescription_dose', preset.dose);
-    setValue('tbi_data.fractions', preset.fractions);
-    toast({
-      title: 'Preset applied',
-      description: preset.description,
-      status: 'info',
-      duration: 2000,
-    });
-  };
-
-  // Helper function to format numbers cleanly
-  const formatNumber = (value, decimals = 1) => {
-    if (value === null || value === undefined || value === '') return '---';
-    const num = parseFloat(value);
-    if (isNaN(num)) return '---';
+  // Handle regimen selection and set dose/fractions
+  const selectRegimen = (regimenKey) => {
+    setValue('tbi_data.regimen', regimenKey);
     
-    let formatted = num.toFixed(decimals).replace(/\.?0+$/, '');
-    return formatted;
+    // Set dose and fractions based on regimen
+    const regimens = {
+      '2gy1fx': { dose: 2.0, fractions: 1 },
+      '4gy1fx': { dose: 4.0, fractions: 1 },
+      '12gy6fx': { dose: 12.0, fractions: 6 },
+      '13.2gy8fx': { dose: 13.2, fractions: 8 }
+    };
+    
+    if (regimens[regimenKey]) {
+      setValue('tbi_data.prescription_dose', regimens[regimenKey].dose);
+      setValue('tbi_data.fractions', regimens[regimenKey].fractions);
+    }
   };
-
-  if (initialLoading) {
-    return (
-      <Box bg="gray.900" minH="100vh" textAlign="center" p={5}>
-        <Text fontSize="lg" mb={2} color="white">Loading TBI form data...</Text>
-        <Text fontSize="sm" color="gray.400">Please wait while we initialize the form</Text>
-      </Box>
-    );
-  }
 
   return (
     <Box bg="gray.900" minH="100vh">
@@ -202,7 +153,7 @@ const TBIForm = () => {
               gap={4}
               mb={6}
             >
-              {/* Staff & Patient Section */}
+              {/* Staff Information Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -211,17 +162,15 @@ const TBIForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Information</Heading>
 
-                <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
-
-                  <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
+                <VStack spacing={3} align="stretch">
+                  <FormControl isInvalid={errors.common_info?.physician?.name}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
                     <Select
                       size="sm"
                       {...register('common_info.physician.name', { required: 'Physician is required' })}
-                      placeholder="Select physician"
+                      placeholder=""
                       aria-label="Select physician"
                       bg="gray.700"
                       borderColor="gray.600"
@@ -232,21 +181,21 @@ const TBIForm = () => {
                     >
                       {physicians.map((physician) => (
                         <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                          Dr. {physician}
+                          {physician}
                         </option>
                       ))}
                     </Select>
-                    <FormErrorMessage fontSize="xs">
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.common_info?.physician?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
+                  <FormControl isInvalid={errors.common_info?.physicist?.name}>
                     <FormLabel fontSize="sm" color="gray.300">Physicist Name</FormLabel>
                     <Select
                       size="sm"
                       {...register('common_info.physicist.name', { required: 'Physicist is required' })}
-                      placeholder="Select physicist"
+                      placeholder=""
                       aria-label="Select physicist"
                       bg="gray.700"
                       borderColor="gray.600"
@@ -257,19 +206,19 @@ const TBIForm = () => {
                     >
                       {physicists.map((physicist) => (
                         <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                          Dr. {physicist}
+                          {physicist}
                         </option>
                       ))}
                     </Select>
-                    <FormErrorMessage fontSize="xs">
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.common_info?.physicist?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
-                </Box>
+                </VStack>
 
               </GridItem>
 
-              {/* Treatment Details Section */}
+              {/* Treatment Parameters Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -278,149 +227,146 @@ const TBIForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Details</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Parameters</Heading>
 
                 <VStack spacing={3} align="stretch">
-                  <FormControl isInvalid={errors.tbi_data?.diagnosis}>
-                    <FormLabel fontSize="sm" color="gray.300">Diagnosis</FormLabel>
-                    <Input
-                      size="sm"
-                      {...register('tbi_data.diagnosis', { required: 'Diagnosis is required' })}
-                      placeholder="e.g., acute lymphoblastic leukemia"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      _placeholder={{ color: 'gray.400' }}
-                    />
-                    <FormErrorMessage fontSize="xs">
-                      {errors.tbi_data?.diagnosis?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.tbi_data?.indication}>
-                    <FormLabel fontSize="sm" color="gray.300">Indication</FormLabel>
-                    <Select
-                      size="sm"
-                      {...register('tbi_data.indication', { required: 'Indication is required' })}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      data-theme="dark"
-                      aria-label="Treatment indication"
-                      sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
+                  <FormControl isInvalid={errors.tbi_data?.regimen}>
+                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Fractionation Regimen</FormLabel>
+                    <RadioGroup
+                      value={watchRegimen}
+                      onChange={(value) => selectRegimen(value)}
                     >
-                      <option value="preparation for allogeneic stem cell transplant" style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                        Preparation for allogeneic stem cell transplant
-                      </option>
-                      <option value="preparation for autologous stem cell transplant" style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                        Preparation for autologous stem cell transplant
-                      </option>
-                      <option value="conditioning regimen" style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                        Conditioning regimen
-                      </option>
-                    </Select>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.tbi_data?.indication?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <Box>
-                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Quick Presets</FormLabel>
-                    <Flex gap={2} flexWrap="wrap">
-                      {fractionationSchemes.map((scheme, idx) => (
-                        <Button
-                          key={idx}
-                          size="xs"
-                          colorScheme="blue"
-                          variant="outline"
-                          onClick={() => applyPreset(scheme)}
-                        >
-                          {scheme.description}
-                        </Button>
-                      ))}
-                    </Flex>
-                  </Box>
-
-                  <FormControl isInvalid={errors.tbi_data?.prescription_dose}>
-                    <FormLabel fontSize="sm" color="gray.300">Prescription Dose (Gy)</FormLabel>
-                    <NumberInput size="sm" min={0} max={20} step={0.5}>
-                      <NumberInputField
-                        {...register('tbi_data.prescription_dose', {
-                          required: 'Prescription dose is required',
-                          min: { value: 0.1, message: 'Dose must be positive' }
-                        })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: 'gray.500' }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </NumberInput>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.tbi_data?.prescription_dose?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={errors.tbi_data?.fractions}>
-                    <FormLabel fontSize="sm" color="gray.300">Number of Fractions</FormLabel>
-                    <NumberInput size="sm" min={1} max={20}>
-                      <NumberInputField
-                        {...register('tbi_data.fractions', {
-                          required: 'Number of fractions is required',
-                          min: { value: 1, message: 'Must be at least 1 fraction' }
-                        })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: 'gray.500' }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </NumberInput>
-                    <FormErrorMessage fontSize="xs">
-                      {errors.tbi_data?.fractions?.message}
+                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                        {/* Single Fraction Column */}
+                        <VStack spacing={2}>
+                          <Box as="label" width="100%" cursor="pointer">
+                            <Radio value="2gy1fx" display="none" {...register('tbi_data.regimen', { required: 'Please select a fractionation regimen' })} />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchRegimen === '2gy1fx' ? 'blue' : 'gray'}
+                              variant={watchRegimen === '2gy1fx' ? 'solid' : 'outline'}
+                              onClick={() => selectRegimen('2gy1fx')}
+                              color={watchRegimen === '2gy1fx' ? 'white' : 'gray.300'}
+                              borderColor={watchRegimen === '2gy1fx' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchRegimen === '2gy1fx' ? 'blue.400' : 'gray.500' }}
+                            >
+                              2 Gy in 1 fx
+                            </Button>
+                          </Box>
+                          <Box as="label" width="100%" cursor="pointer">
+                            <Radio value="4gy1fx" display="none" />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchRegimen === '4gy1fx' ? 'blue' : 'gray'}
+                              variant={watchRegimen === '4gy1fx' ? 'solid' : 'outline'}
+                              onClick={() => selectRegimen('4gy1fx')}
+                              color={watchRegimen === '4gy1fx' ? 'white' : 'gray.300'}
+                              borderColor={watchRegimen === '4gy1fx' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchRegimen === '4gy1fx' ? 'blue.400' : 'gray.500' }}
+                            >
+                              4 Gy in 1 fx
+                            </Button>
+                          </Box>
+                        </VStack>
+                        
+                        {/* BID Column */}
+                        <VStack spacing={2}>
+                          <Box as="label" width="100%" cursor="pointer">
+                            <Radio value="12gy6fx" display="none" />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchRegimen === '12gy6fx' ? 'blue' : 'gray'}
+                              variant={watchRegimen === '12gy6fx' ? 'solid' : 'outline'}
+                              onClick={() => selectRegimen('12gy6fx')}
+                              color={watchRegimen === '12gy6fx' ? 'white' : 'gray.300'}
+                              borderColor={watchRegimen === '12gy6fx' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchRegimen === '12gy6fx' ? 'blue.400' : 'gray.500' }}
+                            >
+                              12 Gy in 6 fx (BID)
+                            </Button>
+                          </Box>
+                          <Box as="label" width="100%" cursor="pointer">
+                            <Radio value="13.2gy8fx" display="none" />
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchRegimen === '13.2gy8fx' ? 'blue' : 'gray'}
+                              variant={watchRegimen === '13.2gy8fx' ? 'solid' : 'outline'}
+                              onClick={() => selectRegimen('13.2gy8fx')}
+                              color={watchRegimen === '13.2gy8fx' ? 'white' : 'gray.300'}
+                              borderColor={watchRegimen === '13.2gy8fx' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchRegimen === '13.2gy8fx' ? 'blue.400' : 'gray.500' }}
+                            >
+                              13.2 Gy in 8 fx (BID)
+                            </Button>
+                          </Box>
+                        </VStack>
+                      </Grid>
+                    </RadioGroup>
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
+                      {errors.tbi_data?.regimen?.message}
                     </FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={errors.tbi_data?.setup}>
-                    <FormLabel fontSize="sm" color="gray.300">Setup</FormLabel>
-                    <Select
-                      size="sm"
-                      {...register('tbi_data.setup', { required: 'Setup is required' })}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: 'gray.500' }}
-                      data-theme="dark"
-                      aria-label="Beam setup"
-                      sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
+                    <FormLabel fontSize="sm" color="gray.300">Beam Setup</FormLabel>
+                    <RadioGroup
+                      value={watchSetup}
+                      onChange={(value) => setValue('tbi_data.setup', value)}
                     >
-                      {setupOptions.map((option) => (
-                        <option key={option} value={option} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                          {option}
-                        </option>
-                      ))}
-                    </Select>
-                    <FormErrorMessage fontSize="xs">
+                      <HStack spacing={2}>
+                        <Box
+                          as="label"
+                          flex="1"
+                          cursor="pointer"
+                        >
+                          <Radio value="AP/PA" display="none" {...register('tbi_data.setup', { required: 'Setup is required' })} />
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchSetup === 'AP/PA' ? 'blue' : 'gray'}
+                            variant={watchSetup === 'AP/PA' ? 'solid' : 'outline'}
+                            onClick={() => setValue('tbi_data.setup', 'AP/PA')}
+                            color={watchSetup === 'AP/PA' ? 'white' : 'gray.300'}
+                            borderColor={watchSetup === 'AP/PA' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchSetup === 'AP/PA' ? 'blue.400' : 'gray.500' }}
+                          >
+                            AP/PA
+                          </Button>
+                        </Box>
+                        <Box
+                          as="label"
+                          flex="1"
+                          cursor="pointer"
+                        >
+                          <Radio value="Lateral" display="none" />
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchSetup === 'Lateral' ? 'blue' : 'gray'}
+                            variant={watchSetup === 'Lateral' ? 'solid' : 'outline'}
+                            onClick={() => setValue('tbi_data.setup', 'Lateral')}
+                            color={watchSetup === 'Lateral' ? 'white' : 'gray.300'}
+                            borderColor={watchSetup === 'Lateral' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchSetup === 'Lateral' ? 'blue.400' : 'gray.500' }}
+                          >
+                            Lateral
+                          </Button>
+                        </Box>
+                      </HStack>
+                    </RadioGroup>
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.tbi_data?.setup?.message}
                     </FormErrorMessage>
                   </FormControl>
 
-                  <FormControl display="flex" alignItems="center">
-                    <FormLabel fontSize="sm" color="gray.300" mb={0}>
-                      Lung Blocks
-                    </FormLabel>
-                    <Switch
-                      {...register('tbi_data.lung_blocks')}
-                      colorScheme="green"
-                      size="sm"
-                    />
-                  </FormControl>
                 </VStack>
               </GridItem>
 
-              {/* Preview Section */}
+              {/* Lung Blocks Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -429,72 +375,89 @@ const TBIForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Preview</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Lung Blocks</Heading>
 
-                <Card bg="green.800" borderColor="green.600" borderWidth="1px" mb={4}>
-                  <CardBody>
-                    <VStack align="start" spacing={3}>
-                      <Box>
-                        <Badge colorScheme="green" mb={2}>Treatment Regimen</Badge>
-                        <Text fontSize="sm" color="white" fontWeight="bold">
-                          {formatNumber(watchPrescriptionDose)} Gy in {watchFractions} fraction{watchFractions !== 1 ? 's' : ''}
-                        </Text>
-                        {watchFractions > 0 && (
-                          <Text fontSize="2xs" color="gray.300">
-                            ({formatNumber(watchPrescriptionDose / watchFractions)} Gy per fraction)
-                          </Text>
-                        )}
-                      </Box>
-
-                      <Box>
-                        <Badge colorScheme="blue" mb={2}>Setup</Badge>
-                        <Text fontSize="sm" color="white">
-                          {watchSetup || '---'}
-                        </Text>
-                      </Box>
-
-                      <Box>
-                        <Badge colorScheme="purple" mb={2}>Lung Blocks</Badge>
-                        <Text fontSize="sm" color="white">
-                          {watchLungBlocks ? 'Yes' : 'No'}
-                        </Text>
-                      </Box>
-
-                      <Box>
-                        <Badge colorScheme="orange" mb={2}>Equipment</Badge>
-                        <Text fontSize="sm" color="white">
-                          6 MV beams
-                        </Text>
-                        <Text fontSize="2xs" color="gray.300">
-                          Dose rate: 10-15 cGy/min
-                        </Text>
-                        <Text fontSize="2xs" color="gray.300">
-                          Machine rate: 200 MU/min
-                        </Text>
-                      </Box>
-                    </VStack>
-                  </CardBody>
-                </Card>
-
-                <Box bg="blue.900" p={3} borderRadius="md" borderWidth="1px" borderColor="blue.700">
-                  <Text fontSize="xs" color="blue.200" fontWeight="bold" mb={2}>
-                    What will be included:
-                  </Text>
-                  <VStack align="start" spacing={1}>
-                    <Text fontSize="2xs" color="blue.100">• Consultation request</Text>
-                    <Text fontSize="2xs" color="blue.100">• Patient demographics</Text>
-                    <Text fontSize="2xs" color="blue.100">• Treatment technique ({watchSetup})</Text>
-                    <Text fontSize="2xs" color="blue.100">• Simulation measurements</Text>
-                    <Text fontSize="2xs" color="blue.100">• Compensating aluminum filters</Text>
-                    {watchLungBlocks && (
-                      <Text fontSize="2xs" color="blue.100">• Lung block fabrication</Text>
-                    )}
-                    <Text fontSize="2xs" color="blue.100">• In-vivo diode dosimetry</Text>
-                    <Text fontSize="2xs" color="blue.100">• Review and approval</Text>
-                  </VStack>
-                </Box>
+                <VStack spacing={3} align="stretch">
+                  <FormControl isInvalid={errors.tbi_data?.lung_blocks}>
+                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Select Lung Block Thickness</FormLabel>
+                    <RadioGroup
+                      value={watchLungBlocks}
+                      onChange={(value) => setValue('tbi_data.lung_blocks', value)}
+                    >
+                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                        <Box as="label" cursor="pointer">
+                          <Radio value="none" display="none" {...register('tbi_data.lung_blocks', { required: 'Please select lung block option' })} />
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchLungBlocks === 'none' ? 'blue' : 'gray'}
+                            variant={watchLungBlocks === 'none' ? 'solid' : 'outline'}
+                            onClick={() => setValue('tbi_data.lung_blocks', 'none')}
+                            color={watchLungBlocks === 'none' ? 'white' : 'gray.300'}
+                            borderColor={watchLungBlocks === 'none' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchLungBlocks === 'none' ? 'blue.400' : 'gray.500' }}
+                          >
+                            None
+                          </Button>
+                        </Box>
+                        <Box as="label" cursor="pointer">
+                          <Radio value="1 HVL" display="none" />
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchLungBlocks === '1 HVL' ? 'blue' : 'gray'}
+                            variant={watchLungBlocks === '1 HVL' ? 'solid' : 'outline'}
+                            onClick={() => setValue('tbi_data.lung_blocks', '1 HVL')}
+                            color={watchLungBlocks === '1 HVL' ? 'white' : 'gray.300'}
+                            borderColor={watchLungBlocks === '1 HVL' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchLungBlocks === '1 HVL' ? 'blue.400' : 'gray.500' }}
+                          >
+                            1 HVL
+                          </Button>
+                        </Box>
+                        <Box as="label" cursor="pointer">
+                          <Radio value="2 HVL" display="none" />
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchLungBlocks === '2 HVL' ? 'blue' : 'gray'}
+                            variant={watchLungBlocks === '2 HVL' ? 'solid' : 'outline'}
+                            onClick={() => setValue('tbi_data.lung_blocks', '2 HVL')}
+                            color={watchLungBlocks === '2 HVL' ? 'white' : 'gray.300'}
+                            borderColor={watchLungBlocks === '2 HVL' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchLungBlocks === '2 HVL' ? 'blue.400' : 'gray.500' }}
+                          >
+                            2 HVL
+                          </Button>
+                        </Box>
+                        <Box as="label" cursor="pointer">
+                          <Radio value="3 HVL" display="none" />
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchLungBlocks === '3 HVL' ? 'blue' : 'gray'}
+                            variant={watchLungBlocks === '3 HVL' ? 'solid' : 'outline'}
+                            onClick={() => setValue('tbi_data.lung_blocks', '3 HVL')}
+                            color={watchLungBlocks === '3 HVL' ? 'white' : 'gray.300'}
+                            borderColor={watchLungBlocks === '3 HVL' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchLungBlocks === '3 HVL' ? 'blue.400' : 'gray.500' }}
+                          >
+                            3 HVL
+                          </Button>
+                        </Box>
+                      </Grid>
+                    </RadioGroup>
+                    <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
+                      {errors.tbi_data?.lung_blocks?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </VStack>
               </GridItem>
             </Grid>
+
+            {/* Hidden inputs for dose/fractions (set via regimen selection) */}
+            <input type="hidden" {...register('tbi_data.prescription_dose')} />
+            <input type="hidden" {...register('tbi_data.fractions')} />
 
             {/* Action Buttons */}
             <Flex gap={4} mb={6}>
@@ -515,6 +478,9 @@ const TBIForm = () => {
                 colorScheme="red"
                 width="auto"
                 size="md"
+                color="red.300"
+                borderColor="red.600"
+                _hover={{ bg: "red.800", borderColor: "red.400" }}
                 onClick={handleReset}
               >
                 Reset Form

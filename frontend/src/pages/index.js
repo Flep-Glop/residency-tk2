@@ -593,7 +593,7 @@ const HomePage = () => {
                 </Button> */}
 
                 {/* Pacemaker/ICD */}
-                {/* <Button
+                <Button
                   size="md"
                   variant={mpcChecklist.pacemaker.enabled ? "solid" : "outline"}
                   colorScheme={mpcChecklist.pacemaker.enabled ? "purple" : "gray"}
@@ -606,7 +606,7 @@ const HomePage = () => {
                   }}
                 >
                   Pacemaker
-                </Button> */}
+                </Button>
 
                 {/* SBRT - TEMPORARY: Mutually exclusive with DIBH */}
                 <Button
@@ -641,7 +641,7 @@ const HomePage = () => {
                 </Button> */}
 
                 {/* TBI */}
-                {/* <Button
+                <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.tbi ? "solid" : "outline"}
                   colorScheme={mpcChecklist.specialTreatmentTypes.tbi ? "orange" : "gray"}
@@ -654,10 +654,10 @@ const HomePage = () => {
                   }}
                 >
                   TBI
-                </Button> */}
+                </Button>
 
                 {/* HDR */}
-                {/* <Button
+                <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.hdr ? "solid" : "outline"}
                   colorScheme={mpcChecklist.specialTreatmentTypes.hdr ? "orange" : "gray"}
@@ -670,7 +670,7 @@ const HomePage = () => {
                   }}
                 >
                   HDR
-                </Button> */}
+                </Button>
 
                 {/* DIBH - TEMPORARY: Mutually exclusive with SBRT */}
                 <Button

@@ -18,25 +18,12 @@ import {
   AlertIcon,
   Badge,
   Flex,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   RadioGroup,
-  Radio,
-  Stack,
   VStack,
   HStack,
   Container,
   Spinner,
-  Center,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Card,
-  CardBody
+  Center
 } from '@chakra-ui/react';
 import { WarningIcon, CheckIcon } from '@chakra-ui/icons';
 import { 
@@ -60,7 +47,7 @@ const PacemakerForm = () => {
   const toast = useToast();
   
   // Default staff lists (can be moved to a service later)
-  const [physicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Newman']);
+  const [physicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
   const [physicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
   
   // Fixed dark theme colors for consistency
@@ -77,16 +64,16 @@ const PacemakerForm = () => {
       },
       pacemaker_data: {
         treatment_site: '',
-        dose: 45.0,
-        fractions: 15,
+        dose: '',
+        fractions: '',
         field_distance: '',
         neutron_producing: 'No',
         device_vendor: '',
         device_model: '',
         device_serial: '',
-        pacing_dependent: 'No',
-        tps_max_dose: 0.5,
-        tps_mean_dose: 0.2,
+        pacing_dependent: '',
+        tps_max_dose: '',
+        tps_mean_dose: '',
         osld_mean_dose: 0.0,
         risk_level: null
       }
@@ -235,7 +222,7 @@ const PacemakerForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>🔋 Pacemaker / CIED Documentation</Heading>
+            <Heading size="xl" mb={2}>Pacemaker / CIED Documentation</Heading>
             <Text opacity={0.9}>Cardiac Implantable Electronic Device (CIED) management for radiation therapy</Text>
           </Box>
         </Flex>
@@ -285,12 +272,12 @@ const PacemakerForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physician</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                       {physicians.map(physician => (
                         <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                       ))}
                     </Select>
-                    <FormErrorMessage>{errors.common_info?.physician?.name?.message}</FormErrorMessage>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>{errors.common_info?.physician?.name?.message}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
@@ -310,17 +297,17 @@ const PacemakerForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physicist</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                       {physicists.map(physicist => (
                         <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                       ))}
                     </Select>
-                    <FormErrorMessage>{errors.common_info?.physicist?.name?.message}</FormErrorMessage>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>{errors.common_info?.physicist?.name?.message}</FormErrorMessage>
                   </FormControl>
                 </Box>
               </GridItem>
 
-              {/* Column 2: Treatment & Device Information */}
+              {/* Column 2: Treatment Information */}
               <GridItem 
                 as={Box} 
                 p={4} 
@@ -330,10 +317,10 @@ const PacemakerForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment & Device Information</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Information</Heading>
                 
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Treatment Information</Heading>
+                  <Heading size="xs" mb={2} color="gray.300">Treatment Site</Heading>
                   
                   <FormControl isInvalid={errors.pacemaker_data?.treatment_site} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
@@ -352,42 +339,128 @@ const PacemakerForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a treatment site</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                       {treatmentSites.map(site => (
                         <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
                       ))}
                     </Select>
-                    <FormErrorMessage>{errors.pacemaker_data?.treatment_site?.message}</FormErrorMessage>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.treatment_site?.message}</FormErrorMessage>
                   </FormControl>
+                </Box>
 
+                <Box mt={4}>
+                  <Heading size="xs" mb={2} color="gray.300">Field Proximity</Heading>
+                  
                   <FormControl isInvalid={errors.pacemaker_data?.field_distance} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Distance from Treatment Field to CIED</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register('pacemaker_data.field_distance', { required: 'Field distance is required' })}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select distance...</option>
-                      {distanceOptions.map(option => (
-                        <option key={option} value={option} style={{ backgroundColor: '#2D3748', color: 'white' }}>{option}</option>
-                      ))}
-                    </Select>
-                    <FormErrorMessage>{errors.pacemaker_data?.field_distance?.message}</FormErrorMessage>
+                    <FormLabel fontSize="sm" color="gray.300">Distance from Field to CIED</FormLabel>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                      <Button
+                        size="sm"
+                        onClick={() => setValue('pacemaker_data.field_distance', 'More than 10 cm from treatment field edge')}
+                        colorScheme={pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'blue' : 'gray'}
+                        variant={pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'solid' : 'outline'}
+                        color={pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'white' : 'gray.300'}
+                        whiteSpace="normal"
+                        height="auto"
+                        py={2}
+                      >
+                        &gt; 10 cm
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setValue('pacemaker_data.field_distance', 'Less than 10 cm from field edge but not in direct field')}
+                        colorScheme={pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'blue' : 'gray'}
+                        variant={pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'solid' : 'outline'}
+                        color={pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'white' : 'gray.300'}
+                        whiteSpace="normal"
+                        height="auto"
+                        py={2}
+                      >
+                        3-10 cm
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setValue('pacemaker_data.field_distance', 'Within 3 cm of field edge')}
+                        colorScheme={pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'blue' : 'gray'}
+                        variant={pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'solid' : 'outline'}
+                        color={pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'white' : 'gray.300'}
+                        whiteSpace="normal"
+                        height="auto"
+                        py={2}
+                      >
+                        Within 3 cm
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setValue('pacemaker_data.field_distance', 'CIED in direct beam')}
+                        colorScheme={pacemakerData.field_distance === 'CIED in direct beam' ? 'blue' : 'gray'}
+                        variant={pacemakerData.field_distance === 'CIED in direct beam' ? 'solid' : 'outline'}
+                        color={pacemakerData.field_distance === 'CIED in direct beam' ? 'white' : 'gray.300'}
+                        whiteSpace="normal"
+                        height="auto"
+                        py={2}
+                      >
+                        Direct Beam
+                      </Button>
+                    </Grid>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.field_distance?.message}</FormErrorMessage>
                   </FormControl>
+                </Box>
 
-                  <Grid templateColumns="1fr 1fr" gap={2} mb={3}>
-                    <FormControl>
-                      <FormLabel fontSize="sm" color="gray.300">Prescription Dose (Gy)</FormLabel>
+                <Box mt={4}>
+                  <Heading size="xs" mb={2} color="gray.300">Pacing Status</Heading>
+                  
+                  <FormControl>
+                    <FormLabel fontSize="sm" color="gray.300">Pacing Dependency</FormLabel>
+                    <RadioGroup 
+                      value={pacemakerData.pacing_dependent || ''} 
+                      onChange={(value) => setValue('pacemaker_data.pacing_dependent', value)}
+                    >
+                      <HStack spacing={2}>
+                        <Button
+                          size="sm"
+                          onClick={() => setValue('pacemaker_data.pacing_dependent', 'Yes')}
+                          colorScheme={pacemakerData.pacing_dependent === 'Yes' ? 'blue' : 'gray'}
+                          variant={pacemakerData.pacing_dependent === 'Yes' ? 'solid' : 'outline'}
+                          color={pacemakerData.pacing_dependent === 'Yes' ? 'white' : 'gray.300'}
+                          flex={1}
+                        >
+                          Dependent
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setValue('pacemaker_data.pacing_dependent', 'No')}
+                          colorScheme={pacemakerData.pacing_dependent === 'No' ? 'blue' : 'gray'}
+                          variant={pacemakerData.pacing_dependent === 'No' ? 'solid' : 'outline'}
+                          color={pacemakerData.pacing_dependent === 'No' ? 'white' : 'gray.300'}
+                          flex={1}
+                        >
+                          Independent
+                        </Button>
+                      </HStack>
+                    </RadioGroup>
+                  </FormControl>
+                </Box>
+              </GridItem>
+
+              {/* Column 3: Treatment & Risk Assessment */}
+              <GridItem 
+                as={Box} 
+                p={4} 
+                borderWidth="1px" 
+                borderRadius="md" 
+                bg={formBg}
+                borderColor={borderColor}
+                boxShadow="sm"
+              >
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment & Risk Assessment</Heading>
+                
+                <Box>
+                  <Heading size="xs" mb={2} color="gray.300">Prescription</Heading>
+                  
+                  <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                    <FormControl isInvalid={errors.pacemaker_data?.dose}>
+                      <FormLabel fontSize="sm" color="gray.300">Dose (Gy)</FormLabel>
                       <Input 
                         size="sm"
                         type="number"
@@ -402,10 +475,11 @@ const PacemakerForm = () => {
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: "gray.400" }}
                       />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.dose?.message}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl>
-                      <FormLabel fontSize="sm" color="gray.300">Number of Fractions</FormLabel>
+                    <FormControl isInvalid={errors.pacemaker_data?.fractions}>
+                      <FormLabel fontSize="sm" color="gray.300">Fractions</FormLabel>
                       <Input 
                         size="sm"
                         type="number"
@@ -419,34 +493,47 @@ const PacemakerForm = () => {
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: "gray.400" }}
                       />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.fractions?.message}</FormErrorMessage>
                     </FormControl>
                   </Grid>
-
-                  <FormControl mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Neutron-Producing Therapy? (Photons &gt;10MV, Protons, etc.)</FormLabel>
-                    <RadioGroup value={pacemakerData.neutron_producing || 'No'}>
-                      <Stack direction="row" spacing={4}>
-                        <Radio 
-                          size="sm"
-                          value="No" 
-                          {...register('pacemaker_data.neutron_producing')}
-                          colorScheme="green"
-                        >
-                          <Text fontSize="sm" color="gray.300">No</Text>
-                        </Radio>
-                        <Radio 
-                          size="sm"
-                          value="Yes" 
-                          {...register('pacemaker_data.neutron_producing')}
-                          colorScheme="green"
-                        >
-                          <Text fontSize="sm" color="gray.300">Yes</Text>
-                        </Radio>
-                      </Stack>
-                    </RadioGroup>
-                  </FormControl>
                 </Box>
-                
+
+                <Box mt={4}>
+                  <Heading size="xs" mb={2} color="gray.300">Dosimetry Information</Heading>
+                  
+                  <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                    <FormControl>
+                      <FormLabel fontSize="sm" color="gray.300">TPS Max Dose (Gy)</FormLabel>
+                      <Input 
+                        size="sm"
+                        type="number"
+                        step="0.01"
+                        {...register('pacemaker_data.tps_max_dose')}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                      />
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel fontSize="sm" color="gray.300">TPS Mean Dose (Gy)</FormLabel>
+                      <Input 
+                        size="sm"
+                        type="number"
+                        step="0.01"
+                        {...register('pacemaker_data.tps_mean_dose')}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                      />
+                    </FormControl>
+                  </Grid>
+                </Box>
+
                 <Box mt={4}>
                   <Heading size="xs" mb={2} color="gray.300">Device Information</Heading>
                   
@@ -469,12 +556,12 @@ const PacemakerForm = () => {
                           }
                         }}
                       >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select vendor...</option>
+                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                         {deviceInfo.vendors.map(vendor => (
                           <option key={vendor} value={vendor} style={{ backgroundColor: '#2D3748', color: 'white' }}>{vendor}</option>
                         ))}
                       </Select>
-                      <FormErrorMessage>{errors.pacemaker_data?.device_vendor?.message}</FormErrorMessage>
+                      <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.device_vendor?.message}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl>
@@ -494,122 +581,13 @@ const PacemakerForm = () => {
                           }
                         }}
                       >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select model...</option>
+                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
                         {selectedVendor && deviceInfo.models_by_vendor[selectedVendor]?.map(model => (
                           <option key={model} value={model} style={{ backgroundColor: '#2D3748', color: 'white' }}>{model}</option>
                         ))}
                       </Select>
                     </FormControl>
                   </Grid>
-
-                  <FormControl mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Device Serial Number</FormLabel>
-                    <Input 
-                      size="sm"
-                      {...register('pacemaker_data.device_serial')}
-                      placeholder="Enter serial number"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: "gray.400" }}
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel fontSize="sm" color="gray.300">Pacing Dependent?</FormLabel>
-                    <RadioGroup value={pacemakerData.pacing_dependent || 'No'}>
-                      <Stack direction="row" spacing={3}>
-                        <Radio 
-                          size="sm"
-                          value="Yes" 
-                          {...register('pacemaker_data.pacing_dependent')}
-                          colorScheme="green"
-                        >
-                          <Text fontSize="sm" color="gray.300">Yes</Text>
-                        </Radio>
-                        <Radio 
-                          size="sm"
-                          value="No" 
-                          {...register('pacemaker_data.pacing_dependent')}
-                          colorScheme="green"
-                        >
-                          <Text fontSize="sm" color="gray.300">No</Text>
-                        </Radio>
-                        <Radio 
-                          size="sm"
-                          value="Unknown" 
-                          {...register('pacemaker_data.pacing_dependent')}
-                          colorScheme="green"
-                        >
-                          <Text fontSize="sm" color="gray.300">Unknown</Text>
-                        </Radio>
-                      </Stack>
-                    </RadioGroup>
-                  </FormControl>
-                </Box>
-              </GridItem>
-
-              {/* Column 3: Dosimetry & Risk Assessment */}
-              <GridItem 
-                as={Box} 
-                p={4} 
-                borderWidth="1px" 
-                borderRadius="md" 
-                bg={formBg}
-                borderColor={borderColor}
-                boxShadow="sm"
-              >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Dosimetry & Risk Assessment</Heading>
-                
-                <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Dosimetry Information</Heading>
-                  
-                  <FormControl mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">TPS Maximum Dose to Device (Gy)</FormLabel>
-                    <Input 
-                      size="sm"
-                      type="number"
-                      step="0.01"
-                      {...register('pacemaker_data.tps_max_dose')}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: "gray.400" }}
-                    />
-                  </FormControl>
-
-                  <FormControl mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">TPS Mean Dose to Device (Gy)</FormLabel>
-                    <Input 
-                      size="sm"
-                      type="number"
-                      step="0.01"
-                      {...register('pacemaker_data.tps_mean_dose')}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: "gray.400" }}
-                    />
-                  </FormControl>
-
-                  <FormControl mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Diode Measured Mean Dose (Gy)</FormLabel>
-                    <Input 
-                      size="sm"
-                      type="number"
-                      step="0.01"
-                      {...register('pacemaker_data.osld_mean_dose')}
-                      placeholder="0.0 (optional)"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: "gray.400" }}
-                    />
-                  </FormControl>
                 </Box>
 
                 {/* Risk Assessment Display */}
@@ -656,67 +634,6 @@ const PacemakerForm = () => {
                   </Box>
                 )}
 
-                {/* Preview Section */}
-                <Box mt={6}>
-                  <Heading size="xs" mb={2} color="gray.300">What will be written up:</Heading>
-                  
-                  <Card size="sm" variant="outline" borderColor="green.400" bg="gray.700">
-                    <CardBody p={3}>
-                      <VStack align="start" spacing={2}>
-                        <HStack>
-                          <Badge colorScheme="green" fontSize="2xs">Treatment Site</Badge>
-                          <Text fontSize="xs" color="gray.200">
-                            {pacemakerData.treatment_site || '---'}
-                          </Text>
-                        </HStack>
-                        
-                        <HStack>
-                          <Badge colorScheme="blue" fontSize="2xs">Prescription</Badge>
-                          <Text fontSize="xs" color="gray.200">
-                            {pacemakerData.dose ? `${pacemakerData.dose} Gy` : '---'} in {pacemakerData.fractions || '---'} fractions
-                          </Text>
-                        </HStack>
-                        
-                        <HStack>
-                          <Badge colorScheme="purple" fontSize="2xs">Device</Badge>
-                          <Text fontSize="xs" color="gray.200">
-                            {pacemakerData.device_vendor || '---'} {pacemakerData.device_model ? `(${pacemakerData.device_model})` : ''}
-                          </Text>
-                        </HStack>
-
-                        <HStack>
-                          <Badge colorScheme="orange" fontSize="2xs">Pacing Dependent</Badge>
-                          <Text fontSize="xs" color="gray.200">
-                            {pacemakerData.pacing_dependent || '---'}
-                          </Text>
-                        </HStack>
-                        
-                        {riskAssessment && (
-                          <HStack>
-                            <Badge 
-                              colorScheme={
-                                riskAssessment.risk_level === 'High' ? 'red' :
-                                riskAssessment.risk_level === 'Medium' ? 'yellow' : 'green'
-                              } 
-                              fontSize="2xs"
-                            >
-                              Risk Level
-                            </Badge>
-                            <Text fontSize="xs" color="gray.200">
-                              {riskAssessment.risk_level} ({riskAssessment.dose_category})
-                            </Text>
-                          </HStack>
-                        )}
-                      </VStack>
-                    </CardBody>
-                  </Card>
-                  
-                  <Box mt={2} p={2} bg="blue.900" borderRadius="md" border="1px" borderColor="blue.700">
-                    <Text fontSize="2xs" color="blue.200">
-                      Write-up will include TG-203 risk assessment, device details, dosimetry analysis, and clinical recommendations based on risk level.
-                    </Text>
-                  </Box>
-                </Box>
               </GridItem>
             </Grid>
 
@@ -737,7 +654,6 @@ const PacemakerForm = () => {
               
               <Button
                 variant="outline"
-                colorScheme="red"
                 onClick={() => {
                   reset();
                   setWriteup('');

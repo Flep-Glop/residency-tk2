@@ -1,10 +1,24 @@
 // Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
-  current: "2.2.0",
-  releaseDate: "2025-11-20",
+  current: "2.3.0",
+  releaseDate: "2025-12-02",
   
   // Update history - add new updates to the top of this array
   updates: [
+    {
+      version: "2.3.0",
+      date: "2025-12-02", 
+      changes: [
+        "✅ TBI Module - comprehensive QA testing with 13/13 tests passing",
+        "✅ HDR Module - comprehensive QA testing with 18/18 tests passing",
+        "✅ Pacemaker Module - comprehensive QA testing with 21/21 tests passing",
+        "🔘 Button-driven interfaces for standardized clinical workflows",
+        "🎯 Streamlined form layouts and improved clinical workflow order",
+        "📋 Automated quality checks across all modules",
+        "🎨 Consistent UI patterns and styling across all 8 modules",
+        "🔧 Grammar and terminology fixes validated through automated testing"
+      ]
+    },
     {
       version: "2.2.0",
       date: "2025-11-20", 

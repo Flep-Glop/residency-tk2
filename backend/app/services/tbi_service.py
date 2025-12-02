@@ -5,9 +5,10 @@ class TBIService:
     def __init__(self):
         # Common TBI fractionation schemes
         self.fractionation_schemes = [
-            {"dose": 12.0, "fractions": 6, "description": "12 Gy in 6 fractions"},
-            {"dose": 12.0, "fractions": 8, "description": "12 Gy in 8 fractions (BID)"},
             {"dose": 2.0, "fractions": 1, "description": "2 Gy in 1 fraction"},
+            {"dose": 4.0, "fractions": 1, "description": "4 Gy in 1 fraction"},
+            {"dose": 12.0, "fractions": 6, "description": "12 Gy in 6 fractions (BID)"},
+            {"dose": 13.2, "fractions": 8, "description": "13.2 Gy in 8 fractions (BID)"},
         ]
         
         self.setup_options = ["AP/PA", "Lateral"]
@@ -30,9 +31,7 @@ class TBIService:
         data = request.tbi_data
         
         # Generate the write-up
-        writeup = self._generate_intro_paragraph(
-            physician, data.diagnosis, data.indication
-        )
+        writeup = self._generate_intro_paragraph(physician)
         
         writeup += "\n\n"
         writeup += self._generate_treatment_paragraph(
@@ -46,16 +45,15 @@ class TBIService:
         
         return TBIGenerateResponse(writeup=writeup)
 
-    def _generate_intro_paragraph(self, physician: str, diagnosis: str, indication: str) -> str:
+    def _generate_intro_paragraph(self, physician: str) -> str:
         """Generate introduction paragraph."""
-        text = f"Dr. {physician} requested a medical physics consultation for ---. "
-        text += f"The patient has {diagnosis} and is now referred to us for consideration of TBI for {indication}."
+        text = f"Dr. {physician} requested a medical physics consultation for --- for consideration of TBI."
         return text
 
     def _generate_treatment_paragraph(self, setup: str, energy: str,
                                       prescription_dose: float, fractions: int,
                                       dose_rate_range: str, machine_dose_rate: str,
-                                      lung_blocks: bool) -> str:
+                                      lung_blocks: str) -> str:
         """Generate treatment description paragraph."""
         # Determine if single or multiple fractions
         if fractions == 1:
@@ -80,8 +78,8 @@ class TBIService:
         text += f"During simulation, patient measurements were made throughout the body ranging from the head to the feet"
         
         # Add lung blocks information if applicable
-        if lung_blocks:
-            text += ", and lung blocks were fabricated to reduce the dose to the lungs. "
+        if lung_blocks and lung_blocks.lower() != 'none':
+            text += f", and lung blocks of {lung_blocks} thickness were fabricated to reduce the dose to the lungs. "
             text += f"These measurements were used to create customized compensating aluminum filters to ensure that the intended dose to midline will be met. "
         else:
             text += " and were used to create customized compensating aluminum filters to ensure that the intended dose to midline will be met. "
