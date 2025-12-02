@@ -575,8 +575,9 @@ const HomePage = () => {
             <CardBody>
               <SimpleGrid columns={2} spacing={3}>
                 
-                {/* TEMPORARY: Disabled modules commented out */}
-                {/* Prior Dose */}
+                {/* PRODUCTION NOTE: Prior Dose and SRS/SRT modules hidden - pending comprehensive QA */}
+                
+                {/* Prior Dose - HIDDEN */}
                 {/* <Button
                   size="md"
                   variant={mpcChecklist.prior ? "solid" : "outline"}
@@ -624,7 +625,7 @@ const HomePage = () => {
                   SBRT
                 </Button>
 
-                {/* SRS/SRT */}
+                {/* SRS/SRT - HIDDEN */}
                 {/* <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.srs ? "solid" : "outline"}

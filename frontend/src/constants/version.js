@@ -1,10 +1,19 @@
 // Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
-  current: "2.3.0",
+  current: "2.3.1",
   releaseDate: "2025-12-02",
   
   // Update history - add new updates to the top of this array
   updates: [
+    {
+      version: "2.3.1",
+      date: "2025-12-02", 
+      changes: [
+        "🔒 Confirmed Prior Dose and SRS/SRT modules hidden from production",
+        "🚀 Active modules: Fusion, DIBH, SBRT, TBI, HDR, Pacemaker",
+        "🔄 Cache-busting deployment to ensure clean state"
+      ]
+    },
     {
       version: "2.3.0",
       date: "2025-12-02", 
