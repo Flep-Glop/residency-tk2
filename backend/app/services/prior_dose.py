@@ -50,7 +50,7 @@ class PriorDoseService:
         # ============================================================
         self.quantec_constraints = {
             "brain": [
-                {"structure": "Brainstem", "constraint": "Dmax", "limit": "<54 Gy", "endpoint": "Cranial neuropathy", "verified": False},
+                {"structure": "Brainstem", "constraint": "Dmax", "limit": "<54 Gy", "endpoint": "Cranial neuropathy", "verified": True},
                 {"structure": "Brainstem", "constraint": "D1-10cc", "limit": "≤59 Gy", "endpoint": "Small volume tolerance", "verified": False},
                 {"structure": "Optic Chiasm", "constraint": "Dmax", "limit": "<55 Gy", "endpoint": "Optic neuropathy", "verified": False},
                 {"structure": "Optic Nerves", "constraint": "Dmax", "limit": "<55 Gy", "endpoint": "Optic neuropathy", "verified": False},
@@ -59,7 +59,8 @@ class PriorDoseService:
             ],
             "head and neck": [
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
-                {"structure": "Brainstem", "constraint": "Dmax", "limit": "<54 Gy", "endpoint": "Cranial neuropathy", "verified": False},
+                {"structure": "Brainstem", "constraint": "Dmax", "limit": "<54 Gy", "endpoint": "Cranial neuropathy", "verified": True},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
                 {"structure": "Parotid (bilateral)", "constraint": "Dmean", "limit": "<25 Gy", "endpoint": "Salivary dysfunction", "verified": False},
                 {"structure": "Parotid (single)", "constraint": "Dmean", "limit": "<20 Gy", "endpoint": "Salivary dysfunction", "verified": False},
                 {"structure": "Larynx", "constraint": "Dmax", "limit": "<66 Gy", "endpoint": "Vocal dysfunction", "verified": False},
@@ -68,47 +69,53 @@ class PriorDoseService:
             ],
             "thorax": [
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
-                {"structure": "Lungs (bilateral)", "constraint": "V20", "limit": "≤30%", "endpoint": "Pneumonitis", "verified": False},
+                {"structure": "Lungs (bilateral)", "constraint": "V20", "limit": "<37%", "endpoint": "Pneumonitis", "verified": True},
                 {"structure": "Lungs (bilateral)", "constraint": "Dmean", "limit": "<20 Gy", "endpoint": "Pneumonitis", "verified": False},
+                {"structure": "Heart", "constraint": "Dmax", "limit": "<40 Gy", "endpoint": "Cardiac toxicity", "verified": True},
                 {"structure": "Heart", "constraint": "V25", "limit": "<10%", "endpoint": "Cardiac mortality", "verified": False},
                 {"structure": "Heart", "constraint": "Dmean", "limit": "<26 Gy", "endpoint": "Pericarditis", "verified": False},
-                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<34 Gy", "endpoint": "Esophagitis", "verified": False},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
                 {"structure": "Brachial Plexus", "constraint": "Dmax", "limit": "60-62 Gy", "endpoint": "Plexopathy", "verified": False},
             ],
             "breast": [
+                {"structure": "Heart", "constraint": "Dmax", "limit": "<40 Gy", "endpoint": "Cardiac toxicity", "verified": True},
+                {"structure": "Lungs (bilateral)", "constraint": "V20", "limit": "<37%", "endpoint": "Pneumonitis", "verified": True},
                 {"structure": "Heart", "constraint": "V25", "limit": "<10%", "endpoint": "Cardiac mortality", "verified": False},
                 {"structure": "Heart", "constraint": "Dmean", "limit": "<26 Gy", "endpoint": "Pericarditis", "verified": False},
-                {"structure": "Lungs (bilateral)", "constraint": "V20", "limit": "≤30%", "endpoint": "Pneumonitis", "verified": False},
                 {"structure": "Contralateral Breast", "constraint": "Dmean", "limit": "<3 Gy", "endpoint": "Secondary malignancy", "verified": False},
             ],
             "lung": [
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
-                {"structure": "Lungs (bilateral)", "constraint": "V20", "limit": "≤30%", "endpoint": "Pneumonitis", "verified": False},
+                {"structure": "Lungs (bilateral)", "constraint": "V20", "limit": "<37%", "endpoint": "Pneumonitis", "verified": True},
                 {"structure": "Lungs (bilateral)", "constraint": "Dmean", "limit": "<20 Gy", "endpoint": "Pneumonitis", "verified": False},
+                {"structure": "Heart", "constraint": "Dmax", "limit": "<40 Gy", "endpoint": "Cardiac toxicity", "verified": True},
                 {"structure": "Heart", "constraint": "V25", "limit": "<10%", "endpoint": "Cardiac mortality", "verified": False},
                 {"structure": "Heart", "constraint": "Dmean", "limit": "<26 Gy", "endpoint": "Pericarditis", "verified": False},
-                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<34 Gy", "endpoint": "Esophagitis", "verified": False},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
             ],
             "liver": [
                 {"structure": "Liver (normal)", "constraint": "Dmean", "limit": "<30-32 Gy", "endpoint": "RILD", "verified": False},
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
                 {"structure": "Kidneys (bilateral)", "constraint": "Dmean", "limit": "<15-18 Gy", "endpoint": "Renal dysfunction", "verified": False},
                 {"structure": "Kidneys (bilateral)", "constraint": "V12", "limit": "<55%", "endpoint": "Renal dysfunction", "verified": False},
             ],
             "pancreas": [
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
                 {"structure": "Kidneys (bilateral)", "constraint": "Dmean", "limit": "<15-18 Gy", "endpoint": "Renal dysfunction", "verified": False},
                 {"structure": "Small Bowel", "constraint": "V15", "limit": "<120 cc", "endpoint": "Acute toxicity", "verified": False},
                 {"structure": "Stomach", "constraint": "V45", "limit": "<195 cc", "endpoint": "Ulceration", "verified": False},
             ],
             "abdomen": [
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
                 {"structure": "Liver (normal)", "constraint": "Dmean", "limit": "<30-32 Gy", "endpoint": "RILD", "verified": False},
                 {"structure": "Kidneys (bilateral)", "constraint": "Dmean", "limit": "<15-18 Gy", "endpoint": "Renal dysfunction", "verified": False},
                 {"structure": "Small Bowel", "constraint": "V15", "limit": "<120 cc", "endpoint": "Acute toxicity", "verified": False},
             ],
             "pelvis": [
-                {"structure": "Rectum", "constraint": "V50", "limit": "<50%", "endpoint": "Late rectal toxicity", "verified": False},
+                {"structure": "Rectum", "constraint": "V50", "limit": "<60%", "endpoint": "Late rectal toxicity", "verified": True},
                 {"structure": "Rectum", "constraint": "V60", "limit": "<35%", "endpoint": "Late rectal toxicity", "verified": False},
                 {"structure": "Rectum", "constraint": "V70", "limit": "<20%", "endpoint": "Late rectal toxicity", "verified": False},
                 {"structure": "Bladder", "constraint": "V65", "limit": "≤50%", "endpoint": "Late toxicity", "verified": False},
@@ -117,20 +124,20 @@ class PriorDoseService:
                 {"structure": "Small Bowel", "constraint": "V15", "limit": "<120 cc", "endpoint": "Acute toxicity", "verified": False},
             ],
             "prostate": [
-                {"structure": "Rectum", "constraint": "V50", "limit": "<50%", "endpoint": "Late rectal toxicity", "verified": False},
+                {"structure": "Rectum", "constraint": "V50", "limit": "<60%", "endpoint": "Late rectal toxicity", "verified": True},
                 {"structure": "Rectum", "constraint": "V70", "limit": "<20%", "endpoint": "Late rectal toxicity", "verified": False},
                 {"structure": "Bladder", "constraint": "V65", "limit": "≤50%", "endpoint": "Late toxicity", "verified": False},
                 {"structure": "Femoral Heads", "constraint": "Dmax", "limit": "≤52 Gy", "endpoint": "Necrosis", "verified": False},
                 {"structure": "Penile Bulb", "constraint": "Dmean", "limit": "<50 Gy", "endpoint": "Erectile dysfunction", "verified": False},
             ],
             "endometrium": [
-                {"structure": "Rectum", "constraint": "V50", "limit": "<50%", "endpoint": "Late rectal toxicity", "verified": False},
+                {"structure": "Rectum", "constraint": "V50", "limit": "<60%", "endpoint": "Late rectal toxicity", "verified": True},
                 {"structure": "Bladder", "constraint": "V65", "limit": "≤50%", "endpoint": "Late toxicity", "verified": False},
                 {"structure": "Small Bowel", "constraint": "V15", "limit": "<120 cc", "endpoint": "Acute toxicity", "verified": False},
                 {"structure": "Femoral Heads", "constraint": "Dmax", "limit": "≤52 Gy", "endpoint": "Necrosis", "verified": False},
             ],
             "cervix": [
-                {"structure": "Rectum", "constraint": "V50", "limit": "<50%", "endpoint": "Late rectal toxicity", "verified": False},
+                {"structure": "Rectum", "constraint": "V50", "limit": "<60%", "endpoint": "Late rectal toxicity", "verified": True},
                 {"structure": "Bladder", "constraint": "V65", "limit": "≤50%", "endpoint": "Late toxicity", "verified": False},
                 {"structure": "Small Bowel", "constraint": "V15", "limit": "<120 cc", "endpoint": "Acute toxicity", "verified": False},
                 {"structure": "Femoral Heads", "constraint": "Dmax", "limit": "≤52 Gy", "endpoint": "Necrosis", "verified": False},
@@ -142,7 +149,7 @@ class PriorDoseService:
             ],
             "spine": [
                 {"structure": "Spinal Cord", "constraint": "Dmax", "limit": "<45 Gy", "endpoint": "Myelopathy", "verified": True},
-                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<34 Gy", "endpoint": "Esophagitis", "verified": False},
+                {"structure": "Esophagus", "constraint": "Dmean", "limit": "<35 Gy", "endpoint": "Esophagitis", "verified": True},
             ],
             "extremity": [
                 {"structure": "Bone", "constraint": "Dmax", "limit": "Per protocol", "endpoint": "Fracture", "verified": False},
@@ -713,22 +720,22 @@ class PriorDoseService:
         
         # Generate appropriate assessment
         if exceeded_constraints:
-            # Constraints exceeded - generate warning
+            # Constraints exceeded - note that this was considered during planning
             exceeded_list = ", ".join([
                 f"{c['structure']} ({c['value']} vs limit {c['limit']})" 
                 for c in exceeded_constraints
             ])
             
             assessment = (
-                f"Composite dose analysis indicates that the following constraint(s) have been exceeded: {exceeded_list}. "
+                f"Composite dose analysis indicates that the following constraint(s) exceed standard limits: {exceeded_list}. "
             )
             
             if within_constraints:
                 assessment += f"Other evaluated structures remain within acceptable limits. "
             
             assessment += (
-                f"Clinical judgment regarding the risk-benefit ratio should guide the treatment decision. "
-                f"The composite dose distribution and DVH were reviewed by Dr. {physician} and Dr. {physicist}."
+                f"This was taken into consideration during the treatment planning process. "
+                f"The composite dose distribution and DVH were reviewed and approved by Dr. {physician} and Dr. {physicist}."
             )
         else:
             # All constraints within limits

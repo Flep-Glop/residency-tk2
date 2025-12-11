@@ -243,12 +243,10 @@ const PriorDoseForm = () => {
         return;
       }
       
-      // Don't suggest constraints when fractionation differs and Raw Dose is selected
-      // User should switch to EQD2 for valid constraint comparison
-      if (fractionationMismatch && watchDoseCalcMethod === 'Raw Dose') {
-        setValue('prior_dose_data.dose_statistics', []);
-        return;
-      }
+      // When fractionation differs and Raw Dose is selected, we still allow constraints
+      // but the warning banner is shown to inform the user about the mismatch
+      // Previously this cleared dose_statistics which "tripped out" the system
+      // when users added multiple prior treatments with different fractionation
       
       // Get current site (custom or standard)
       const currentSite = isCustomCurrentSite 
@@ -1217,7 +1215,7 @@ const PriorDoseForm = () => {
                                         <Input
                                           size="xs"
                                           type="number"
-                                          step="0.1"
+                                          step="any"
                                           {...register(`prior_dose_data.dose_statistics.${index}.value`)}
                                           placeholder="Value"
                                           bg="gray.600"
