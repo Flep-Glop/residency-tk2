@@ -164,12 +164,13 @@ const theme = extendTheme({
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
         fontFamily: '"Aseprite", monospace !important',
+        fontSize: '24px !important',
       },
       'select option, option': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
-        padding: '4px 8px !important',
-        fontSize: '14px !important',
+        padding: '8px 12px !important',
+        fontSize: '20px !important',
       },
       // Ensure select elements maintain dark styling
       'select[data-theme="dark"]': {
@@ -177,16 +178,24 @@ const theme = extendTheme({
         color: '#ebede9 !important',
         borderColor: '#394a50 !important',
         fontFamily: '"Aseprite", monospace !important',
+        fontSize: '24px !important',
       },
       'select[data-theme="dark"] option': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
         fontFamily: '"Aseprite", monospace !important',
+        fontSize: '20px !important',
       },
       // Alternative approach for better browser compatibility
       '.chakra-select__wrapper select, .chakra-select__wrapper select option': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
+        fontFamily: '"Aseprite", monospace !important',
+        fontSize: '24px !important',
+      },
+      // Chakra Select component overrides
+      '.chakra-select': {
+        fontSize: '24px !important',
         fontFamily: '"Aseprite", monospace !important',
       },
       // Ensure textarea and output areas use Aseprite font
