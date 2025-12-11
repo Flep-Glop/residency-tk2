@@ -19,7 +19,6 @@ class PacemakerData(BaseModel):
     
     # Dosimetry information
     tps_max_dose: float = Field(..., example=0.5, description="TPS calculated maximum dose to device in Gy")
-    tps_mean_dose: float = Field(..., example=0.2, description="TPS calculated mean dose to device in Gy")
     osld_mean_dose: float = Field(0.0, example=0.15, description="Diode measured mean dose in Gy")
     
     # Risk assessment (calculated by frontend/backend)
@@ -41,12 +40,6 @@ class PacemakerData(BaseModel):
     def tps_max_dose_must_be_non_negative(cls, v):
         if v < 0:
             raise ValueError('TPS max dose must be non-negative')
-        return v
-    
-    @validator('tps_mean_dose')
-    def tps_mean_dose_must_be_non_negative(cls, v):
-        if v < 0:
-            raise ValueError('TPS mean dose must be non-negative')
         return v
     
     @validator('osld_mean_dose')

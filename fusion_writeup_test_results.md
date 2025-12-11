@@ -19,11 +19,11 @@
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-An MRI study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+An MRI study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -35,11 +35,11 @@ The fusion for the image sets was reviewed and approved by both the prescribing 
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-A PET/CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+A PET/CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -51,11 +51,11 @@ The fusion for the image sets was reviewed and approved by both the prescribing 
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-A PET/CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+A PET/CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -67,11 +67,11 @@ The fusion for the image sets was reviewed and approved by both the prescribing 
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-A CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+A separate CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported CT image set. The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -83,11 +83,11 @@ The fusion for the image sets was reviewed and approved by both the prescribing 
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-A CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported image set. The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+A separate CT study was imported into the Velocity software. A fusion study was created between the planning CT and the imported CT image set. The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusion for the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -101,11 +101,11 @@ The fusion for the image sets was reviewed and approved by both the prescribing 
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two MRI studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusions were verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two MRI studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -117,13 +117,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -135,13 +135,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -153,13 +153,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -171,13 +171,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -189,11 +189,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -205,11 +205,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -221,13 +221,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -239,13 +239,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -257,11 +257,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -273,13 +273,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain.
+Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -291,13 +291,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain.
+Multiple image studies including one PET/CT study and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -309,11 +309,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -325,11 +325,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -341,11 +341,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -359,11 +359,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Three MRI studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusions were verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Three MRI studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -375,11 +375,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Three PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Three PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -391,11 +391,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Three PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Three PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -407,11 +407,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Three CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Three CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -423,11 +423,11 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Three CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Three CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -439,13 +439,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study and two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study and two PET/CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -457,13 +457,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study and two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study and two CT studies were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -475,15 +475,15 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study, one CT study, and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study, one CT study, and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -495,13 +495,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including two PET/CT studies and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Multiple image studies including two PET/CT studies and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -513,13 +513,13 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including two PET/CT studies and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+Multiple image studies including two PET/CT studies and one CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and PET/CT image sets were aligned using rigid registration for one study and rigid registration followed by deformable registration for the other study. The accuracy of these fusions was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -531,15 +531,15 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study, one CT study, and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study, one CT study, and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -551,15 +551,15 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+Dr. Galvan requested a medical physics consultation for --- to perform a multimodality image fusion. The patient was scanned in our CT simulator in the treatment position. This CT study was then exported to the Velocity imaging registration software.
 
-Multiple image studies including one MRI study, one CT study, and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, then refined manually. The resulting fusion was verified for accuracy using anatomical landmarks such as the brain.
+Multiple image studies including one MRI study, one CT study, and one PET/CT study were imported into the Velocity software. Fusion studies were created between the planning CT and each of the imported image sets. The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the brain anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks.
 
-The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain.
+The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks.
 
-The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical structures such as the brain. The fused images were subsequently used to improve the identification of critical structures and targets and to accurately contour them for treatment planning.
+The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks. The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.
 
-The fusions for all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+The fusions of all image sets were reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
 ```
 
 ---
@@ -573,11 +573,7 @@ The fusions for all image sets were reviewed and approved by both the prescribin
 **Write-up:**
 
 ```
-Dr. Galvan requested a medical physics consultation for --- for multimodality image fusion. The patient was scanned with the bladder full and again with the bladder empty to evaluate the position of the pelvic anatomy in both scans.
-
-The patient was scanned in our CT simulator in the treatment position in a Vac-Lok to minimize motion. The CT studies were then exported to the Velocity imaging registration software. A fusion study of the two CT sets (empty and full bladder) was then created. The CT image sets were registered using a rigid registration algorithm based on the pelvic anatomy. The resulting registrations of the fused image studies were verified for accuracy using anatomical landmarks such as the pelvis. The fused images were used to improve the identification of the critical structures and targets and to accurately contour them.
-
-The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. Galvan, and the medical physicist, Dr. Kirby.
+ERROR: API call failed - 500 Server Error: Internal Server Error for url: http://localhost:8000/api/fusion/generate
 ```
 
 ---

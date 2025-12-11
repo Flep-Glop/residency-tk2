@@ -72,17 +72,17 @@ const QAToolForm = () => {
   // Information density levels
   const infoLevels = {
     whisper: {
-      name: '🤫 Whisper',
+      name: 'Whisper',
       description: 'Minimal info',
       color: 'gray'
     },
     normal: {
-      name: '💬 Normal', 
+      name: 'Normal', 
       description: 'Balanced view',
       color: 'blue'
     },
     shout: {
-      name: '📢 Shout',
+      name: 'Shout',
       description: 'Full details',
       color: 'purple'
     }
@@ -92,7 +92,7 @@ const QAToolForm = () => {
   const qaAreas = [
     {
       id: 'vault1',
-      title: '🏢 Vault 1',
+      title: 'Vault 1',
       description: 'Monthly QA for Vault 1 (Legacy Varian) - Basic mechanical and dosimetry tests',
       shortDesc: 'Vault 1 (Legacy)',
       totalProcedures: 8,
@@ -101,7 +101,7 @@ const QAToolForm = () => {
     },
     {
       id: 'vault2',
-      title: '🏢 Vault 2', 
+      title: 'Vault 2', 
       description: 'Monthly QA for Vault 2 (VersaHD) - Full test suite including CRAD',
       shortDesc: 'Vault 2 (VersaHD)',
       totalProcedures: 18,
@@ -110,7 +110,7 @@ const QAToolForm = () => {
     },
     {
       id: 'vault4',
-      title: '🏢 Vault 4',
+      title: 'Vault 4',
       description: 'Monthly QA for Vault 4 (VersaHD) - Full suite plus ExacTrac and Winston Lutz',
       shortDesc: 'Vault 4 (VersaHD + SRS)',
       totalProcedures: 22,
@@ -119,7 +119,7 @@ const QAToolForm = () => {
     },
     {
       id: 'vault6',
-      title: '🏢 Vault 6',
+      title: 'Vault 6',
       description: 'Monthly QA for Vault 6 (VersaHD) - Full test suite including CRAD',
       shortDesc: 'Vault 6 (VersaHD)',
       totalProcedures: 18,
@@ -128,7 +128,7 @@ const QAToolForm = () => {
     },
     {
       id: 'ct',
-      title: '🔬 CT Scanner',
+      title: 'CT Scanner',
       description: 'CT scanner quality assurance and imaging protocols',
       shortDesc: 'CT QA',
       totalProcedures: 0,
@@ -142,7 +142,7 @@ const QAToolForm = () => {
     // Initial setup and safety (always first)
     setup: {
       name: 'Setup & Safety',
-      icon: '🚀',
+      icon: '',
       color: 'red',
       estimatedTime: '10 min',
       procedures: [
@@ -168,7 +168,7 @@ const QAToolForm = () => {
     // Mechanical tests (resident responsibility)
     mechanical: {
       name: 'Mechanical Tests',
-      icon: '⚙️',
+      icon: '',
       color: 'blue',
       estimatedTime: '75 min',
       procedures: [
@@ -213,7 +213,7 @@ const QAToolForm = () => {
     // Dosimetry - separated by who does what
     dosimetry: {
       name: 'Dosimetry Tests',
-      icon: '📊',
+      icon: '',
       color: 'orange',
       estimatedTime: '115 min',
       procedures: [
@@ -258,7 +258,7 @@ const QAToolForm = () => {
     // Imaging (VersaHD only)
     imaging: {
       name: 'Imaging Tests',
-      icon: '📷',
+      icon: '',
       color: 'green',
       estimatedTime: '50 min',
       procedures: [
@@ -284,7 +284,7 @@ const QAToolForm = () => {
     // MLC (VersaHD only)
     mlc: {
       name: 'MLC Tests',
-      icon: '🎯',
+      icon: '',
       color: 'purple',
       estimatedTime: '25 min',
       procedures: [
@@ -310,7 +310,7 @@ const QAToolForm = () => {
     // CRAD (Vault 2 and 6 only)
     crad: {
       name: 'CRAD Testing',
-      icon: '📋',
+      icon: '',
       color: 'teal',
       estimatedTime: '50 min',
       procedures: [
@@ -336,7 +336,7 @@ const QAToolForm = () => {
     // Stereotactic (Vault 4 only)
     stereotactic: {
       name: 'Stereotactic QA',
-      icon: '🎭',
+      icon: '',
       color: 'pink',
       estimatedTime: '75 min',
       procedures: [
@@ -364,10 +364,10 @@ const QAToolForm = () => {
   const modalContentData = {
     detailsInitialSetup: {
       title: "Setup & Safety Check",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Establish safe working conditions and proper starting configuration for monthly QA.
 
-**📋 Setup Protocol**
+**Setup Protocol**
 1. **Power & Monitors:** Verify in-room monitors are on and displaying properly
 2. **Positioning:** Set gantry to 90°, collimator to 90° using digital indicators
 3. **Safety Systems:** Test radiation warning lights - should illuminate during prep mode
@@ -375,20 +375,20 @@ Establish safe working conditions and proper starting configuration for monthly 
 5. **Environment:** Check adequate lighting and gather QA equipment
 6. **Documentation:** Note any initial observations or concerns
 
-**📊 Acceptance Criteria**
+**Acceptance Criteria**
 • All safety systems functional before proceeding
 • Proper gantry and collimator positioning achieved
 • All necessary equipment available and operational
 
-**⚠️ Safety Note**
+**Safety Note**
 Never proceed with QA if any safety system fails. Contact supervisor immediately.`
     },
     detailsBasicMechanical: {
       title: "Basic Mechanical Tests",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Verify fundamental mechanical accuracy and positioning systems.
 
-**📋 Test Sequence**
+**Test Sequence**
 **Tray Functions (VersaHD only):**
 • Rotate gantry to 90° or 270°, collimator pointing down
 • Test tray latch engagement and security
@@ -409,15 +409,15 @@ Verify fundamental mechanical accuracy and positioning systems.
 • Spirit level at 0°, 90°, 180°, 270°
 • Tolerance: ±0.5°
 
-**📊 Documentation**
+**Documentation**
 Record actual vs expected readings for all measurements. Note any trends from previous months.`
     },
     detailsPositioningFields: {
       title: "Positioning & Field Definition Tests",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Verify treatment positioning accuracy and radiation field definition.
 
-**📋 Test Sequence**
+**Test Sequence**
 **Cross-Hair Centering:**
 • Graph paper on table, open rectangular field
 • Rotate collimator full range, check crosshair stability
@@ -442,15 +442,15 @@ Verify treatment positioning accuracy and radiation field definition.
 • EBT3 film, outline 10x10 light field, irradiate 400 MU
 • Tolerance: ±2mm alignment
 
-**📊 Critical Points**
+**Critical Points**
 Document any systematic offsets. Jaw positioning affects all treatments.`
     },
     detailsFacultyOutputs: {
       title: "Faculty Output Measurements (D1-D5)",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Faculty-performed dosimetry measurements for beam output and energy constancy.
 
-**📋 Faculty Responsibilities**
+**Faculty Responsibilities**
 **D1. Output Constancy:**
 • PTW 31013/31003 chambers, 10x10 FS, 105cm SSD
 • All energies: 6X, 10X, 18X, 6XFFF, 6e, 9e, 12e, 15e
@@ -472,15 +472,15 @@ Faculty-performed dosimetry measurements for beam output and energy constancy.
 • Maximum dose rate measurements
 • Tolerance: ±2%
 
-**🤝 Coordination**
+**Coordination**
 Schedule with faculty in advance. No specific handoff required - can be done independently.`
     },
     detailsStarcheck: {
       title: "Resident Starcheck Measurements (D6)",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Profile constancy verification using Starcheck device - resident responsibility.
 
-**📋 Setup & Procedure**
+**Setup & Procedure**
 **Photons:**
 • 20x20 FS, 100cm SSD to top of Starcheck
 • Deliver 200 MU per energy
@@ -496,22 +496,22 @@ Profile constancy verification using Starcheck device - resident responsibility.
 • LRFlat - Inplane flatness
 • LRSym - Inplane symmetry
 
-**📊 Acceptance Criteria**
+**Acceptance Criteria**
 • Tolerance: ±2% for all parameters
 • Compare to baseline measurements from annual calibration
 • Document Pass/Fail for each energy and parameter
 
-**💡 Tips**
+**Tips**
 • Setup is straightforward - just position and irradiate
 • Analysis software handles calculations
 • Most common issues are setup positioning errors`
     },
     detailsImagingQA: {
       title: "Imaging Quality Assurance",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Verify imaging system accuracy for patient positioning (VersaHD only).
 
-**📋 Test Sequence**
+**Test Sequence**
 **Hexapod Laser Check:**
 • Verify laser system alignment and positioning
 • Check for any drift or misalignment
@@ -531,18 +531,18 @@ Verify imaging system accuracy for patient positioning (VersaHD only).
 • Verify within 1mm of 2x2 square reference
 • Check portal imaging system accuracy
 
-**📊 Documentation**
+**Documentation**
 Record all measurements and any systematic offsets. Imaging accuracy directly affects treatment delivery precision.
 
-**🔧 Troubleshooting**
+**Troubleshooting**
 Most issues relate to phantom setup. Double-check laser alignment before imaging.`
     },
     detailsCRADComplete: {
       title: "CRAD Testing Complete Procedure",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Comprehensive Radiation Audit and Documentation (Vault 2 & 6 only).
 
-**📋 Complete Workflow**
+**Complete Workflow**
 **Setup Phase:**
 • Position CRAD phantom per protocol specifications
 • Verify alignment accuracy (±1mm positioning tolerance)
@@ -563,20 +563,20 @@ Comprehensive Radiation Audit and Documentation (Vault 2 & 6 only).
 • Prepare images for submission
 • File results in appropriate database
 
-**📊 Acceptance Criteria**
+**Acceptance Criteria**
 • Phantom setup: ±1mm tolerance
 • Complete image set per protocol requirements
 • Analysis results within specified limits
 
-**⏱️ Time Management**
+**Time Management**
 This is typically the longest single procedure. Plan accordingly and ensure uninterrupted time.`
     },
     detailsStereotacticQA: {
       title: "Stereotactic QA Complete (Vault 4 Only)",
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Comprehensive stereotactic system verification for high-precision treatments.
 
-**📋 Complete Workflow**
+**Complete Workflow**
 **ExacTrac Calibration:**
 • Power on and warm-up ExacTrac system
 • Position calibration phantom on couch
@@ -599,12 +599,12 @@ Comprehensive stereotactic system verification for high-precision treatments.
 • Verify mechanical alignment (±0.5mm from isocenter)
 • Check output constancy (±2% from baseline)
 
-**📊 Critical Tolerances**
+**Critical Tolerances**
 • Overall isocenter diameter: ≤2mm
 • Systematic offset: ≤0.5mm any direction
 • All individual measurements must pass
 
-**🎯 Clinical Impact**
+**Clinical Impact**
 Stereotactic treatments require submillimeter accuracy. Any failures require immediate attention.`
     }
   };
@@ -613,22 +613,22 @@ Stereotactic treatments require submillimeter accuracy. Any failures require imm
   const contextualHelpData = {
     // Equipment operation basics
     linacOperation: {
-      title: "🔧 Linac Operation Basics",
+      title: "Linac Operation Basics",
       type: "equipment",
       urgency: "immediate",
-      content: `**🔴 EMERGENCY STOPS**
+      content: `**EMERGENCY STOPS**
 • Red mushroom buttons on console and room walls
 • Interrupt key on console
 • Door opening during beam
 
-**⚡ Powering ON (Morning startup):**
+**Powering ON (Morning startup):**
 1. Main power switch (usually green, on machine cabinet)
 2. Wait for cooling system startup (listen for fans)
 3. Console power on
 4. Login to system
 5. Wait for warm-up cycle completion (~10-15 min)
 
-**🛑 Powering OFF (End of day):**
+**Powering OFF (End of day):**
 1. Log out of treatment system
 2. Gantry to 0°, Collimator to 0°
 3. Console power off
@@ -636,10 +636,10 @@ Stereotactic treatments require submillimeter accuracy. Any failures require imm
     },
     
     whyThisTest: {
-      title: "🤔 Why Do We Do This Test?",
+      title: "Why Do We Do This Test?",
       type: "educational",
       urgency: "nice-to-know",
-      content: `**🎯 Purpose of Monthly QA:**
+      content: `**Purpose of Monthly QA:**
 
 **Safety First:** Monthly QA catches problems before they affect patients
 **Regulatory:** Required by licensing agencies (State, NRC)
@@ -654,10 +654,10 @@ Stereotactic treatments require submillimeter accuracy. Any failures require imm
     },
 
     troubleshooting: {
-      title: "🔧 Quick Troubleshooting",
+      title: "Quick Troubleshooting",
       type: "support",
       urgency: "when-stuck",
-      content: `**🚨 Common Issues & Quick Fixes:**
+      content: `**Common Issues & Quick Fixes:**
 
 **Setup won't complete:**
 • Check door interlocks (fully closed?)
@@ -675,7 +675,7 @@ Stereotactic treatments require submillimeter accuracy. Any failures require imm
 • Check required equipment setup
 • Verify beam readiness
 
-**❓ When to Ask for Help:**
+**When to Ask for Help:**
 • Any safety system failure
 • Measurements outside tolerance
 • Equipment error messages
@@ -690,10 +690,10 @@ Stereotactic treatments require submillimeter accuracy. Any failures require imm
     detailsInitialSetup: {
       title: "Setup & Safety Check",
       contextualHelp: ['linacOperation', 'troubleshooting'],
-      content: `**🔍 Purpose**
+      content: `**Purpose**
 Establish safe working conditions and proper starting configuration for monthly QA.
 
-**📋 Setup Protocol**
+**Setup Protocol**
 1. **Power & Monitors:** Verify in-room monitors are on and displaying properly
 2. **Positioning:** Set gantry to 90°, collimator to 90° using digital indicators
 3. **Safety Systems:** Test radiation warning lights - should illuminate during prep mode
@@ -701,15 +701,15 @@ Establish safe working conditions and proper starting configuration for monthly 
 5. **Environment:** Check adequate lighting and gather QA equipment
 6. **Documentation:** Note any initial observations or concerns
 
-**📊 Acceptance Criteria**
+**Acceptance Criteria**
 • All safety systems functional before proceeding
 • Proper gantry and collimator positioning achieved
 • All necessary equipment available and operational
 
-**⚠️ Safety Note**
+**Safety Note**
 Never proceed with QA if any safety system fails. Contact supervisor immediately.
 
-**🆘 Need Help?**
+**Need Help?**
 • How to turn on linac → Click "Linac Operation" below
 • Troubleshooting → Click "Quick Help" below`
     },
@@ -823,7 +823,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
   const showContextualHelp = (helpKeys) => {
     const helpContent = helpKeys.map(key => contextualHelpData[key]).filter(Boolean);
     setModalContent({
-      title: "🎯 Contextual Help",
+      title: "Contextual Help",
       content: helpContent.map(help => `**${help.title}**\n\n${help.content}`).join('\n\n---\n\n')
     });
     onOpen();
@@ -881,7 +881,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                 borderColor: "green.400"
               }}
             >
-              🎓 Learning
+              Learning
             </Button>
             <Button
               size="sm"
@@ -904,13 +904,13 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
         {/* Learning Mode Panel */}
         {learningMode && (
           <Box w="100%" mt={4} p={4} bg="green.900" borderRadius="md" border="1px" borderColor="green.700">
-            <Text fontWeight="bold" mb={3} color="green.200">🎓 Learning Mode Active</Text>
+            <Text fontWeight="bold" mb={3} color="green.200">Learning Mode Active</Text>
             <Text fontSize="sm" color="green.300" mb={3}>
               Additional educational context and "why" explanations will be shown throughout the interface.
             </Text>
             <Alert status="info" size="sm" bg="green.800" borderColor="green.600">
               <AlertIcon color="green.300" />
-              <Text color="green.200">Look for 📚 icons next to procedures for educational content about clinical significance and physics principles.</Text>
+              <Text color="green.200">Look for Learn badges next to procedures for educational content about clinical significance and physics principles.</Text>
             </Alert>
           </Box>
         )}
@@ -918,7 +918,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
         {/* Quick Help Panel */}
         {showQuickHelp && (
           <Box w="100%" mt={4} p={4} bg="purple.900" borderRadius="md" border="1px" borderColor="purple.700">
-            <Text fontWeight="bold" mb={3} color="purple.200">🆘 Quick Access Help</Text>
+            <Text fontWeight="bold" mb={3} color="purple.200">Quick Access Help</Text>
             <HStack spacing={2} flexWrap="wrap">
               <Button
                 size="xs"
@@ -929,7 +929,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                 borderColor="red.600"
                 _hover={{ bg: "red.800", borderColor: "red.400" }}
               >
-                🔧 Linac On/Off
+                Linac On/Off
               </Button>
               <Button
                 size="xs"
@@ -940,7 +940,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                 borderColor="blue.600"
                 _hover={{ bg: "blue.800", borderColor: "blue.400" }}
               >
-                🤔 Why This Test?
+                Why This Test?
               </Button>
               <Button
                 size="xs"
@@ -951,7 +951,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                 borderColor="orange.600"
                 _hover={{ bg: "orange.800", borderColor: "orange.400" }}
               >
-                🔧 Troubleshoot
+                Troubleshoot
               </Button>
               <Button
                 size="xs"
@@ -962,7 +962,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                 borderColor="green.600"
                 _hover={{ bg: "green.800", borderColor: "green.400" }}
               >
-                📚 All Help
+                All Help
               </Button>
             </HStack>
           </Box>
@@ -977,7 +977,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
         <Alert status="info" mb={4} bg="blue.900" borderColor="blue.700" color="blue.200">
           <AlertIcon color="blue.300" />
           <Box>
-            <AlertTitle color="blue.200">📋 Monthly QA Documentation System</AlertTitle>
+            <AlertTitle color="blue.200">Monthly QA Documentation System</AlertTitle>
             <AlertDescription color="blue.300">
               Select a vault below to begin monthly quality assurance procedures. Each vault has specialized test requirements based on equipment capabilities.
             </AlertDescription>
@@ -1026,10 +1026,10 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                     <VStack spacing={2} align="stretch">
                       <HStack justify="space-between">
                         <Text fontSize="sm" color="gray.400">
-                          📋 {area.totalProcedures} procedures
+                          {area.totalProcedures} procedures
                         </Text>
                         <Text fontSize="sm" color="gray.400">
-                          ⏱️ ~{area.estimatedTime}
+                          ~{area.estimatedTime}
                         </Text>
                       </HStack>
                       
@@ -1313,7 +1313,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                             </Text>
                             {informationLevel === 'shout' && procedure.note && (
                               <Text fontSize="sm" color="blue.300" fontStyle="italic" mt={1}>
-                                💡 {procedure.note}
+                                {procedure.note}
                               </Text>
                             )}
                             {informationLevel !== 'whisper' && (
@@ -1329,7 +1329,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                             {learningMode && informationLevel !== 'whisper' && (
                               <Box mt={3} p={3} bg="green.900" borderRadius="md" borderLeft="3px" borderLeftColor="green.400" border="1px" borderColor="green.700">
                                 <Text fontSize="sm" fontWeight="semibold" color="green.200" mb={1}>
-                                  📚 Why This Matters (Learning Mode)
+                                  Why This Matters (Learning Mode)
                                 </Text>
                                 <Text fontSize="sm" color="green.300">
                                   {procedure.id.includes('setup') && 
@@ -1378,7 +1378,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                                   cursor="pointer"
                                   onClick={() => showContextualHelp(['whyThisTest'])}
                                 >
-                                  📚 Learn
+                                  Learn
                                 </Badge>
                               </Tooltip>
                             )}
@@ -1388,7 +1388,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                               variant="ghost"
                               onClick={() => showModal(procedure.details)}
                             >
-                              📖
+                              Details
                             </Button>
                             {/* Smart contextual help - appears when likely needed */}
                             {(procedure.id.includes('setup') || procedure.id.includes('mech') || !checkedItems[procedure.id]) && (
@@ -1410,7 +1410,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                                     showContextualHelp(helpKeys);
                                   }}
                                 >
-                                  💡
+                                  Help
                                 </Button>
                               </Tooltip>
                             )}
@@ -1420,13 +1420,13 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                               variant="ghost"
                               onClick={() => toast({
                                 title: "Photo Upload",
-                                description: "📷 Photo upload functionality coming soon!",
+                                description: "Photo upload functionality coming soon!",
                                 status: "info",
                                 duration: 2000,
                                 isClosable: true,
                               })}
                             >
-                              📷
+                              Photo
                             </Button>
                           </HStack>
                         )}
@@ -1450,7 +1450,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
             textAlign="center"
             boxShadow="xl"
           >
-            <Heading size="lg" mb={2}>🎉 {vaultName} Monthly QA Complete!</Heading>
+            <Heading size="lg" mb={2}>{vaultName} Monthly QA Complete!</Heading>
             <Text mb={4} opacity={0.9}>
               Excellent work! All {vaultProcedures.length} procedures completed successfully.
             </Text>
@@ -1467,7 +1467,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                   isClosable: true,
                 })}
               >
-                📋 Generate Report
+                Generate Report
               </Button>
               <Button 
                 colorScheme="whiteAlpha" 
@@ -1475,7 +1475,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                 color="white"
                 onClick={() => setActiveSection('home')}
               >
-                🏠 Back to Home
+                Back to Home
               </Button>
             </HStack>
           </Box>
@@ -1509,7 +1509,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
             <Alert status="info" bg="blue.900" borderColor="blue.700" color="blue.200">
               <AlertIcon color="blue.300" />
               <Box>
-                <AlertTitle color="blue.200">🔬 CT Scanner QA</AlertTitle>
+                <AlertTitle color="blue.200">CT Scanner QA</AlertTitle>
                 <AlertDescription color="blue.300">
                   CT scanner quality assurance procedures are being developed. Please check back soon.
                 </AlertDescription>
@@ -1528,7 +1528,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
       <Box bg="purple.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="purple.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>🔧 Monthly QA Documentation System</Heading>
+            <Heading size="md" mb={2}>Monthly QA Documentation System</Heading>
             <Text opacity={0.9}>Comprehensive quality assurance procedures for radiation therapy equipment</Text>
             {informationLevel === 'shout' && (
               <Badge mt={2} colorScheme="purple">
@@ -1572,7 +1572,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
             {/* Add contextual help buttons in modal footer */}
             {modalContent.contextualHelp && (
               <Box mt={6} p={4} bg="gray.700" borderRadius="md" border="1px" borderColor="gray.600">
-                <Text fontWeight="bold" mb={3} color="white">🆘 Related Help Topics</Text>
+                <Text fontWeight="bold" mb={3} color="white">Related Help Topics</Text>
                 <HStack spacing={2} flexWrap="wrap">
                   {modalContent.contextualHelp.map(helpKey => {
                     const helpData = contextualHelpData[helpKey];
@@ -1588,7 +1588,7 @@ Never proceed with QA if any safety system fails. Contact supervisor immediately
                         borderColor="blue.600"
                         _hover={{ bg: "blue.800", borderColor: "blue.400" }}
                       >
-                        {helpData.title.split(' ')[0]} {helpData.title.split(' ').slice(1).join(' ').split('🔧')[1]?.trim() || helpData.title.split(' ').slice(1).join(' ')}
+                        {helpData.title}
                       </Button>
                     );
                   })}

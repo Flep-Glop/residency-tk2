@@ -228,8 +228,7 @@ const SRSForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>SRS/SRT Write-up Generator</Heading>
-            <Text opacity={0.9}>Generate standardized write-up for stereotactic radiosurgery and radiotherapy</Text>
+            <Heading size="md" mb={2}>SRS/SRT Write-up Generator</Heading>
           </Box>
         </Flex>
       </Box>
@@ -248,7 +247,7 @@ const SRSForm = () => {
               gap={4}
               mb={6}
             >
-              {/* Staff & Patient Section */}
+              {/* Staff Info Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -257,10 +256,8 @@ const SRSForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
-
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
 
                   <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
@@ -754,10 +751,10 @@ const SRSForm = () => {
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
-                  fontFamily="monospace"
                   fontSize="sm"
                   whiteSpace="pre-wrap"
                   _focus={{ borderColor: 'blue.400' }}
+                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
               </Box>
             )}

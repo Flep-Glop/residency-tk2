@@ -101,8 +101,20 @@ const theme = extendTheme({
     },
   },
   fonts: {
-    heading: 'Inter, system-ui, sans-serif',
-    body: 'Inter, system-ui, sans-serif',
+    heading: '"Aseprite", monospace',
+    body: '"Aseprite", monospace',
+  },
+  fontSizes: {
+    xs: '24px',
+    sm: '28px',
+    md: '32px',
+    lg: '40px',
+    xl: '48px',
+    '2xl': '56px',
+    '3xl': '72px',
+    '4xl': '96px',
+    '5xl': '120px',
+    '6xl': '160px',
   },
   config: {
     initialColorMode: 'dark',
@@ -110,9 +122,20 @@ const theme = extendTheme({
   },
   styles: {
     global: {
+      // Load the Aseprite pixel font
+      '@font-face': {
+        fontFamily: 'Aseprite',
+        src: 'url("/fonts/AsepriteFont.ttf") format("truetype")',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        fontDisplay: 'swap',
+      },
       body: {
         bg: '#090a14',
         color: '#ebede9',
+        fontFamily: '"Aseprite", monospace',
+        fontSize: '32px',
+        lineHeight: '1.0',
       },
       // Custom scrollbar styling
       '*::-webkit-scrollbar': {
@@ -125,30 +148,55 @@ const theme = extendTheme({
       '*::-webkit-scrollbar-thumb': {
         background: 'transparent',
       },
-      '*': {
+      // Universal font override
+      '*, *::before, *::after': {
         scrollbarWidth: 'none', // Firefox
         msOverflowStyle: 'none', // IE and Edge
+        fontWeight: 'normal !important', // Pixel font looks better uniform
+        fontFamily: '"Aseprite", monospace !important',
+      },
+      // HTML and root elements
+      'html, body': {
+        fontFamily: '"Aseprite", monospace !important',
       },
       // Fix dropdown option visibility in dark theme
-      'select option': {
+      'select': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
-        padding: '8px !important',
+        fontFamily: '"Aseprite", monospace !important',
+      },
+      'select option, option': {
+        backgroundColor: '#151d28 !important',
+        color: '#ebede9 !important',
+        padding: '4px 8px !important',
+        fontSize: '14px !important',
       },
       // Ensure select elements maintain dark styling
       'select[data-theme="dark"]': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
         borderColor: '#394a50 !important',
+        fontFamily: '"Aseprite", monospace !important',
       },
       'select[data-theme="dark"] option': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
+        fontFamily: '"Aseprite", monospace !important',
       },
       // Alternative approach for better browser compatibility
-      '.chakra-select__wrapper select option': {
+      '.chakra-select__wrapper select, .chakra-select__wrapper select option': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
+        fontFamily: '"Aseprite", monospace !important',
+      },
+      // Ensure textarea and output areas use Aseprite font
+      'textarea, pre, code, .chakra-textarea, .chakra-textarea__wrapper textarea': {
+        fontFamily: '"Aseprite", monospace !important',
+        fontSize: '24px !important',
+      },
+      // Input elements
+      'input, button, select, textarea': {
+        fontFamily: '"Aseprite", monospace !important',
       },
     },
   },

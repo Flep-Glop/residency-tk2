@@ -339,8 +339,7 @@ const SBRTForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>SBRT Write-up Generator</Heading>
-            <Text opacity={0.9}>Generate standardized write-up for stereotactic body radiation therapy</Text>
+            <Heading size="md" mb={2}>SBRT Write-up Generator</Heading>
           </Box>
         </Flex>
       </Box>
@@ -359,7 +358,7 @@ const SBRTForm = () => {
               gap={4} 
               mb={6}
             >
-              {/* Staff & Patient Section */}
+              {/* Staff Info Section */}
               <GridItem 
                 as={Box} 
                 p={4} 
@@ -369,11 +368,9 @@ const SBRTForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
-                
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <VStack spacing={3} align="stretch">
                   <Box>
-                    <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
                     
                     <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
                       <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
@@ -541,7 +538,7 @@ const SBRTForm = () => {
                     
                     <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
                       <FormControl isInvalid={errors.sbrt_data?.dose}>
-                        <FormLabel fontSize="sm" color="gray.300">Prescription Dose (Gy)</FormLabel>
+                        <FormLabel fontSize="sm" color="gray.300">Rx Dose (Gy)</FormLabel>
                         <Input
                           size="sm"
                           type="number"
@@ -562,7 +559,7 @@ const SBRTForm = () => {
                       </FormControl>
 
                       <FormControl isInvalid={errors.sbrt_data?.fractions}>
-                        <FormLabel fontSize="sm" color="gray.300">Number of Fractions</FormLabel>
+                        <FormLabel fontSize="sm" color="gray.300">Fractions</FormLabel>
                         <Input
                           size="sm"
                           type="number"
@@ -585,7 +582,7 @@ const SBRTForm = () => {
                     </Grid>
 
                     <FormControl isInvalid={errors.sbrt_data?.breathing_technique} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Breathing/Imaging Technique</FormLabel>
+                      <FormLabel fontSize="sm" color="gray.300">Technique</FormLabel>
                       <RadioGroup
                         value={watchBreathingTechnique}
                         onChange={(value) => setValue('sbrt_data.breathing_technique', value)}
@@ -745,7 +742,7 @@ const SBRTForm = () => {
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
-                      <FormLabel fontSize="sm" color="gray.300">PTV receiving Rx (cc)</FormLabel>
+                      <FormLabel fontSize="sm" color="gray.300">Vol at Rx (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
@@ -769,7 +766,7 @@ const SBRTForm = () => {
                   {/* Row 2: 100% Rx Isodose Vol and 50% Rx Isodose Vol */}
                   <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.vol_100_rx_isodose}>
-                      <FormLabel fontSize="sm" color="gray.300">100% Isodose Vol (cc)</FormLabel>
+                      <FormLabel fontSize="sm" color="gray.300">100% Vol (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
@@ -790,7 +787,7 @@ const SBRTForm = () => {
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.vol_50_rx_isodose}>
-                      <FormLabel fontSize="sm" color="gray.300">50% Isodose Vol (cc)</FormLabel>
+                      <FormLabel fontSize="sm" color="gray.300">50% Vol (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
@@ -814,7 +811,7 @@ const SBRTForm = () => {
                   {/* Row 3: Max Dose 2cm ring and Max Dose in target */}
                   <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_2cm_ring}>
-                      <FormLabel fontSize="sm" color="gray.300">Max Dose 2cm (Gy)</FormLabel>
+                      <FormLabel fontSize="sm" color="gray.300">Dmax 2cm (Gy)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
@@ -835,7 +832,7 @@ const SBRTForm = () => {
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_in_target}>
-                      <FormLabel fontSize="sm" color="gray.300">Max Dose Target (Gy)</FormLabel>
+                      <FormLabel fontSize="sm" color="gray.300">Dmax Target (Gy)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
@@ -874,19 +871,19 @@ const SBRTForm = () => {
               
               <Box overflowX="auto">
                 <Table size="sm" variant="simple" sx={{ 
-                  'th, td': { borderColor: 'gray.600' }
+                  'th, td': { borderColor: 'gray.600', whiteSpace: 'nowrap', px: 2 }
                 }}>
                   <Thead>
                     <Tr>
-                      <Th color="gray.300" fontSize="xs">Name</Th>
-                      <Th color="gray.300" fontSize="xs">PTV Vol (cc)</Th>
-                      <Th color="gray.300" fontSize="xs">Prescription (Gy)</Th>
-                      <Th color="gray.300" fontSize="xs">Coverage (%)</Th>
-                      <Th color="gray.300" fontSize="xs">Conformity Index</Th>
-                      <Th color="gray.300" fontSize="xs">R50</Th>
-                      <Th color="gray.300" fontSize="xs">Gradient Measure</Th>
-                      <Th color="gray.300" fontSize="xs">Max Dose 2cm (%)</Th>
-                      <Th color="gray.300" fontSize="xs">Homogeneity Index</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Name</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">PTV Vol<br/>(cc)</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Prescription<br/>(Gy)</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Coverage<br/>(%)</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Conformity<br/>Index</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">R50</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Gradient<br/>Measure</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Dmax 2cm<br/>(%)</Th>
+                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Homogeneity<br/>Index</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -897,31 +894,16 @@ const SBRTForm = () => {
                       <Td color={calculatedMetrics?.coverage ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.coverage, 1)}</Td>
                       <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.conformityDeviation) : "gray.500"} fontSize="xs">
                         {formatNumber(calculatedMetrics?.conformityIndex, 2)}
-                        {calculatedMetrics && (
-                          <>
-                            <br />
-                            <Text fontSize="2xs">({calculatedMetrics.conformityDeviation})</Text>
-                          </>
-                        )}
+                        {calculatedMetrics && <Text as="span" fontSize="xs" ml={1}>({calculatedMetrics.conformityDeviation})</Text>}
                       </Td>
                       <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.r50Deviation) : "gray.500"} fontSize="xs">
                         {formatNumber(calculatedMetrics?.r50, 2)}
-                        {calculatedMetrics && (
-                          <>
-                            <br />
-                            <Text fontSize="2xs">({calculatedMetrics.r50Deviation})</Text>
-                          </>
-                        )}
+                        {calculatedMetrics && <Text as="span" fontSize="xs" ml={1}>({calculatedMetrics.r50Deviation})</Text>}
                       </Td>
                       <Td color={calculatedMetrics?.gradientMeasure ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.gradientMeasure, 2)}</Td>
                       <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "gray.500"} fontSize="xs">
                         {formatNumber(calculatedMetrics?.maxDose2cmRingPercent, 1)}
-                        {calculatedMetrics && (
-                          <>
-                            <br />
-                            <Text fontSize="2xs">({calculatedMetrics.maxDose2cmDeviation})</Text>
-                          </>
-                        )}
+                        {calculatedMetrics && <Text as="span" fontSize="xs" ml={1}>({calculatedMetrics.maxDose2cmDeviation})</Text>}
                       </Td>
                       <Td color={calculatedMetrics?.homogeneityIndex ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.homogeneityIndex, 2)}</Td>
                     </Tr>
@@ -982,7 +964,6 @@ const SBRTForm = () => {
                   value={writeup}
                   height="400px"
                   isReadOnly
-                  fontFamily="mono"
                   fontSize="sm"
                   resize="vertical"
                   aria-label="Generated write-up"
@@ -990,6 +971,7 @@ const SBRTForm = () => {
                   borderColor="gray.600"
                   color="white"
                   _hover={{ borderColor: "gray.500" }}
+                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
                 <Button
                   mt={3}

@@ -10,11 +10,6 @@ import {
   Select,
   FormErrorMessage,
   Heading,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
   Grid,
   GridItem,
   Text,
@@ -22,9 +17,7 @@ import {
   useToast,
   Card,
   CardBody,
-  IconButton,
   HStack,
-  VStack,
   List,
   ListItem,
   Checkbox,
@@ -39,12 +32,25 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Flex,
+  Radio,
+  RadioGroup,
+  SimpleGrid,
 } from '@chakra-ui/react';
-import { getLesionRegions, getModalities, getRegistrationMethods, generateFusionWriteup } from '../../services/fusionService';
+import { getModalities, getRegistrationMethods, generateFusionWriteup } from '../../services/fusionService';
+
+// Anatomical regions for fusion registration
+const ANATOMICAL_REGIONS = [
+  { value: 'brain', label: 'Brain' },
+  { value: 'head and neck', label: 'Head & Neck' },
+  { value: 'thoracic', label: 'Thoracic' },
+  { value: 'abdominal', label: 'Abdominal' },
+  { value: 'pelvic', label: 'Pelvic' },
+  { value: 'spinal', label: 'Spinal' },
+  { value: 'extremity', label: 'Extremity' },
+];
 
 const FusionForm = () => {
   const router = useRouter();
-  const [lesionRegions, setLesionRegions] = useState({});
   const [modalities, setModalities] = useState([]);
   const [registrationMethods, setRegistrationMethods] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +61,7 @@ const FusionForm = () => {
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
   const [selectedSecondaryModality, setSelectedSecondaryModality] = useState('');
   const initialLoadRef = useRef(true);
-  const [isCustomLesion, setIsCustomLesion] = useState(false);
+  const [isCustomRegion, setIsCustomRegion] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [indexToRemove, setIndexToRemove] = useState(null);
   const cancelRef = useRef();
@@ -114,6 +120,27 @@ const FusionForm = () => {
           } else if (ctRigidCount > 0 && ctDeformableCount > 0 && (ctRigidCount + ctDeformableCount) > 1 && totalFusions === (ctRigidCount + ctDeformableCount)) {
             // Multiple CT/CT rigid and deformable registrations (any combination)
             setFusionMode('multiple-ct-rigid-deformable');
+          } else if (mriCount === 0 && (petRigidCount > 0 || petDeformableCount > 0) && (ctRigidCount > 0 || ctDeformableCount > 0) && 
+                     totalFusions === (petRigidCount + petDeformableCount + ctRigidCount + ctDeformableCount)) {
+            // Mixed PET + CT combinations (no MRI)
+            const totalPetCount = petRigidCount + petDeformableCount;
+            const totalCtCount = ctRigidCount + ctDeformableCount;
+            
+            if (totalPetCount === 1 && totalCtCount === 1) {
+              // 1 PET + 1 CT
+              if (petRigidCount === 1 && ctRigidCount === 1) {
+                setFusionMode('pet-ct-single-rigid-rigid');
+              } else if (petRigidCount === 1 && ctDeformableCount === 1) {
+                setFusionMode('pet-ct-single-rigid-deformable');
+              } else if (petDeformableCount === 1 && ctRigidCount === 1) {
+                setFusionMode('pet-ct-single-deformable-rigid');
+              } else {
+                setFusionMode('pet-ct-single-deformable-deformable');
+              }
+            } else {
+              // Multiple PET and/or CT combinations
+              setFusionMode('pet-ct-multiple');
+            }
           } else if (mriCount > 0 && (petRigidCount > 0 || petDeformableCount > 0) && totalFusions === (mriCount + petRigidCount + petDeformableCount)) {
             // Mixed MRI + PET combinations
             if (mriCount === 1 && petRigidCount === 1 && petDeformableCount === 0) {
@@ -254,6 +281,17 @@ const FusionForm = () => {
   const isMultipleCtDeformableMode = fusionMode === 'multiple-ct-deformable';
   const isMultipleCtRigidDeformableMode = fusionMode === 'multiple-ct-rigid-deformable';
   
+  // Mixed PET+CT mode helpers (no MRI)
+  const isPetCtSingleRigidRigidMode = fusionMode === 'pet-ct-single-rigid-rigid';
+  const isPetCtSingleRigidDeformableMode = fusionMode === 'pet-ct-single-rigid-deformable';
+  const isPetCtSingleDeformableRigidMode = fusionMode === 'pet-ct-single-deformable-rigid';
+  const isPetCtSingleDeformableDeformableMode = fusionMode === 'pet-ct-single-deformable-deformable';
+  const isPetCtMultipleMode = fusionMode === 'pet-ct-multiple';
+  
+  // Combined PET+CT helper for conditional checks
+  const isPetCtMode = isPetCtSingleRigidRigidMode || isPetCtSingleRigidDeformableMode || 
+    isPetCtSingleDeformableRigidMode || isPetCtSingleDeformableDeformableMode || isPetCtMultipleMode;
+  
   // Mixed MRI+PET mode helpers
   const isMriPetSingleRigidMode = fusionMode === 'mri-pet-single-rigid';
   const isMriPetSingleDeformableMode = fusionMode === 'mri-pet-single-deformable';
@@ -334,9 +372,8 @@ const FusionForm = () => {
         physicist: { name: '', role: 'physicist' },
       },
       fusion_data: {
-        lesion: '',
-        custom_lesion: '',
         anatomical_region: '',
+        custom_anatomical_region: '',
         registrations: [],
       }
     }
@@ -347,7 +384,7 @@ const FusionForm = () => {
     name: 'fusion_data.registrations'
   });
 
-  const selectedLesion = watch('fusion_data.lesion');
+  const watchedAnatomicalRegion = watch('fusion_data.anatomical_region');
   const watchedRegistrations = watch('fusion_data.registrations');
   const hasMriRegistration = watchedRegistrations?.some(reg => reg.secondary === 'MRI');
   const hasPetRegistration = watchedRegistrations?.some(reg => reg.secondary === 'PET/CT');
@@ -357,13 +394,11 @@ const FusionForm = () => {
     const fetchInitialData = async () => {
       setInitialLoading(true);
       try {
-        const [lesionRegionsData, modalitiesData, methodsData] = await Promise.all([
-          getLesionRegions(),
+        const [modalitiesData, methodsData] = await Promise.all([
           getModalities(),
           getRegistrationMethods()
         ]);
         
-        setLesionRegions(lesionRegionsData);
         setModalities(modalitiesData);
         setRegistrationMethods(methodsData);
       } catch (error) {
@@ -389,13 +424,6 @@ const FusionForm = () => {
       setSelectedSecondaryModality(modalities[0]);
     }
   }, [modalities]);
-
-  // Update anatomical region when lesion changes
-  useEffect(() => {
-    if (selectedLesion && !isCustomLesion && lesionRegions[selectedLesion]) {
-      setValue('fusion_data.anatomical_region', lesionRegions[selectedLesion]);
-    }
-  }, [selectedLesion, lesionRegions, setValue, isCustomLesion]);
 
   // Auto-populate form based on fusion mode
   useEffect(() => {
@@ -633,6 +661,49 @@ const FusionForm = () => {
           
           setValue('fusion_data.registrations', registrations);
         }
+      } else if (isPetCtMode) {
+        // Auto-populate mixed PET + CT combinations (no MRI) based on config and mode
+        if (parsedConfig) {
+          const registrations = [];
+          const petRigidCount = parsedConfig.pet?.rigid || 0;
+          const petDeformableCount = parsedConfig.pet?.deformable || 0;
+          const ctRigidCount = parsedConfig.ct?.rigid || 0;
+          const ctDeformableCount = parsedConfig.ct?.deformable || 0;
+          
+          // Add PET registrations (rigid first, then deformable)
+          for (let i = 0; i < petRigidCount; i++) {
+            registrations.push({
+              primary: 'CT',
+              secondary: 'PET/CT',
+              method: 'rigid'
+            });
+          }
+          for (let i = 0; i < petDeformableCount; i++) {
+            registrations.push({
+              primary: 'CT',
+              secondary: 'PET/CT',
+              method: 'deformable'
+            });
+          }
+          
+          // Add CT registrations (rigid first, then deformable)
+          for (let i = 0; i < ctRigidCount; i++) {
+            registrations.push({
+              primary: 'CT',
+              secondary: 'CT',
+              method: 'rigid'
+            });
+          }
+          for (let i = 0; i < ctDeformableCount; i++) {
+            registrations.push({
+              primary: 'CT',
+              secondary: 'CT',
+              method: 'deformable'
+            });
+          }
+          
+          setValue('fusion_data.registrations', registrations);
+        }
       } else if (isMriCtPetMode) {
         // Auto-populate ultimate MRI + CT + PET combinations based on config and mode
         if (parsedConfig) {
@@ -688,14 +759,14 @@ const FusionForm = () => {
         }
       }
     }
-  }, [fusionMode, registrationMethods, setValue, isMriPetMode, isMriCtMode, isMriCtPetMode, parsedConfig]);
+  }, [fusionMode, registrationMethods, setValue, isPetCtMode, isMriPetMode, isMriCtMode, isMriCtPetMode, parsedConfig]);
 
   const onSubmit = async (data) => {
     // Validate that we have at least one registration (unless it's single or multiple mode)
     if (!isSingleMriMode && !isMultipleMriMode && !isSinglePetMode && !isSingleCtMode && 
         !isMultiplePetRigidMode && !isMultiplePetDeformableMode && !isMultiplePetRigidDeformableMode &&
         !isMultipleCtRigidMode && !isMultipleCtDeformableMode && !isMultipleCtRigidDeformableMode &&
-        !isMriPetMode && !isMriCtMode && !isMriCtPetMode && data.fusion_data.registrations.length === 0) {
+        !isPetCtMode && !isMriPetMode && !isMriCtMode && !isMriCtPetMode && data.fusion_data.registrations.length === 0) {
       toast({
         title: 'Validation Error',
         description: 'At least one registration is required for multimodality fusion',
@@ -740,8 +811,7 @@ const FusionForm = () => {
     
     const physician = formData.common_info.physician.name;
     const physicist = formData.common_info.physicist.name;
-    const lesion = isCustomLesion ? formData.fusion_data.custom_lesion : formData.fusion_data.lesion;
-    const anatomicalRegion = formData.fusion_data.anatomical_region;
+    const anatomicalRegion = isCustomRegion ? formData.fusion_data.custom_anatomical_region : formData.fusion_data.anatomical_region;
     
     // Group registrations by modality
     const mriRegistrations = formData.fusion_data.registrations.filter(reg => reg.secondary.includes('MRI'));
@@ -964,13 +1034,12 @@ const FusionForm = () => {
     }
   };
 
-  const handleCustomLesionChange = (e) => {
-    setIsCustomLesion(e.target.checked);
+  const handleCustomRegionChange = (e) => {
+    setIsCustomRegion(e.target.checked);
     if (e.target.checked) {
-      setValue('fusion_data.lesion', '');
       setValue('fusion_data.anatomical_region', '');
     } else {
-      setValue('fusion_data.custom_lesion', '');
+      setValue('fusion_data.custom_anatomical_region', '');
     }
   };
 
@@ -982,15 +1051,13 @@ const FusionForm = () => {
         physicist: { name: '', role: 'physicist' },
       },
       fusion_data: {
-        lesion: '',
-        custom_lesion: '',
         anatomical_region: '',
+        custom_anatomical_region: '',
         registrations: [],
       }
     });
     setWriteup('');
-    setIsCustomLesion(false);
-    setIsBladderFillingStudy(false);
+    setIsCustomRegion(false);
     
     toast({
       title: 'Form reset',
@@ -1015,7 +1082,7 @@ const FusionForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>
+            <Heading size="md" mb={2}>
               {fusionMode === 'single-mri' ? 'MRI/CT Fusion Write-up' 
                : fusionMode === 'multiple-mri' ? 'Multiple MRI/CT Fusion Write-up'
                : fusionMode === 'single-pet-rigid' ? 'PET/CT Rigid Fusion Write-up'
@@ -1028,6 +1095,11 @@ const FusionForm = () => {
                : fusionMode === 'multiple-ct-rigid' ? 'Multiple CT/CT Rigid Fusion Write-up'
                : fusionMode === 'multiple-ct-deformable' ? 'Multiple CT/CT Deformable Fusion Write-up'
                : fusionMode === 'multiple-ct-rigid-deformable' ? 'Multiple CT/CT Rigid+Deformable Fusion Write-up'
+               : isPetCtSingleRigidRigidMode ? 'PET/CT + CT/CT Rigid Fusion Write-up'
+               : isPetCtSingleRigidDeformableMode ? 'PET/CT Rigid + CT/CT Deformable Fusion Write-up'
+               : isPetCtSingleDeformableRigidMode ? 'PET/CT Deformable + CT/CT Rigid Fusion Write-up'
+               : isPetCtSingleDeformableDeformableMode ? 'PET/CT + CT/CT Deformable Fusion Write-up'
+               : isPetCtMultipleMode ? 'Multiple PET/CT + CT/CT Fusion Write-up'
                : isMriPetSingleRigidMode ? 'MRI/CT + PET/CT Rigid Fusion Write-up'
                : isMriPetSingleDeformableMode ? 'MRI/CT + PET/CT Deformable Fusion Write-up'
                : isMriPetMode ? 'Mixed MRI/CT + PET/CT Fusion Write-up'
@@ -1041,33 +1113,6 @@ const FusionForm = () => {
                : isMriCtPetMode ? 'Ultimate MRI + CT + PET Fusion Write-up'
                : 'Fusion Write-up Generator'}
             </Heading>
-            <Text opacity={0.9}>
-              {fusionMode === 'single-mri' ? 'Generate standardized write-up for single MRI/CT fusion'
-               : fusionMode === 'multiple-mri' ? 'Generate standardized write-up for multiple MRI/CT fusions'
-               : fusionMode === 'single-pet-rigid' ? 'Generate standardized write-up for single PET/CT rigid fusion'
-               : fusionMode === 'single-pet-deformable' ? 'Generate standardized write-up for single PET/CT deformable fusion'
-               : fusionMode === 'multiple-pet-rigid' ? 'Generate standardized write-up for multiple PET/CT rigid fusions'
-               : fusionMode === 'multiple-pet-deformable' ? 'Generate standardized write-up for multiple PET/CT deformable fusions'
-               : fusionMode === 'multiple-pet-rigid-deformable' ? 'Generate standardized write-up for multiple PET/CT rigid and deformable fusions'
-               : fusionMode === 'single-ct-rigid' ? 'Generate standardized write-up for single CT/CT rigid fusion'
-               : fusionMode === 'single-ct-deformable' ? 'Generate standardized write-up for single CT/CT deformable fusion'
-               : fusionMode === 'multiple-ct-rigid' ? 'Generate standardized write-up for multiple CT/CT rigid fusions'
-               : fusionMode === 'multiple-ct-deformable' ? 'Generate standardized write-up for multiple CT/CT deformable fusions'
-               : fusionMode === 'multiple-ct-rigid-deformable' ? 'Generate standardized write-up for multiple CT/CT rigid and deformable fusions'
-               : isMriPetSingleRigidMode ? 'Generate standardized write-up for MRI/CT + PET/CT rigid fusion combination'
-               : isMriPetSingleDeformableMode ? 'Generate standardized write-up for MRI/CT + PET/CT deformable fusion combination'
-               : isMriPetMode ? 'Generate standardized write-up for mixed MRI/CT + PET/CT fusion combinations'
-               : isMriCtSingleRigidMode ? 'Generate standardized write-up for MRI/CT + CT/CT rigid fusion combination'
-               : isMriCtSingleDeformableMode ? 'Generate standardized write-up for MRI/CT + CT/CT deformable fusion combination'
-               : isMriCtMode ? 'Generate standardized write-up for mixed MRI/CT + CT/CT fusion combinations'
-               : isMriCtPetSingleRigidRigidMode ? 'Generate the ultimate fusion write-up: MRI + CT (Rigid) + PET (Rigid) - the most comprehensive combination'
-               : isMriCtPetSingleRigidDeformableMode ? 'Generate the ultimate fusion write-up: MRI + CT (Rigid) + PET (Deformable) - advanced multi-modality'
-               : isMriCtPetSingleDeformableRigidMode ? 'Generate the ultimate fusion write-up: MRI + CT (Deformable) + PET (Rigid) - sophisticated registration'
-               : isMriCtPetSingleDeformableDeformableMode ? 'Generate the ultimate fusion write-up: MRI + CT (Deformable) + PET (Deformable) - maximum flexibility'
-               : isMriCtPetMode ? 'Generate the ultimate fusion write-up: Complex MRI + CT + PET combinations - pinnacle of fusion technology'
-               : 'Generate standardized write-ups for multimodality image fusions and bladder filling studies'
-              }
-            </Text>
           </Box>
         </Flex>
       </Box>
@@ -1085,9 +1130,8 @@ const FusionForm = () => {
               gap={4} 
               mb={6}
             >
-              {/* Staff & Patient Section */}
+              {/* Staff Info Section */}
               <GridItem 
-                as={Box} 
                 p={4} 
                 borderWidth="1px" 
                 borderRadius="md" 
@@ -1095,10 +1139,8 @@ const FusionForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
-                
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
                   
                   <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
@@ -1120,12 +1162,12 @@ const FusionForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physician</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}></option>
                       {physicians.map(physician => (
                         <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                       ))}
                     </Select>
-                    <FormErrorMessage>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>
                       {errors.common_info?.physician?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
@@ -1150,21 +1192,20 @@ const FusionForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a physicist</option>
+                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}></option>
                       {physicists.map(physicist => (
                         <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                       ))}
                     </Select>
-                    <FormErrorMessage>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>
                       {errors.common_info?.physicist?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
                 </Box>
               </GridItem>
               
-              {/* Lesion Info Section */}
+              {/* Anatomical Region Section */}
               <GridItem 
-                as={Box} 
                 p={4} 
                 borderWidth="1px" 
                 borderRadius="md" 
@@ -1172,242 +1213,92 @@ const FusionForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Lesion Info</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Anatomical Region</Heading>
                 
-                <Box mb={4}>
-                  <Box mb={3}>
-                    <Checkbox 
-                      size="sm" 
-                      isChecked={isCustomLesion} 
-                      onChange={handleCustomLesionChange}
-                      colorScheme="green"
-                      color="gray.300"
-                    >
-                      Custom Lesion?
-                    </Checkbox>
-                  </Box>
-                </Box>
-                
-                {!isCustomLesion ? (
-                  <FormControl isInvalid={errors.fusion_data?.lesion} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Lesion</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register("fusion_data.lesion", { 
-                        required: !isCustomLesion ? "Lesion is required" : false
+                {!isCustomRegion ? (
+                  <FormControl isInvalid={errors.fusion_data?.anatomical_region} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300" fontWeight="bold">Select Region</FormLabel>
+                    <Input
+                      type="hidden"
+                      {...register("fusion_data.anatomical_region", {
+                        required: !isCustomRegion ? "Anatomical region is required" : false
                       })}
-                      isDisabled={isCustomLesion}
-                      aria-label="Select lesion"
+                    />
+                    <RadioGroup
+                      value={watchedAnatomicalRegion}
+                      onChange={(value) => setValue('fusion_data.anatomical_region', value)}
+                    >
+                      <SimpleGrid columns={2} spacing={2}>
+                        {ANATOMICAL_REGIONS.map((region) => (
+                          <Button
+                            key={region.value}
+                            size="sm"
+                            variant={watchedAnatomicalRegion === region.value ? 'solid' : 'outline'}
+                            colorScheme={watchedAnatomicalRegion === region.value ? 'blue' : 'gray'}
+                            color={watchedAnatomicalRegion === region.value ? 'white' : 'gray.300'}
+                            onClick={() => setValue('fusion_data.anatomical_region', region.value)}
+                            borderColor="gray.600"
+                            _hover={{ 
+                              bg: watchedAnatomicalRegion === region.value ? 'blue.600' : 'gray.600',
+                              borderColor: 'gray.500'
+                            }}
+                          >
+                            <Radio value={region.value} display="none" />
+                            {region.label}
+                          </Button>
+                        ))}
+                      </SimpleGrid>
+                    </RadioGroup>
+                    <FormErrorMessage sx={{ color: 'red.300' }}>
+                      {errors.fusion_data?.anatomical_region?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                ) : (
+                  <FormControl isInvalid={errors.fusion_data?.custom_anatomical_region} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">Custom Anatomical Region</FormLabel>
+                    <Input 
+                      size="sm"
+                      placeholder="e.g., shoulder, foot, sacrum"
+                      {...register("fusion_data.custom_anatomical_region", { 
+                        required: isCustomRegion ? "Custom anatomical region is required" : false
+                      })}
+                      aria-label="Custom anatomical region"
                       bg="gray.700"
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a lesion</option>
-                      {Object.keys(lesionRegions).sort().map(lesion => (
-                        <option key={lesion} value={lesion} style={{ backgroundColor: '#2D3748', color: 'white' }}>{lesion}</option>
-                      ))}
-                    </Select>
-                    <FormErrorMessage>
-                      {errors.fusion_data?.lesion?.message}
+                      _placeholder={{ color: "gray.400" }}
+                    />
+                    <FormErrorMessage sx={{ color: 'red.300' }}>
+                      {errors.fusion_data?.custom_anatomical_region?.message}
                     </FormErrorMessage>
                   </FormControl>
-                ) : (
-                  <>
-                    <FormControl isInvalid={errors.fusion_data?.custom_lesion} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Custom Lesion Name</FormLabel>
-                      <Input 
-                        size="sm"
-                        {...register("fusion_data.custom_lesion", { 
-                          required: isCustomLesion ? "Custom lesion name is required" : false
-                        })}
-                        aria-label="Custom lesion name"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: "gray.400" }}
-                      />
-                      <FormErrorMessage>
-                        {errors.fusion_data?.custom_lesion?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                    
-                    <FormControl isInvalid={errors.fusion_data?.anatomical_region} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Anatomical Region</FormLabel>
-                      <Select 
-                        size="sm"
-                        {...register("fusion_data.anatomical_region", { 
-                          required: isCustomLesion ? "Anatomical region is required" : false
-                        })}
-                        aria-label="Anatomical region"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}>Select a region</option>
-                        <option value="head and neck" style={{ backgroundColor: '#2D3748', color: 'white' }}>Head and Neck</option>
-                        <option value="brain" style={{ backgroundColor: '#2D3748', color: 'white' }}>Brain</option>
-                        <option value="thoracic" style={{ backgroundColor: '#2D3748', color: 'white' }}>Thoracic</option>
-                        <option value="abdominal" style={{ backgroundColor: '#2D3748', color: 'white' }}>Abdominal</option>
-                        <option value="pelvic" style={{ backgroundColor: '#2D3748', color: 'white' }}>Pelvic</option>
-                        <option value="spinal" style={{ backgroundColor: '#2D3748', color: 'white' }}>Spinal</option>
-                        <option value="extremity" style={{ backgroundColor: '#2D3748', color: 'white' }}>Extremity</option>
-                      </Select>
-                      <FormErrorMessage>
-                        {errors.fusion_data?.anatomical_region?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                  </>
                 )}
+                
+                <Checkbox 
+                  size="sm" 
+                  isChecked={isCustomRegion} 
+                  onChange={handleCustomRegionChange}
+                  colorScheme="blue"
+                  color="gray.300"
+                >
+                  <Text fontSize="sm" color="gray.300">Custom Region?</Text>
+                </Checkbox>
               </GridItem>
               
-              {/* Third Column - Preview for Single MRI or Registrations for Complex */}
+              {/* Third Column - Fusion Configuration Summary */}
               <GridItem 
-                  as={Box} 
                   p={4} 
-                  borderWidth="1px" 
+                  borderWidth="0"
                   borderRadius="md" 
-                  bg={formBg}
-                  borderColor={borderColor}
-                  boxShadow="sm"
+                  bg="transparent"
                 >
                 {(isSingleMriMode || isMultipleMriMode || isSinglePetMode || isSingleCtMode || 
                   isMultiplePetRigidMode || isMultiplePetDeformableMode || isMultiplePetRigidDeformableMode ||
                   isMultipleCtRigidMode || isMultipleCtDeformableMode || isMultipleCtRigidDeformableMode ||
-                  isMriPetMode || isMriCtMode || isMriCtPetMode) ? (
-                  // Preview section for single fusion mode
-                  <>
-                    <Heading size="sm" mb={3} textAlign="center" color="white">Fusion Preview</Heading>
-                    
-                    <Alert status="success" mb={3} size="sm" borderRadius="md" bg="green.900" borderColor="green.700">
-                      <AlertIcon color="green.300" />
-                      <Text fontSize="xs" color="green.200">
-                        {fusionMode === 'single-mri' ? 'Single MRI/CT fusion configured'
-                         : fusionMode === 'multiple-mri' ? `Multiple MRI/CT fusions configured (${parsedConfig?.mri?.rigid || 0} MRIs)`
-                         : fusionMode === 'single-pet-rigid' ? 'Single PET/CT (Rigid) fusion configured'
-                         : fusionMode === 'single-pet-deformable' ? 'Single PET/CT (Deformable) fusion configured'
-                         : fusionMode === 'multiple-pet-rigid' ? `Multiple PET/CT rigid fusions configured (${parsedConfig?.pet?.rigid || 0} scans)`
-                         : fusionMode === 'multiple-pet-deformable' ? `Multiple PET/CT deformable fusions configured (${parsedConfig?.pet?.deformable || 0} scans)`
-                         : fusionMode === 'multiple-pet-rigid-deformable' ? `Multiple PET/CT rigid+deformable fusions configured (${(parsedConfig?.pet?.rigid || 0) + (parsedConfig?.pet?.deformable || 0)} scans)`
-                         : fusionMode === 'single-ct-rigid' ? 'Single CT/CT (Rigid) fusion configured'
-                         : fusionMode === 'single-ct-deformable' ? 'Single CT/CT (Deformable) fusion configured'
-                         : fusionMode === 'multiple-ct-rigid' ? `Multiple CT/CT rigid fusions configured (${parsedConfig?.ct?.rigid || 0} scans)`
-                         : fusionMode === 'multiple-ct-deformable' ? `Multiple CT/CT deformable fusions configured (${parsedConfig?.ct?.deformable || 0} scans)`
-                         : fusionMode === 'multiple-ct-rigid-deformable' ? `Multiple CT/CT rigid+deformable fusions configured (${(parsedConfig?.ct?.rigid || 0) + (parsedConfig?.ct?.deformable || 0)} scans)`
-                         : isMriPetSingleRigidMode ? 'MRI/CT + PET/CT (Rigid) fusion configured'
-                         : isMriPetSingleDeformableMode ? 'MRI/CT + PET/CT (Deformable) fusion configured'
-                         : isMriPetMode ? `Mixed MRI/CT + PET/CT fusions configured (${parsedConfig?.mri?.rigid || 0} MRI + ${(parsedConfig?.pet?.rigid || 0) + (parsedConfig?.pet?.deformable || 0)} PET)`
-                         : isMriCtSingleRigidMode ? 'MRI/CT + CT/CT (Rigid) fusion configured'
-                         : isMriCtSingleDeformableMode ? 'MRI/CT + CT/CT (Deformable) fusion configured'
-                         : isMriCtMode ? `Mixed MRI/CT + CT/CT fusions configured (${parsedConfig?.mri?.rigid || 0} MRI + ${(parsedConfig?.ct?.rigid || 0) + (parsedConfig?.ct?.deformable || 0)} CT)`
-                         : isMriCtPetSingleRigidRigidMode ? 'Ultimate fusion: 1 MRI + 1 CT (Rigid) + 1 PET (Rigid)'
-                         : isMriCtPetSingleRigidDeformableMode ? 'Ultimate fusion: 1 MRI + 1 CT (Rigid) + 1 PET (Deformable)'
-                         : isMriCtPetSingleDeformableRigidMode ? 'Ultimate fusion: 1 MRI + 1 CT (Deformable) + 1 PET (Rigid)'
-                         : isMriCtPetSingleDeformableDeformableMode ? 'Ultimate fusion: 1 MRI + 1 CT (Deformable) + 1 PET (Deformable)'
-                         : isMriCtPetMode ? `Ultimate fusion: ${parsedConfig?.mri?.rigid || 0} MRI + ${(parsedConfig?.ct?.rigid || 0) + (parsedConfig?.ct?.deformable || 0)} CT + ${(parsedConfig?.pet?.rigid || 0) + (parsedConfig?.pet?.deformable || 0)} PET`
-                         : 'Single fusion configured'}
-                      </Text>
-                    </Alert>
-                    
-                    <Box mb={3}>
-                      <Heading size="xs" mb={2} color="gray.300">What will be written up:</Heading>
-                      
-                      <Card size="sm" variant="outline" borderColor="green.400" bg="gray.700">
-                        <CardBody p={3}>
-                          <VStack align="start" spacing={2}>
-                            <HStack>
-                              <Badge colorScheme="green" size="sm">✓</Badge>
-                              <Text fontSize="xs" color="gray.200">
-                                <strong>Primary:</strong> Planning CT
-                              </Text>
-                            </HStack>
-                            <HStack>
-                              <Badge colorScheme="green" size="sm">✓</Badge>
-                              <Text fontSize="xs" color="gray.200">
-                                <strong>Secondary:</strong> {fusionMode === 'single-mri' ? 'MRI Study'
-                                  : fusionMode === 'multiple-mri' ? `${parsedConfig?.mri?.rigid || 0} MRI Studies`
-                                  : (fusionMode === 'single-pet-rigid' || fusionMode === 'single-pet-deformable') ? 'PET/CT Study'
-                                  : fusionMode === 'multiple-pet-rigid' ? `${parsedConfig?.pet?.rigid || 0} PET/CT Studies`
-                                  : fusionMode === 'multiple-pet-deformable' ? `${parsedConfig?.pet?.deformable || 0} PET/CT Studies`
-                                  : fusionMode === 'multiple-pet-rigid-deformable' ? `${(parsedConfig?.pet?.rigid || 0) + (parsedConfig?.pet?.deformable || 0)} PET/CT Studies`
-                                  : (fusionMode === 'single-ct-rigid' || fusionMode === 'single-ct-deformable') ? 'CT Study'
-                                  : fusionMode === 'multiple-ct-rigid' ? `${parsedConfig?.ct?.rigid || 0} CT Studies`
-                                  : fusionMode === 'multiple-ct-deformable' ? `${parsedConfig?.ct?.deformable || 0} CT Studies`
-                                  : fusionMode === 'multiple-ct-rigid-deformable' ? `${(parsedConfig?.ct?.rigid || 0) + (parsedConfig?.ct?.deformable || 0)} CT Studies`
-                                  : isMriCtMode ? `${parsedConfig?.mri?.rigid || 0} MRI + ${(parsedConfig?.ct?.rigid || 0) + (parsedConfig?.ct?.deformable || 0)} CT Studies`
-                                  : isMriPetMode ? `${parsedConfig?.mri?.rigid || 0} MRI + ${(parsedConfig?.pet?.rigid || 0) + (parsedConfig?.pet?.deformable || 0)} PET Studies`
-                                  : isMriCtPetMode ? `${parsedConfig?.mri?.rigid || 0} MRI + ${(parsedConfig?.ct?.rigid || 0) + (parsedConfig?.ct?.deformable || 0)} CT + ${(parsedConfig?.pet?.rigid || 0) + (parsedConfig?.pet?.deformable || 0)} PET Studies`
-                                  : 'CT Study'}
-                              </Text>
-                            </HStack>
-                            <HStack>
-                              <Badge 
-                                colorScheme={
-                                  (fusionMode === 'single-pet-deformable' || fusionMode === 'single-ct-deformable' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-ct-deformable' || isMriCtSingleDeformableMode) ? "purple"
-                                  : (fusionMode === 'multiple-pet-rigid-deformable' || fusionMode === 'multiple-ct-rigid-deformable' || isMriCtSingleMriMultipleMixedMode || (isMriCtMode && parsedConfig?.ct?.rigid > 0 && parsedConfig?.ct?.deformable > 0)) ? "orange"
-                                  : isMriCtPetMode ? "red"  // Ultimate combinations get red badge
-                                  : "blue"
-                                } 
-                                size="sm"
-                              >
-                                {(fusionMode === 'single-pet-deformable' || fusionMode === 'single-ct-deformable' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-ct-deformable' || isMriCtSingleDeformableMode) ? 'Deformable'
-                                 : (fusionMode === 'multiple-pet-rigid-deformable' || fusionMode === 'multiple-ct-rigid-deformable' || isMriCtSingleMriMultipleMixedMode || (isMriCtMode && parsedConfig?.ct?.rigid > 0 && parsedConfig?.ct?.deformable > 0)) ? 'Mixed'
-                                 : isMriCtPetMode ? 'Ultimate'
-                                 : 'Rigid'}
-                              </Badge>
-                              <Text fontSize="xs" color="gray.200">
-                                <strong>Method:</strong> {
-                                  (fusionMode === 'single-pet-deformable' || fusionMode === 'single-ct-deformable' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-ct-deformable' || isMriCtSingleDeformableMode) ? 'Deformable Registration'
-                                  : (fusionMode === 'multiple-pet-rigid-deformable' || fusionMode === 'multiple-ct-rigid-deformable' || isMriCtSingleMriMultipleMixedMode || (isMriCtMode && parsedConfig?.ct?.rigid > 0 && parsedConfig?.ct?.deformable > 0)) ? 'Mixed (Rigid + Deformable) Registration'
-                                  : isMriCtPetMode ? 'Ultimate Multi-Modality Registration (MRI + CT + PET)'
-                                  : 'Rigid Registration'
-                                }
-                              </Text>
-                            </HStack>
-                          </VStack>
-                        </CardBody>
-                      </Card>
-                      
-                      <Box mt={3} p={3} bg="blue.900" borderRadius="md" border="1px" borderColor="blue.600">
-                        <Text fontSize="xs" color="blue.200" fontWeight="bold" mb={1}>
-                          Expected Write-up Structure:
-                        </Text>
-                        <Text fontSize="xs" color="blue.100" lineHeight="1.3">
-                          • Introduction with physician consultation request<br/>
-                          • Patient details and lesion information<br/>
-                          • {fusionMode === 'single-mri' ? 'MRI'
-                            : fusionMode === 'multiple-mri' ? 'Multiple MRI'
-                            : (fusionMode === 'single-pet-rigid' || fusionMode === 'single-pet-deformable' || fusionMode === 'multiple-pet-rigid' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-pet-rigid-deformable') ? 'PET/CT'
-                            : isMriCtPetMode ? 'Multiple MRI + CT + PET/CT studies'
-                            : 'CT'} {(fusionMode === 'multiple-mri' || fusionMode === 'multiple-pet-rigid' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-pet-rigid-deformable' || fusionMode === 'multiple-ct-rigid' || fusionMode === 'multiple-ct-deformable' || fusionMode === 'multiple-ct-rigid-deformable' || isMriCtPetMode) ? 'studies' : 'study'} import into Velocity software<br/>
-                          • {(fusionMode === 'single-pet-deformable' || fusionMode === 'single-ct-deformable' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-ct-deformable') ? 'Rigid + deformable'
-                            : (fusionMode === 'multiple-pet-rigid-deformable' || fusionMode === 'multiple-ct-rigid-deformable') ? 'Mixed rigid and deformable'
-                            : isMriCtPetMode ? 'Comprehensive multi-modality (MRI rigid + CT rigid/deformable + PET rigid/deformable)'
-                            : 'Rigid'} registration process description<br/>
-                          • {fusionMode === 'single-mri' || fusionMode === 'multiple-mri' || fusionMode === 'multiple-pet-rigid' || fusionMode === 'multiple-ct-rigid' ? 'Manual refinement and accuracy verification'
-                            : (fusionMode === 'single-pet-deformable' || fusionMode === 'single-ct-deformable' || fusionMode === 'multiple-pet-deformable' || fusionMode === 'multiple-ct-deformable' || fusionMode === 'multiple-pet-rigid-deformable' || fusionMode === 'multiple-ct-rigid-deformable') ? 'Deformable registration and validation'
-                            : 'Manual refinement and accuracy verification'}<br/>
-                          • Final approval by physician and physicist
-                        </Text>
-                      </Box>
-                    </Box>
-                  </>
+                  isPetCtMode || isMriPetMode || isMriCtMode || isMriCtPetMode) ? (
+                  // Empty for pre-configured fusion modes - column kept for layout
+                  null
                 ) : (
                   // Original registration input for complex cases
                   <>
@@ -1555,7 +1446,7 @@ const FusionForm = () => {
                 isDisabled={!isSingleMriMode && !isMultipleMriMode && !isSinglePetMode && !isSingleCtMode && 
                            !isMultiplePetRigidMode && !isMultiplePetDeformableMode && !isMultiplePetRigidDeformableMode &&
                            !isMultipleCtRigidMode && !isMultipleCtDeformableMode && !isMultipleCtRigidDeformableMode &&
-                           !isMriPetMode && !isMriCtMode && !isMriCtPetMode && fields.length === 0}
+                           !isPetCtMode && !isMriPetMode && !isMriCtMode && !isMriCtPetMode && fields.length === 0}
                 width="100%"
                 size="md"
                 aria-label="Generate write-up"
@@ -1595,7 +1486,6 @@ const FusionForm = () => {
                   value={writeup}
                   height="300px"
                   isReadOnly
-                  fontFamily="mono"
                   fontSize="sm"
                   resize="vertical"
                   aria-label="Generated write-up"
@@ -1603,6 +1493,7 @@ const FusionForm = () => {
                   borderColor="gray.600"
                   color="white"
                   _focus={{ borderColor: "green.500" }}
+                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
                 <Button 
                   mt={3} 

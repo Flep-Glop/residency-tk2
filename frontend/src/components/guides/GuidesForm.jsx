@@ -78,17 +78,17 @@ const GuidesForm = () => {
   // Information density levels (same as QA Tool)
   const infoLevels = {
     whisper: {
-      name: '🤫 Whisper',
+      name: 'Whisper',
       description: 'Minimal info',
       color: 'gray'
     },
     normal: {
-      name: '💬 Normal', 
+      name: 'Normal', 
       description: 'Balanced view',
       color: 'blue'
     },
     shout: {
-      name: '📢 Shout',
+      name: 'Shout',
       description: 'Full details',
       color: 'purple'
     }
@@ -98,68 +98,68 @@ const GuidesForm = () => {
   const guideCategories = [
     {
       id: 'plan-review',
-      title: '📋 Plan Review',
+      title: 'Plan Review',
       description: 'Comprehensive treatment plan review and approval workflow',
       shortDesc: 'Plan Review',
       estimatedTime: '30-45 min',
       complexity: 'intermediate',
       role: 'Resident/Attending',
-      icon: '📋',
+      icon: '',
       color: 'blue'
     },
     {
       id: 'tbi-simulation',
-      title: '🔬 TBI Simulation',
+      title: 'TBI Simulation',
       description: 'Total Body Irradiation simulation setup and planning procedures',
       shortDesc: 'TBI Sim',
       estimatedTime: '60-90 min',
       complexity: 'advanced',
       role: 'Resident/Therapist',
-      icon: '🔬',
+      icon: '',
       color: 'red'
     },
     {
       id: 'fusion',
-      title: '🔄 Image Fusion',
+      title: 'Image Fusion',
       description: 'Multi-modality image registration and fusion workflows',
       shortDesc: 'Fusion',
       estimatedTime: '20-30 min',
       complexity: 'intermediate',
       role: 'Resident/Dosimetrist',
-      icon: '🔄',
+      icon: '',
       color: 'purple'
     },
     {
       id: 'sbrt-planning',
-      title: '🎯 SBRT Planning',
+      title: 'SBRT Planning',
       description: 'Stereotactic body radiation therapy planning procedures',
       shortDesc: 'SBRT Planning',
       estimatedTime: '45-60 min',
       complexity: 'advanced',
       role: 'Resident/Dosimetrist',
-      icon: '🎯',
+      icon: '',
       color: 'orange'
     },
     {
       id: 'brachytherapy',
-      title: '💎 Brachytherapy',
+      title: 'Brachytherapy',
       description: 'Brachytherapy procedures and safety protocols',
       shortDesc: 'Brachy',
       estimatedTime: '30-120 min',
       complexity: 'advanced',
       role: 'Attending/Resident',
-      icon: '💎',
+      icon: '',
       color: 'green'
     },
     {
       id: 'emergency',
-      title: '🚨 Emergency Procedures',
+      title: 'Emergency Procedures',
       description: 'Emergency response protocols and troubleshooting',
       shortDesc: 'Emergency',
       estimatedTime: 'Variable',
       complexity: 'critical',
       role: 'All Staff',
-      icon: '🚨',
+      icon: '',
       color: 'red'
     }
   ];
@@ -167,21 +167,21 @@ const GuidesForm = () => {
   // Contextual help data - organized by when you need it
   const contextualHelpData = {
     systemAccess: {
-      title: "🔐 System Access & Login",
+      title: "System Access & Login",
       type: "technical",
       urgency: "immediate",
-      content: `**🖥️ ARIA/Eclipse Access:**
+      content: `**ARIA/Eclipse Access:**
 • VPN connection required for remote access
 • Use hospital credentials (not personal)
 • Two-factor authentication may be required
 
-**💻 Workstation Setup:**
+**Workstation Setup:**
 1. Log into Windows with hospital ID
 2. Launch ARIA/Eclipse from desktop
 3. Select appropriate database (Clinical vs Training)
 4. Verify user permissions and role
 
-**🔒 Security Best Practices:**
+**Security Best Practices:**
 • Never share login credentials
 • Lock workstation when away (Windows + L)
 • Log out completely at end of session
@@ -189,10 +189,10 @@ const GuidesForm = () => {
     },
     
     clinicalWorkflow: {
-      title: "🏥 Clinical Workflow Basics",
+      title: "Clinical Workflow Basics",
       type: "clinical",
       urgency: "foundational",
-      content: `**📊 Patient Flow Overview:**
+      content: `**Patient Flow Overview:**
 1. **Consultation** → Treatment decision made
 2. **Simulation** → Patient setup and imaging
 3. **Planning** → Dosimetry and plan creation
@@ -200,72 +200,72 @@ const GuidesForm = () => {
 5. **Treatment** → Daily delivery and verification
 6. **Follow-up** → Assessment and monitoring
 
-**⚖️ Who Does What:**
+**Who Does What:**
 • **Attending:** Final approval, clinical decisions
 • **Resident:** Plan review, clinical oversight
 • **Physicist:** Dose calculations, safety checks
 • **Dosimetrist:** Plan optimization, technical planning
 • **Therapists:** Patient setup, daily treatments
 
-**📋 Documentation Requirements:**
+**Documentation Requirements:**
 • All changes must be documented
 • Approval signatures required at key steps
 • Quality assurance checks mandatory`
     },
 
     emergencyProcedures: {
-      title: "🚨 Emergency Response",
+      title: "Emergency Response",
       type: "safety",
       urgency: "critical",
-      content: `**🔴 IMMEDIATE ACTIONS:**
+      content: `**IMMEDIATE ACTIONS:**
 • **Medical Emergency:** Call Code Blue (ext. 911)
 • **Radiation Emergency:** Evacuate area, contact RSO
 • **Equipment Failure:** Stop treatment, secure area
 • **Fire:** Activate alarm, evacuate per protocol
 
-**☢️ Radiation Safety:**
+**Radiation Safety:**
 • Never override safety interlocks
 • Report unusual readings immediately
 • Know location of survey meters
 • Emergency contact: RSO (ext. 2345)
 
-**📞 Emergency Contacts:**
+**Emergency Contacts:**
 • Security: ext. 911
 • Nursing Supervisor: ext. 2222
 • Physics On-Call: (555) 123-4567
 • RSO Emergency: (555) 987-6543
 
-**📋 Post-Emergency:**
+**Post-Emergency:**
 • Complete incident report
 • Notify attending physician
 • Document all actions taken`
     },
 
     qualityAssurance: {
-      title: "✅ Quality Assurance",
+      title: "Quality Assurance",
       type: "quality",
       urgency: "always",
-      content: `**🎯 QA Mindset:**
+      content: `**QA Mindset:**
 • Question everything that seems unusual
 • Double-check critical parameters
 • Verify patient identity at every step
 • When in doubt, ask for help
 
-**📊 Common QA Checks:**
+**Common QA Checks:**
 • Patient demographics and diagnosis
 • Treatment site and technique
 • Dose and fractionation scheme
 • Critical organ constraints
 • Setup reproducibility
 
-**🚫 Stop Treatment If:**
+**Stop Treatment If:**
 • Patient identity unclear
 • Setup significantly different
 • Equipment malfunction
 • Unusual readings or alarms
 • Patient medical emergency
 
-**📝 Documentation:**
+**Documentation:**
 • Record all QA checks performed
 • Note any deviations or concerns
 • Ensure proper approval signatures`
@@ -276,7 +276,7 @@ const GuidesForm = () => {
   const showContextualHelp = (helpKeys) => {
     const helpContent = helpKeys.map(key => contextualHelpData[key]).filter(Boolean);
     setModalContent({
-      title: "🎯 Contextual Help",
+      title: "Contextual Help",
       content: helpContent.map(help => `**${help.title}**\n\n${help.content}`).join('\n\n---\n\n')
     });
     onOpen();
@@ -361,7 +361,7 @@ const GuidesForm = () => {
                 borderColor: "green.400"
               }}
             >
-              🎓 Learning
+              Learning
             </Button>
             <Button
               size="sm"
@@ -384,13 +384,13 @@ const GuidesForm = () => {
         {/* Learning Mode Panel */}
         {learningMode && (
           <Box w="100%" mt={4} p={4} bg="green.900" borderRadius="md" border="1px" borderColor="green.700">
-            <Text fontWeight="bold" mb={3} color="green.200">🎓 Learning Mode Active</Text>
+            <Text fontWeight="bold" mb={3} color="green.200">Learning Mode Active</Text>
             <Text fontSize="sm" color="green.300" mb={3}>
               Additional educational context, clinical rationale, and "why" explanations will be shown throughout procedures.
             </Text>
             <Alert status="info" size="sm" bg="green.800" borderColor="green.600">
               <AlertIcon color="green.300" />
-              <Text color="green.200">Look for 📚 icons for educational content about clinical significance and best practices.</Text>
+              <Text color="green.200">Look for Learn badges for educational content about clinical significance and best practices.</Text>
             </Alert>
           </Box>
         )}
@@ -398,7 +398,7 @@ const GuidesForm = () => {
         {/* Quick Help Panel */}
         {showQuickHelp && (
           <Box w="100%" mt={4} p={4} bg="purple.900" borderRadius="md" border="1px" borderColor="purple.700">
-            <Text fontWeight="bold" mb={3} color="purple.200">🆘 Quick Access Help</Text>
+            <Text fontWeight="bold" mb={3} color="purple.200">Quick Access Help</Text>
             <HStack spacing={2} flexWrap="wrap">
               <Button
                 size="xs"
@@ -409,7 +409,7 @@ const GuidesForm = () => {
                 borderColor="blue.600"
                 _hover={{ bg: "blue.800", borderColor: "blue.400" }}
               >
-                🔐 System Access
+                System Access
               </Button>
               <Button
                 size="xs"
@@ -420,7 +420,7 @@ const GuidesForm = () => {
                 borderColor="green.600"
                 _hover={{ bg: "green.800", borderColor: "green.400" }}
               >
-                🏥 Clinical Workflow
+                Clinical Workflow
               </Button>
               <Button
                 size="xs"
@@ -431,7 +431,7 @@ const GuidesForm = () => {
                 borderColor="red.600"
                 _hover={{ bg: "red.800", borderColor: "red.400" }}
               >
-                🚨 Emergency
+                Emergency
               </Button>
               <Button
                 size="xs"
@@ -442,7 +442,7 @@ const GuidesForm = () => {
                 borderColor="orange.600"
                 _hover={{ bg: "orange.800", borderColor: "orange.400" }}
               >
-                ✅ Quality Assurance
+                Quality Assurance
               </Button>
             </HStack>
           </Box>
@@ -458,7 +458,7 @@ const GuidesForm = () => {
         <Alert status="info" mb={4} bg="teal.900" borderColor="teal.700" color="teal.200">
           <AlertIcon color="teal.300" />
           <Box>
-            <AlertTitle color="teal.200">📚 Clinical Procedures & How-To Guides</AlertTitle>
+            <AlertTitle color="teal.200">Clinical Procedures & How-To Guides</AlertTitle>
             <AlertDescription color="teal.300">
               Select a procedure category below for step-by-step guidance. Each guide includes contextual help, troubleshooting, and educational content.
             </AlertDescription>
@@ -508,7 +508,7 @@ const GuidesForm = () => {
                   <VStack spacing={2} align="stretch">
                     <HStack justify="space-between">
                       <Text fontSize="sm" color="gray.400">
-                        ⏱️ {category.estimatedTime}
+                        {category.estimatedTime}
                       </Text>
                       <Badge colorScheme={getComplexityColor(category.complexity)} size="sm">
                         {category.complexity}
@@ -572,28 +572,28 @@ const GuidesForm = () => {
   const modalContentData = {
     detailsPlaceholder: {
       title: "Procedure Details",
-      content: `**🚧 Under Development**
+      content: `**Under Development**
 
 This detailed procedure guide is being developed and will include:
 
-**📋 Step-by-Step Instructions**
+**Step-by-Step Instructions**
 • Detailed procedural steps
 • Safety considerations and checkpoints
 • Quality assurance requirements
 • Troubleshooting guides
 
-**🎯 Learning Content**
+**Learning Content**
 • Clinical significance and rationale
 • Best practice recommendations
 • Common pitfalls and how to avoid them
 • Regulatory and compliance requirements
 
-**📚 Additional Resources**
+**Additional Resources**
 • Reference materials and protocols
 • Contact information for support
 • Related procedures and workflows
 
-**⏱️ Coming Soon**
+**Coming Soon**
 Complete content will be added from Google Drive resources.`
     }
   };
@@ -622,7 +622,7 @@ Complete content will be added from Google Drive resources.`
         {informationLevel !== 'whisper' && (
           <Box p={6} bg="teal.900" borderRadius="lg" border="1px" borderColor="teal.700">
             <Heading size="lg" color="teal.200" mb={3}>
-              📋 {procedure.name}
+              {procedure.name}
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
               <Stat>
@@ -725,10 +725,10 @@ Complete content will be added from Google Drive resources.`
 
                     {/* Learning Mode Educational Content */}
                     {learningMode && informationLevel !== 'whisper' && (
-                      <Box mt={3} p={3} bg="green.900" borderRadius="md" borderLeft="3px" borderLeftColor="green.400" border="1px" borderColor="green.700">
-                        <Text fontSize="sm" fontWeight="semibold" color="green.200" mb={1}>
-                          📚 Clinical Significance (Learning Mode)
-                        </Text>
+                              <Box mt={3} p={3} bg="green.900" borderRadius="md" borderLeft="3px" borderLeftColor="green.400" border="1px" borderColor="green.700">
+                                <Text fontSize="sm" fontWeight="semibold" color="green.200" mb={1}>
+                                  Clinical Significance (Learning Mode)
+                                </Text>
                         <Text fontSize="sm" color="green.300">
                           {step.category === 'Setup' && 
                             "Proper system access and patient identification are the foundation of patient safety. Any errors here can propagate through the entire treatment process."
@@ -756,7 +756,7 @@ Complete content will be added from Google Drive resources.`
                           cursor="pointer"
                           onClick={() => showContextualHelp(['clinicalWorkflow'])}
                         >
-                          📚 Learn
+                          Learn
                         </Badge>
                       </Tooltip>
                     )}
@@ -769,7 +769,7 @@ Complete content will be added from Google Drive resources.`
                       color="purple.300"
                       _hover={{ bg: "purple.800" }}
                     >
-                      📖
+                      Details
                     </Button>
                   </HStack>
                 )}
@@ -809,7 +809,7 @@ Complete content will be added from Google Drive resources.`
             <Alert status="info" bg="teal.900" borderColor="teal.700" color="teal.200">
               <AlertIcon color="teal.300" />
               <Box>
-                <AlertTitle color="teal.200">🚧 Procedure Under Development</AlertTitle>
+                <AlertTitle color="teal.200">Procedure Under Development</AlertTitle>
                 <AlertDescription color="teal.300">
                   Detailed step-by-step guidance for this procedure is being created. Check back soon!
                 </AlertDescription>
@@ -828,7 +828,7 @@ Complete content will be added from Google Drive resources.`
       <Box bg="teal.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="teal.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>📚 Clinical Procedures & How-To Guides</Heading>
+            <Heading size="md" mb={2}>Clinical Procedures & How-To Guides</Heading>
             <Text opacity={0.9}>Step-by-step guidance for radiation therapy procedures</Text>
             {informationLevel === 'shout' && (
               <Badge mt={2} colorScheme="purple">

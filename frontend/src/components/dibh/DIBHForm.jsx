@@ -227,8 +227,7 @@ const DIBHForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>DIBH Write-up Generator</Heading>
-            <Text opacity={0.9}>Generate standardized write-up for deep inspiration breath hold procedures</Text>
+            <Heading size="md" mb={2}>DIBH Write-up Generator</Heading>
           </Box>
         </Flex>
       </Box>
@@ -246,7 +245,7 @@ const DIBHForm = () => {
               gap={4} 
               mb={6}
             >
-              {/* Staff & Patient Section */}
+              {/* Staff Info Section */}
               <GridItem 
                 p={4} 
                 borderWidth="1px" 
@@ -255,10 +254,8 @@ const DIBHForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
-                
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
                   
                   <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
@@ -331,8 +328,7 @@ const DIBHForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Information</Heading>
-                
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Info</Heading>
                 {!isCustomTreatmentSite ? (
                   <FormControl isInvalid={errors.dibh_data?.treatment_site} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
@@ -559,7 +555,6 @@ const DIBHForm = () => {
                   value={writeup}
                   height="300px"
                   isReadOnly
-                  fontFamily="mono"
                   fontSize="sm"
                   resize="vertical"
                   aria-label="Generated write-up"
@@ -567,6 +562,7 @@ const DIBHForm = () => {
                   borderColor="gray.600"
                   color="white"
                   _focus={{ borderColor: "green.500" }}
+                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
                 <Button 
                   mt={3} 

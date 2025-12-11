@@ -1,5 +1,8 @@
 # MEDICAL PHYSICS TOOLKIT HUB
 
+![Observatory View 1](../../frontend/src/images/observatory1.png)
+![Observatory View 2](../../frontend/src/images/observatory2.png)
+
 ## FOR AI ASSISTANTS
 You're developing a medical physics consultation toolkit (FastAPI + Next.js).
 Start here, then navigate to specific docs as needed.
@@ -71,11 +74,11 @@ Log every session in DEV_LOG.md:
 - **Test end-to-end:** Backend logs lie, frontend display is truth
 
 ## DOCUMENTATION VERSIONS
-- HUB: v1.0 (Oct 2025)
+- HUB: v1.1 (Dec 2025)
 - ARCHITECTURE: v1.0 (Oct 2025)
 - PATTERNS: v1.0 (Oct 2025)
 - SPRITES: v1.0 (Oct 2025)
 - STACK: v1.0 (Oct 2025)
 - DEV_LOG: Rolling (wiped periodically)
-- Last updated: November 20, 2025
+- Last updated: December 11, 2025
 

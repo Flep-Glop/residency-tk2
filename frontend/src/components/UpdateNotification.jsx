@@ -42,8 +42,26 @@ const UpdateNotification = () => {
       zIndex={1000}
       maxW="400px"
     >
-      {/* Notification Toggle Button */}
-      <HStack justify="flex-end" mb={2}>
+      {/* Top Right Header Bar */}
+      <HStack justify="flex-end" mb={2} spacing={3}>
+        {/* MPC Writeup Time Button */}
+        <Button
+          as="a"
+          href="https://forms.gle/yYw77opkcSFx1CS36"
+          target="_blank"
+          rel="noopener noreferrer"
+          size="sm"
+          colorScheme="green"
+          _hover={{
+            transform: "scale(1.05)",
+            boxShadow: "lg"
+          }}
+          transition="all 0.2s"
+        >
+          Submit MPC Writeup Time
+        </Button>
+        
+        {/* Version Toggle Button */}
         <Button
           size="sm"
           onClick={onToggle}
@@ -58,7 +76,7 @@ const UpdateNotification = () => {
             borderColor: "blue.300"
           }}
         >
-          📢 v{VERSION_INFO.current}
+          v{VERSION_INFO.current}
           {isNewUpdate && (
             <Box
               position="absolute"

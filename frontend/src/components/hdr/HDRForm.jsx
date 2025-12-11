@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Box,
@@ -15,10 +15,7 @@ import {
   Textarea,
   useToast,
   Flex,
-  VStack,
-  HStack,
-  RadioGroup,
-  Radio
+  VStack
 } from '@chakra-ui/react';
 import hdrService from '../../services/hdrService';
 
@@ -109,8 +106,7 @@ const HDRForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>HDR Write-up Generator</Heading>
-            <Text opacity={0.9}>Generate standardized write-up for HDR brachytherapy</Text>
+            <Heading size="md" mb={2}>HDR Write-up Generator</Heading>
           </Box>
         </Flex>
       </Box>
@@ -129,7 +125,7 @@ const HDRForm = () => {
               gap={4}
               mb={6}
             >
-              {/* Staff Information Section */}
+              {/* Staff Info Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -138,8 +134,7 @@ const HDRForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Information</Heading>
-
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <VStack spacing={3} align="stretch">
 
                   <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
@@ -208,129 +203,121 @@ const HDRForm = () => {
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.hdr_data?.applicator_type}>
                     <FormLabel fontSize="sm" color="gray.300">Select Applicator & Site</FormLabel>
-                    <RadioGroup value={watchApplicator}>
-                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
-                        {/* First Row */}
-                        <Button
-                          size="sm"
-                          variant={watchApplicator === 'VC' ? 'solid' : 'outline'}
-                          colorScheme={watchApplicator === 'VC' ? 'blue' : 'gray'}
-                          onClick={() => {
-                            setValue('hdr_data.applicator_type', 'VC');
-                            setValue('hdr_data.treatment_site', 'gynecological');
-                            setValue('hdr_data.number_of_channels', 1);
-                          }}
-                          color={watchApplicator === 'VC' ? 'white' : 'gray.300'}
-                          borderColor="gray.600"
-                          _hover={{
-                            bg: watchApplicator === 'VC' ? 'blue.600' : 'gray.700',
-                            borderColor: watchApplicator === 'VC' ? 'blue.300' : 'gray.500'
-                          }}
-                        >
-                          <Radio value="VC" isChecked={watchApplicator === 'VC'} display="none" {...register('hdr_data.applicator_type', { required: 'Applicator is required' })} />
-                          VC
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={watchApplicator === 'T&O' ? 'solid' : 'outline'}
-                          colorScheme={watchApplicator === 'T&O' ? 'blue' : 'gray'}
-                          onClick={() => {
-                            setValue('hdr_data.applicator_type', 'T&O');
-                            setValue('hdr_data.treatment_site', 'gynecological');
-                            setValue('hdr_data.number_of_channels', 3);
-                          }}
-                          color={watchApplicator === 'T&O' ? 'white' : 'gray.300'}
-                          borderColor="gray.600"
-                          _hover={{
-                            bg: watchApplicator === 'T&O' ? 'blue.600' : 'gray.700',
-                            borderColor: watchApplicator === 'T&O' ? 'blue.300' : 'gray.500'
-                          }}
-                        >
-                          <Radio value="T&O" isChecked={watchApplicator === 'T&O'} display="none" />
-                          T&O
-                        </Button>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                      {/* First Row */}
+                      <Button
+                        size="sm"
+                        variant={watchApplicator === 'VC' ? 'solid' : 'outline'}
+                        colorScheme={watchApplicator === 'VC' ? 'blue' : 'gray'}
+                        onClick={() => {
+                          setValue('hdr_data.applicator_type', 'VC', { shouldValidate: true });
+                          setValue('hdr_data.treatment_site', 'gynecological');
+                          setValue('hdr_data.number_of_channels', 1, { shouldValidate: true });
+                        }}
+                        color={watchApplicator === 'VC' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{
+                          bg: watchApplicator === 'VC' ? 'blue.600' : 'gray.700',
+                          borderColor: watchApplicator === 'VC' ? 'blue.300' : 'gray.500'
+                        }}
+                      >
+                        VC
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={watchApplicator === 'T&O' ? 'solid' : 'outline'}
+                        colorScheme={watchApplicator === 'T&O' ? 'blue' : 'gray'}
+                        onClick={() => {
+                          setValue('hdr_data.applicator_type', 'T&O', { shouldValidate: true });
+                          setValue('hdr_data.treatment_site', 'gynecological');
+                          setValue('hdr_data.number_of_channels', 3, { shouldValidate: true });
+                        }}
+                        color={watchApplicator === 'T&O' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{
+                          bg: watchApplicator === 'T&O' ? 'blue.600' : 'gray.700',
+                          borderColor: watchApplicator === 'T&O' ? 'blue.300' : 'gray.500'
+                        }}
+                      >
+                        T&O
+                      </Button>
 
-                        {/* Second Row */}
-                        <Button
-                          size="sm"
-                          variant={watchApplicator === 'Utrecht' ? 'solid' : 'outline'}
-                          colorScheme={watchApplicator === 'Utrecht' ? 'blue' : 'gray'}
-                          onClick={() => {
-                            setValue('hdr_data.applicator_type', 'Utrecht');
-                            setValue('hdr_data.treatment_site', 'gynecological');
-                            setValue('hdr_data.number_of_channels', '');
-                          }}
-                          color={watchApplicator === 'Utrecht' ? 'white' : 'gray.300'}
-                          borderColor="gray.600"
-                          _hover={{
-                            bg: watchApplicator === 'Utrecht' ? 'blue.600' : 'gray.700',
-                            borderColor: watchApplicator === 'Utrecht' ? 'blue.300' : 'gray.500'
-                          }}
-                        >
-                          <Radio value="Utrecht" isChecked={watchApplicator === 'Utrecht'} display="none" />
-                          Utrecht
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={watchApplicator === 'GENEVA' ? 'solid' : 'outline'}
-                          colorScheme={watchApplicator === 'GENEVA' ? 'blue' : 'gray'}
-                          onClick={() => {
-                            setValue('hdr_data.applicator_type', 'GENEVA');
-                            setValue('hdr_data.treatment_site', 'gynecological');
-                            setValue('hdr_data.number_of_channels', '');
-                          }}
-                          color={watchApplicator === 'GENEVA' ? 'white' : 'gray.300'}
-                          borderColor="gray.600"
-                          _hover={{
-                            bg: watchApplicator === 'GENEVA' ? 'blue.600' : 'gray.700',
-                            borderColor: watchApplicator === 'GENEVA' ? 'blue.300' : 'gray.500'
-                          }}
-                        >
-                          <Radio value="GENEVA" isChecked={watchApplicator === 'GENEVA'} display="none" />
-                          GENEVA
-                        </Button>
+                      {/* Second Row */}
+                      <Button
+                        size="sm"
+                        variant={watchApplicator === 'Utrecht' ? 'solid' : 'outline'}
+                        colorScheme={watchApplicator === 'Utrecht' ? 'blue' : 'gray'}
+                        onClick={() => {
+                          setValue('hdr_data.applicator_type', 'Utrecht', { shouldValidate: true });
+                          setValue('hdr_data.treatment_site', 'gynecological');
+                          setValue('hdr_data.number_of_channels', '', { shouldValidate: false });
+                        }}
+                        color={watchApplicator === 'Utrecht' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{
+                          bg: watchApplicator === 'Utrecht' ? 'blue.600' : 'gray.700',
+                          borderColor: watchApplicator === 'Utrecht' ? 'blue.300' : 'gray.500'
+                        }}
+                      >
+                        Utrecht
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={watchApplicator === 'GENEVA' ? 'solid' : 'outline'}
+                        colorScheme={watchApplicator === 'GENEVA' ? 'blue' : 'gray'}
+                        onClick={() => {
+                          setValue('hdr_data.applicator_type', 'GENEVA', { shouldValidate: true });
+                          setValue('hdr_data.treatment_site', 'gynecological');
+                          setValue('hdr_data.number_of_channels', '', { shouldValidate: false });
+                        }}
+                        color={watchApplicator === 'GENEVA' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{
+                          bg: watchApplicator === 'GENEVA' ? 'blue.600' : 'gray.700',
+                          borderColor: watchApplicator === 'GENEVA' ? 'blue.300' : 'gray.500'
+                        }}
+                      >
+                        GENEVA
+                      </Button>
 
-                        {/* Third Row - SYED options */}
-                        <Button
-                          size="sm"
-                          variant={watchApplicator === 'SYED-Gyn' ? 'solid' : 'outline'}
-                          colorScheme={watchApplicator === 'SYED-Gyn' ? 'blue' : 'gray'}
-                          onClick={() => {
-                            setValue('hdr_data.applicator_type', 'SYED-Gyn');
-                            setValue('hdr_data.treatment_site', 'gynecological');
-                            setValue('hdr_data.number_of_channels', '');
-                          }}
-                          color={watchApplicator === 'SYED-Gyn' ? 'white' : 'gray.300'}
-                          borderColor="gray.600"
-                          _hover={{
-                            bg: watchApplicator === 'SYED-Gyn' ? 'blue.600' : 'gray.700',
-                            borderColor: watchApplicator === 'SYED-Gyn' ? 'blue.300' : 'gray.500'
-                          }}
-                        >
-                          <Radio value="SYED-Gyn" isChecked={watchApplicator === 'SYED-Gyn'} display="none" />
-                          SYED Gyn
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={watchApplicator === 'SYED-Prostate' ? 'solid' : 'outline'}
-                          colorScheme={watchApplicator === 'SYED-Prostate' ? 'blue' : 'gray'}
-                          onClick={() => {
-                            setValue('hdr_data.applicator_type', 'SYED-Prostate');
-                            setValue('hdr_data.treatment_site', 'prostate');
-                            setValue('hdr_data.number_of_channels', '');
-                          }}
-                          color={watchApplicator === 'SYED-Prostate' ? 'white' : 'gray.300'}
-                          borderColor="gray.600"
-                          _hover={{
-                            bg: watchApplicator === 'SYED-Prostate' ? 'blue.600' : 'gray.700',
-                            borderColor: watchApplicator === 'SYED-Prostate' ? 'blue.300' : 'gray.500'
-                          }}
-                        >
-                          <Radio value="SYED-Prostate" isChecked={watchApplicator === 'SYED-Prostate'} display="none" />
-                          SYED Prostate
-                        </Button>
-                      </Grid>
-                    </RadioGroup>
+                      {/* Third Row - SYED options */}
+                      <Button
+                        size="sm"
+                        variant={watchApplicator === 'SYED-Gyn' ? 'solid' : 'outline'}
+                        colorScheme={watchApplicator === 'SYED-Gyn' ? 'blue' : 'gray'}
+                        onClick={() => {
+                          setValue('hdr_data.applicator_type', 'SYED-Gyn', { shouldValidate: true });
+                          setValue('hdr_data.treatment_site', 'gynecological');
+                          setValue('hdr_data.number_of_channels', '', { shouldValidate: false });
+                        }}
+                        color={watchApplicator === 'SYED-Gyn' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{
+                          bg: watchApplicator === 'SYED-Gyn' ? 'blue.600' : 'gray.700',
+                          borderColor: watchApplicator === 'SYED-Gyn' ? 'blue.300' : 'gray.500'
+                        }}
+                      >
+                        SYED Gyn
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={watchApplicator === 'SYED-Prostate' ? 'solid' : 'outline'}
+                        colorScheme={watchApplicator === 'SYED-Prostate' ? 'blue' : 'gray'}
+                        onClick={() => {
+                          setValue('hdr_data.applicator_type', 'SYED-Prostate', { shouldValidate: true });
+                          setValue('hdr_data.treatment_site', 'prostate');
+                          setValue('hdr_data.number_of_channels', '', { shouldValidate: false });
+                        }}
+                        color={watchApplicator === 'SYED-Prostate' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{
+                          bg: watchApplicator === 'SYED-Prostate' ? 'blue.600' : 'gray.700',
+                          borderColor: watchApplicator === 'SYED-Prostate' ? 'blue.300' : 'gray.500'
+                        }}
+                      >
+                        SYED Prostate
+                      </Button>
+                    </Grid>
                     <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.hdr_data?.applicator_type?.message}
                     </FormErrorMessage>
@@ -360,17 +347,11 @@ const HDRForm = () => {
                         min: { value: 1, message: 'Must be at least 1' },
                         max: { value: 30, message: 'Must be 30 or less' }
                       })}
-                      placeholder={
-                        !watchApplicator 
-                          ? 'Choose applicator first' 
-                          : (watchApplicator === 'VC' || watchApplicator === 'T&O') 
-                            ? '' 
-                            : 'Enter channels'
-                      }
+                      placeholder={!watchApplicator ? 'Choose applicator first' : ''}
                       readOnly={watchApplicator === 'VC' || watchApplicator === 'T&O'}
                       bg="gray.700"
                       borderColor="gray.600"
-                      color={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'gray.500' : 'white'}
+                      color={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'gray.400' : 'white'}
                       _hover={{ borderColor: 'gray.500' }}
                       _placeholder={{ color: 'gray.400' }}
                       cursor={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'not-allowed' : 'text'}
@@ -382,6 +363,9 @@ const HDRForm = () => {
                 </VStack>
               </GridItem>
             </Grid>
+
+            {/* Hidden input for applicator type validation */}
+            <input type="hidden" {...register('hdr_data.applicator_type', { required: 'Applicator is required' })} />
 
             {/* Buttons */}
             <Flex gap={4} mb={6}>
@@ -440,9 +424,9 @@ const HDRForm = () => {
                 bg="gray.700"
                 color="white"
                 borderColor="gray.600"
-                fontFamily="monospace"
                 fontSize="sm"
                 lineHeight="1.6"
+                sx={{ fontFamily: '"Aseprite", monospace !important' }}
               />
             </Box>
           )}

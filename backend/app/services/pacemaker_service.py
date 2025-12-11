@@ -174,7 +174,6 @@ class PacemakerService:
         device_serial = pacemaker_data.device_serial
         pacing_dependent = pacemaker_data.pacing_dependent
         tps_max_dose = pacemaker_data.tps_max_dose
-        tps_mean_dose = pacemaker_data.tps_mean_dose
         osld_mean_dose = pacemaker_data.osld_mean_dose
         
         # Calculate risk level if not provided (critical for accurate writeup)
@@ -235,7 +234,7 @@ class PacemakerService:
             write_up += "No primary radiation fields intercept the pacemaker. "
         
         write_up += "The device was contoured in the treatment planning system. "
-        write_up += f"The maximum dose to the device was {tps_max_dose} Gy, with a mean dose of {tps_mean_dose} Gy"
+        write_up += f"The maximum dose to the device was {tps_max_dose} Gy"
         
         # Conditional dose comparison based on actual dose value
         if tps_max_dose < 2.0:

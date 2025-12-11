@@ -15,9 +15,7 @@ import {
   useToast,
   Flex,
   VStack,
-  HStack,
-  RadioGroup,
-  Radio
+  HStack
 } from '@chakra-ui/react';
 import tbiService from '../../services/tbiService';
 
@@ -111,7 +109,7 @@ const TBIForm = () => {
 
   // Handle regimen selection and set dose/fractions
   const selectRegimen = (regimenKey) => {
-    setValue('tbi_data.regimen', regimenKey);
+    setValue('tbi_data.regimen', regimenKey, { shouldValidate: true });
     
     // Set dose and fractions based on regimen
     const regimens = {
@@ -122,8 +120,8 @@ const TBIForm = () => {
     };
     
     if (regimens[regimenKey]) {
-      setValue('tbi_data.prescription_dose', regimens[regimenKey].dose);
-      setValue('tbi_data.fractions', regimens[regimenKey].fractions);
+      setValue('tbi_data.prescription_dose', regimens[regimenKey].dose, { shouldValidate: true });
+      setValue('tbi_data.fractions', regimens[regimenKey].fractions, { shouldValidate: true });
     }
   };
 
@@ -133,8 +131,7 @@ const TBIForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>TBI Write-up Generator</Heading>
-            <Text opacity={0.9}>Generate standardized write-up for total body irradiation</Text>
+            <Heading size="md" mb={2}>TBI Write-up Generator</Heading>
           </Box>
         </Flex>
       </Box>
@@ -153,7 +150,7 @@ const TBIForm = () => {
               gap={4}
               mb={6}
             >
-              {/* Staff Information Section */}
+              {/* Staff Info Section */}
               <GridItem
                 p={4}
                 borderWidth="1px"
@@ -162,8 +159,6 @@ const TBIForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Information</Heading>
-
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.common_info?.physician?.name}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
@@ -232,80 +227,63 @@ const TBIForm = () => {
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.tbi_data?.regimen}>
                     <FormLabel fontSize="sm" color="gray.300" mb={2}>Fractionation Regimen</FormLabel>
-                    <RadioGroup
-                      value={watchRegimen}
-                      onChange={(value) => selectRegimen(value)}
-                    >
-                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
-                        {/* Single Fraction Column */}
-                        <VStack spacing={2}>
-                          <Box as="label" width="100%" cursor="pointer">
-                            <Radio value="2gy1fx" display="none" {...register('tbi_data.regimen', { required: 'Please select a fractionation regimen' })} />
-                            <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchRegimen === '2gy1fx' ? 'blue' : 'gray'}
-                              variant={watchRegimen === '2gy1fx' ? 'solid' : 'outline'}
-                              onClick={() => selectRegimen('2gy1fx')}
-                              color={watchRegimen === '2gy1fx' ? 'white' : 'gray.300'}
-                              borderColor={watchRegimen === '2gy1fx' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchRegimen === '2gy1fx' ? 'blue.400' : 'gray.500' }}
-                            >
-                              2 Gy in 1 fx
-                            </Button>
-                          </Box>
-                          <Box as="label" width="100%" cursor="pointer">
-                            <Radio value="4gy1fx" display="none" />
-                            <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchRegimen === '4gy1fx' ? 'blue' : 'gray'}
-                              variant={watchRegimen === '4gy1fx' ? 'solid' : 'outline'}
-                              onClick={() => selectRegimen('4gy1fx')}
-                              color={watchRegimen === '4gy1fx' ? 'white' : 'gray.300'}
-                              borderColor={watchRegimen === '4gy1fx' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchRegimen === '4gy1fx' ? 'blue.400' : 'gray.500' }}
-                            >
-                              4 Gy in 1 fx
-                            </Button>
-                          </Box>
-                        </VStack>
-                        
-                        {/* BID Column */}
-                        <VStack spacing={2}>
-                          <Box as="label" width="100%" cursor="pointer">
-                            <Radio value="12gy6fx" display="none" />
-                            <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchRegimen === '12gy6fx' ? 'blue' : 'gray'}
-                              variant={watchRegimen === '12gy6fx' ? 'solid' : 'outline'}
-                              onClick={() => selectRegimen('12gy6fx')}
-                              color={watchRegimen === '12gy6fx' ? 'white' : 'gray.300'}
-                              borderColor={watchRegimen === '12gy6fx' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchRegimen === '12gy6fx' ? 'blue.400' : 'gray.500' }}
-                            >
-                              12 Gy in 6 fx (BID)
-                            </Button>
-                          </Box>
-                          <Box as="label" width="100%" cursor="pointer">
-                            <Radio value="13.2gy8fx" display="none" />
-                            <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchRegimen === '13.2gy8fx' ? 'blue' : 'gray'}
-                              variant={watchRegimen === '13.2gy8fx' ? 'solid' : 'outline'}
-                              onClick={() => selectRegimen('13.2gy8fx')}
-                              color={watchRegimen === '13.2gy8fx' ? 'white' : 'gray.300'}
-                              borderColor={watchRegimen === '13.2gy8fx' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchRegimen === '13.2gy8fx' ? 'blue.400' : 'gray.500' }}
-                            >
-                              13.2 Gy in 8 fx (BID)
-                            </Button>
-                          </Box>
-                        </VStack>
-                      </Grid>
-                    </RadioGroup>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                      {/* Single Fraction Column */}
+                      <VStack spacing={2}>
+                        <Button
+                          size="sm"
+                          width="100%"
+                          colorScheme={watchRegimen === '2gy1fx' ? 'blue' : 'gray'}
+                          variant={watchRegimen === '2gy1fx' ? 'solid' : 'outline'}
+                          onClick={() => selectRegimen('2gy1fx')}
+                          color={watchRegimen === '2gy1fx' ? 'white' : 'gray.300'}
+                          borderColor={watchRegimen === '2gy1fx' ? 'blue.500' : 'gray.600'}
+                          _hover={{ borderColor: watchRegimen === '2gy1fx' ? 'blue.400' : 'gray.500' }}
+                        >
+                          2 Gy in 1 fx
+                        </Button>
+                        <Button
+                          size="sm"
+                          width="100%"
+                          colorScheme={watchRegimen === '4gy1fx' ? 'blue' : 'gray'}
+                          variant={watchRegimen === '4gy1fx' ? 'solid' : 'outline'}
+                          onClick={() => selectRegimen('4gy1fx')}
+                          color={watchRegimen === '4gy1fx' ? 'white' : 'gray.300'}
+                          borderColor={watchRegimen === '4gy1fx' ? 'blue.500' : 'gray.600'}
+                          _hover={{ borderColor: watchRegimen === '4gy1fx' ? 'blue.400' : 'gray.500' }}
+                        >
+                          4 Gy in 1 fx
+                        </Button>
+                      </VStack>
+                      
+                      {/* BID Column */}
+                      <VStack spacing={2}>
+                        <Button
+                          size="sm"
+                          width="100%"
+                          colorScheme={watchRegimen === '12gy6fx' ? 'blue' : 'gray'}
+                          variant={watchRegimen === '12gy6fx' ? 'solid' : 'outline'}
+                          onClick={() => selectRegimen('12gy6fx')}
+                          color={watchRegimen === '12gy6fx' ? 'white' : 'gray.300'}
+                          borderColor={watchRegimen === '12gy6fx' ? 'blue.500' : 'gray.600'}
+                          _hover={{ borderColor: watchRegimen === '12gy6fx' ? 'blue.400' : 'gray.500' }}
+                        >
+                          12 Gy in 6 fx (BID)
+                        </Button>
+                        <Button
+                          size="sm"
+                          width="100%"
+                          colorScheme={watchRegimen === '13.2gy8fx' ? 'blue' : 'gray'}
+                          variant={watchRegimen === '13.2gy8fx' ? 'solid' : 'outline'}
+                          onClick={() => selectRegimen('13.2gy8fx')}
+                          color={watchRegimen === '13.2gy8fx' ? 'white' : 'gray.300'}
+                          borderColor={watchRegimen === '13.2gy8fx' ? 'blue.500' : 'gray.600'}
+                          _hover={{ borderColor: watchRegimen === '13.2gy8fx' ? 'blue.400' : 'gray.500' }}
+                        >
+                          13.2 Gy in 8 fx (BID)
+                        </Button>
+                      </VStack>
+                    </Grid>
                     <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.tbi_data?.regimen?.message}
                     </FormErrorMessage>
@@ -313,51 +291,32 @@ const TBIForm = () => {
 
                   <FormControl isInvalid={errors.tbi_data?.setup}>
                     <FormLabel fontSize="sm" color="gray.300">Beam Setup</FormLabel>
-                    <RadioGroup
-                      value={watchSetup}
-                      onChange={(value) => setValue('tbi_data.setup', value)}
-                    >
-                      <HStack spacing={2}>
-                        <Box
-                          as="label"
-                          flex="1"
-                          cursor="pointer"
-                        >
-                          <Radio value="AP/PA" display="none" {...register('tbi_data.setup', { required: 'Setup is required' })} />
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchSetup === 'AP/PA' ? 'blue' : 'gray'}
-                            variant={watchSetup === 'AP/PA' ? 'solid' : 'outline'}
-                            onClick={() => setValue('tbi_data.setup', 'AP/PA')}
-                            color={watchSetup === 'AP/PA' ? 'white' : 'gray.300'}
-                            borderColor={watchSetup === 'AP/PA' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchSetup === 'AP/PA' ? 'blue.400' : 'gray.500' }}
-                          >
-                            AP/PA
-                          </Button>
-                        </Box>
-                        <Box
-                          as="label"
-                          flex="1"
-                          cursor="pointer"
-                        >
-                          <Radio value="Lateral" display="none" />
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchSetup === 'Lateral' ? 'blue' : 'gray'}
-                            variant={watchSetup === 'Lateral' ? 'solid' : 'outline'}
-                            onClick={() => setValue('tbi_data.setup', 'Lateral')}
-                            color={watchSetup === 'Lateral' ? 'white' : 'gray.300'}
-                            borderColor={watchSetup === 'Lateral' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchSetup === 'Lateral' ? 'blue.400' : 'gray.500' }}
-                          >
-                            Lateral
-                          </Button>
-                        </Box>
-                      </HStack>
-                    </RadioGroup>
+                    <HStack spacing={2}>
+                      <Button
+                        size="sm"
+                        flex="1"
+                        colorScheme={watchSetup === 'AP/PA' ? 'blue' : 'gray'}
+                        variant={watchSetup === 'AP/PA' ? 'solid' : 'outline'}
+                        onClick={() => setValue('tbi_data.setup', 'AP/PA', { shouldValidate: true })}
+                        color={watchSetup === 'AP/PA' ? 'white' : 'gray.300'}
+                        borderColor={watchSetup === 'AP/PA' ? 'blue.500' : 'gray.600'}
+                        _hover={{ borderColor: watchSetup === 'AP/PA' ? 'blue.400' : 'gray.500' }}
+                      >
+                        AP/PA
+                      </Button>
+                      <Button
+                        size="sm"
+                        flex="1"
+                        colorScheme={watchSetup === 'Lateral' ? 'blue' : 'gray'}
+                        variant={watchSetup === 'Lateral' ? 'solid' : 'outline'}
+                        onClick={() => setValue('tbi_data.setup', 'Lateral', { shouldValidate: true })}
+                        color={watchSetup === 'Lateral' ? 'white' : 'gray.300'}
+                        borderColor={watchSetup === 'Lateral' ? 'blue.500' : 'gray.600'}
+                        _hover={{ borderColor: watchSetup === 'Lateral' ? 'blue.400' : 'gray.500' }}
+                      >
+                        Lateral
+                      </Button>
+                    </HStack>
                     <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.tbi_data?.setup?.message}
                     </FormErrorMessage>
@@ -380,73 +339,56 @@ const TBIForm = () => {
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.tbi_data?.lung_blocks}>
                     <FormLabel fontSize="sm" color="gray.300" mb={2}>Select Lung Block Thickness</FormLabel>
-                    <RadioGroup
-                      value={watchLungBlocks}
-                      onChange={(value) => setValue('tbi_data.lung_blocks', value)}
-                    >
-                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
-                        <Box as="label" cursor="pointer">
-                          <Radio value="none" display="none" {...register('tbi_data.lung_blocks', { required: 'Please select lung block option' })} />
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchLungBlocks === 'none' ? 'blue' : 'gray'}
-                            variant={watchLungBlocks === 'none' ? 'solid' : 'outline'}
-                            onClick={() => setValue('tbi_data.lung_blocks', 'none')}
-                            color={watchLungBlocks === 'none' ? 'white' : 'gray.300'}
-                            borderColor={watchLungBlocks === 'none' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchLungBlocks === 'none' ? 'blue.400' : 'gray.500' }}
-                          >
-                            None
-                          </Button>
-                        </Box>
-                        <Box as="label" cursor="pointer">
-                          <Radio value="1 HVL" display="none" />
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchLungBlocks === '1 HVL' ? 'blue' : 'gray'}
-                            variant={watchLungBlocks === '1 HVL' ? 'solid' : 'outline'}
-                            onClick={() => setValue('tbi_data.lung_blocks', '1 HVL')}
-                            color={watchLungBlocks === '1 HVL' ? 'white' : 'gray.300'}
-                            borderColor={watchLungBlocks === '1 HVL' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchLungBlocks === '1 HVL' ? 'blue.400' : 'gray.500' }}
-                          >
-                            1 HVL
-                          </Button>
-                        </Box>
-                        <Box as="label" cursor="pointer">
-                          <Radio value="2 HVL" display="none" />
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchLungBlocks === '2 HVL' ? 'blue' : 'gray'}
-                            variant={watchLungBlocks === '2 HVL' ? 'solid' : 'outline'}
-                            onClick={() => setValue('tbi_data.lung_blocks', '2 HVL')}
-                            color={watchLungBlocks === '2 HVL' ? 'white' : 'gray.300'}
-                            borderColor={watchLungBlocks === '2 HVL' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchLungBlocks === '2 HVL' ? 'blue.400' : 'gray.500' }}
-                          >
-                            2 HVL
-                          </Button>
-                        </Box>
-                        <Box as="label" cursor="pointer">
-                          <Radio value="3 HVL" display="none" />
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchLungBlocks === '3 HVL' ? 'blue' : 'gray'}
-                            variant={watchLungBlocks === '3 HVL' ? 'solid' : 'outline'}
-                            onClick={() => setValue('tbi_data.lung_blocks', '3 HVL')}
-                            color={watchLungBlocks === '3 HVL' ? 'white' : 'gray.300'}
-                            borderColor={watchLungBlocks === '3 HVL' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchLungBlocks === '3 HVL' ? 'blue.400' : 'gray.500' }}
-                          >
-                            3 HVL
-                          </Button>
-                        </Box>
-                      </Grid>
-                    </RadioGroup>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                      <Button
+                        size="sm"
+                        width="100%"
+                        colorScheme={watchLungBlocks === 'none' ? 'blue' : 'gray'}
+                        variant={watchLungBlocks === 'none' ? 'solid' : 'outline'}
+                        onClick={() => setValue('tbi_data.lung_blocks', 'none', { shouldValidate: true })}
+                        color={watchLungBlocks === 'none' ? 'white' : 'gray.300'}
+                        borderColor={watchLungBlocks === 'none' ? 'blue.500' : 'gray.600'}
+                        _hover={{ borderColor: watchLungBlocks === 'none' ? 'blue.400' : 'gray.500' }}
+                      >
+                        None
+                      </Button>
+                      <Button
+                        size="sm"
+                        width="100%"
+                        colorScheme={watchLungBlocks === '1 HVL' ? 'blue' : 'gray'}
+                        variant={watchLungBlocks === '1 HVL' ? 'solid' : 'outline'}
+                        onClick={() => setValue('tbi_data.lung_blocks', '1 HVL', { shouldValidate: true })}
+                        color={watchLungBlocks === '1 HVL' ? 'white' : 'gray.300'}
+                        borderColor={watchLungBlocks === '1 HVL' ? 'blue.500' : 'gray.600'}
+                        _hover={{ borderColor: watchLungBlocks === '1 HVL' ? 'blue.400' : 'gray.500' }}
+                      >
+                        1 HVL
+                      </Button>
+                      <Button
+                        size="sm"
+                        width="100%"
+                        colorScheme={watchLungBlocks === '2 HVL' ? 'blue' : 'gray'}
+                        variant={watchLungBlocks === '2 HVL' ? 'solid' : 'outline'}
+                        onClick={() => setValue('tbi_data.lung_blocks', '2 HVL', { shouldValidate: true })}
+                        color={watchLungBlocks === '2 HVL' ? 'white' : 'gray.300'}
+                        borderColor={watchLungBlocks === '2 HVL' ? 'blue.500' : 'gray.600'}
+                        _hover={{ borderColor: watchLungBlocks === '2 HVL' ? 'blue.400' : 'gray.500' }}
+                      >
+                        2 HVL
+                      </Button>
+                      <Button
+                        size="sm"
+                        width="100%"
+                        colorScheme={watchLungBlocks === '3 HVL' ? 'blue' : 'gray'}
+                        variant={watchLungBlocks === '3 HVL' ? 'solid' : 'outline'}
+                        onClick={() => setValue('tbi_data.lung_blocks', '3 HVL', { shouldValidate: true })}
+                        color={watchLungBlocks === '3 HVL' ? 'white' : 'gray.300'}
+                        borderColor={watchLungBlocks === '3 HVL' ? 'blue.500' : 'gray.600'}
+                        _hover={{ borderColor: watchLungBlocks === '3 HVL' ? 'blue.400' : 'gray.500' }}
+                      >
+                        3 HVL
+                      </Button>
+                    </Grid>
                     <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.tbi_data?.lung_blocks?.message}
                     </FormErrorMessage>
@@ -455,9 +397,12 @@ const TBIForm = () => {
               </GridItem>
             </Grid>
 
-            {/* Hidden inputs for dose/fractions (set via regimen selection) */}
-            <input type="hidden" {...register('tbi_data.prescription_dose')} />
-            <input type="hidden" {...register('tbi_data.fractions')} />
+            {/* Hidden inputs for all button-selected values */}
+            <input type="hidden" {...register('tbi_data.regimen', { required: 'Please select a fractionation regimen' })} />
+            <input type="hidden" {...register('tbi_data.setup', { required: 'Setup is required' })} />
+            <input type="hidden" {...register('tbi_data.lung_blocks', { required: 'Please select lung block option' })} />
+            <input type="hidden" {...register('tbi_data.prescription_dose', { required: true })} />
+            <input type="hidden" {...register('tbi_data.fractions', { required: true })} />
 
             {/* Action Buttons */}
             <Flex gap={4} mb={6}>
@@ -514,9 +459,9 @@ const TBIForm = () => {
                   bg="gray.700"
                   color="white"
                   borderColor="gray.600"
-                  fontFamily="monospace"
                   fontSize="sm"
                   _hover={{ borderColor: 'gray.500' }}
+                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
               </Box>
             )}

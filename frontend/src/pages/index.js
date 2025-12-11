@@ -30,15 +30,26 @@ import {
   Tr,
   Th,
   Td,
-  ButtonGroup
+  ButtonGroup,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  ModalCloseButton
 } from '@chakra-ui/react';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import UpdateNotification from '../components/UpdateNotification';
 import { VERSION_INFO } from '../constants/version';
+import observatory1 from '../images/observatory1.png';
+import observatory2 from '../images/observatory2.png';
 
 const HomePage = () => {
   const router = useRouter();
+  
+  // State for enlarged observatory image
+  const [enlargedImage, setEnlargedImage] = useState(null);
   
   // State for detailed fusion configuration
   const [fusionConfig, setFusionConfig] = useState({
@@ -305,7 +316,7 @@ const HomePage = () => {
         minW="30px"
         textAlign="center"
       >
-        <Text fontSize="sm" fontWeight="bold" color={isDisabled ? "gray.500" : "blue.200"}>
+        <Text fontSize="sm" color={isDisabled ? "gray.500" : "blue.200"}>
           {value}
         </Text>
       </Box>
@@ -328,78 +339,44 @@ const HomePage = () => {
       {/* Update Notification Component */}
       <UpdateNotification />
       
-      <Container maxW="container.xl" py={8}>
-        <Box textAlign="center" mb={10}>
-          <Heading as="h1" size="2xl" mb={4} color="white">
-            Medical Physics Toolkit
-          </Heading>
-          <Text fontSize="xl" maxW="container.md" mx="auto" color="gray.300" mb={6}>
-            Streamlining documentation and procedures for radiation oncology workflows
-          </Text>
-          
-          {/* MPC Writeup Time Submission Button */}
-          <Center>
-            <Button
-              as="a"
-              href="https://forms.gle/yYw77opkcSFx1CS36"
-              target="_blank"
-              rel="noopener noreferrer"
-              colorScheme="green"
-              size="lg"
-              px={8}
-              py={6}
-              fontSize="md"
-              fontWeight="bold"
-              leftIcon={
-                <Box as="span" fontSize="xl">
-                  📊
-                </Box>
-              }
-              _hover={{
-                transform: "scale(1.05)",
-                boxShadow: "lg"
-              }}
-              transition="all 0.2s"
-            >
-              Submit MPC Writeup Time
-            </Button>
-          </Center>
+      {/* Tabbed Interface */}
+      <Tabs 
+        variant="soft-rounded" 
+        colorScheme="blue" 
+        size="lg"
+        defaultIndex={0}
+      >
+        {/* Top Navigation Bar */}
+        <Box bg="gray.800" py={3} px={4} position="sticky" top={0} zIndex={100}>
+          <Container maxW="container.xl">
+            <TabList justifyContent="center">
+              <Tab 
+                _selected={{ bg: "blue.500", color: "white" }}
+                _hover={{ bg: "gray.700" }}
+                color="gray.300"
+              >
+                QuickWrite
+              </Tab>
+              <Tab 
+                _selected={{ bg: "cyan.500", color: "white" }}
+                _hover={{ bg: "gray.700" }}
+                color="gray.300"
+              >
+                The Observatory
+              </Tab>
+              <Tab 
+                _selected={{ bg: "purple.500", color: "white" }}
+                _hover={{ bg: "gray.700" }}
+                color="gray.300"
+              >
+                About
+              </Tab>
+            </TabList>
+          </Container>
         </Box>
 
-        {/* Tabbed Interface */}
-        <Tabs 
-          variant="soft-rounded" 
-          colorScheme="blue" 
-          size="lg"
-          defaultIndex={0}
-        >
-          <TabList mb={8} justifyContent="center" bg="gray.800" p={2} borderRadius="lg">
-            <Tab 
-              _selected={{ bg: "blue.500", color: "white" }}
-              _hover={{ bg: "gray.700" }}
-              color="gray.300"
-              fontWeight="semibold"
-            >
-              QuickWrite
-            </Tab>
-            <Tab 
-              _selected={{ bg: "teal.500", color: "white" }}
-              _hover={{ bg: "gray.700" }}
-              color="gray.300"
-              fontWeight="semibold"
-            >
-              Other Tools
-            </Tab>
-            <Tab 
-              _selected={{ bg: "purple.500", color: "white" }}
-              _hover={{ bg: "gray.700" }}
-              color="gray.300"
-              fontWeight="semibold"
-            >
-              About
-            </Tab>
-          </TabList>
-
+        {/* Tab Content */}
+        <Container maxW="container.xl" py={8}>
           <TabPanels>
             {/* QuickWrite Tab */}
             <TabPanel p={0}>
@@ -414,30 +391,24 @@ const HomePage = () => {
             height="fit-content"
           >
             <CardHeader>
-              <Heading size="lg" color="blue.200">
-                Fusions
+              <Heading size="lg" color="blue.200" textAlign="center">
+                Fusion MPCs
               </Heading>
-              <Text color="gray.300" mt={2}>
-                Configure and launch fusion write-ups
-              </Text>
             </CardHeader>
             
             <CardBody>
-              {/* Summary Badge */}
-              <HStack mb={4} justify="space-between" align="center">
-                <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
-                  {getTotalFusions()} fusion{getTotalFusions() !== 1 ? 's' : ''} configured
-                </Badge>
-                {fusionConfig.ct.bladderStatus && (
+              {/* Bladder Status Badge (only shows when active) */}
+              {fusionConfig.ct.bladderStatus && (
+                <HStack mb={4} justify="flex-end">
                   <Badge colorScheme="yellow" fontSize="xs">
                     Bladder Comparison Active
                   </Badge>
-                )}
-              </HStack>
+                </HStack>
+              )}
 
               {/* Compact Table Layout */}
               <Box overflowX="auto" mb={4}>
-                <Table size="sm" variant="simple">
+                <Table size="sm" variant="simple" sx={{ '& td, & th': { py: 2, lineHeight: '1' } }}>
                   <Thead>
                     <Tr>
                       <Th color="gray.400" borderColor="gray.600">Fusion Type</Th>
@@ -448,7 +419,7 @@ const HomePage = () => {
                   <Tbody>
                     {/* MRI/CT Row */}
                     <Tr>
-                      <Td color="gray.300" borderColor="gray.600" fontWeight="medium">MRI/CT</Td>
+                      <Td color="gray.300" borderColor="gray.600">MRI/CT</Td>
                       <Td borderColor="gray.600">
                         <CounterControl
                           value={fusionConfig.mri.rigid}
@@ -464,7 +435,7 @@ const HomePage = () => {
 
                     {/* PET/CT Row */}
                     <Tr>
-                      <Td color="gray.300" borderColor="gray.600" fontWeight="medium">PET/CT</Td>
+                      <Td color="gray.300" borderColor="gray.600">PET/CT</Td>
                       <Td borderColor="gray.600">
                         <CounterControl
                           value={fusionConfig.pet.rigid}
@@ -485,7 +456,7 @@ const HomePage = () => {
 
                     {/* CT/CT Row */}
                     <Tr>
-                      <Td color="gray.300" borderColor="gray.600" fontWeight="medium">CT/CT</Td>
+                      <Td color="gray.300" borderColor="gray.600">CT/CT</Td>
                       <Td borderColor="gray.600">
                         <CounterControl
                           value={fusionConfig.ct.rigid}
@@ -524,7 +495,6 @@ const HomePage = () => {
                   <VStack align="start" spacing={0} ml={2}>
                     <Text 
                       color={fusionConfig.ct.bladderStatus ? "yellow.200" : "gray.300"} 
-                      fontWeight="medium"
                       fontSize="sm"
                     >
                       Full/Empty Bladder Comparison
@@ -564,21 +534,19 @@ const HomePage = () => {
             height="fit-content"
           >
             <CardHeader>
-              <Heading size="lg" color="purple.200">
+              <Heading size="lg" color="purple.200" textAlign="center">
                 General MPCs
               </Heading>
-              <Text color="gray.300" mt={2}>
-                Select consultation types to include
-              </Text>
             </CardHeader>
             
             <CardBody>
               <SimpleGrid columns={2} spacing={3}>
                 
-                {/* PRODUCTION NOTE: Prior Dose and SRS/SRT modules hidden - pending comprehensive QA */}
+                {/* PRODUCTION NOTE: SRS/SRT module hidden - pending comprehensive QA */}
+                {/* Prior Dose - Phase 1 UI polish complete, available for review */}
                 
-                {/* Prior Dose - HIDDEN */}
-                {/* <Button
+                {/* Prior Dose */}
+                <Button
                   size="md"
                   variant={mpcChecklist.prior ? "solid" : "outline"}
                   colorScheme={mpcChecklist.prior ? "purple" : "gray"}
@@ -591,7 +559,7 @@ const HomePage = () => {
                   }}
                 >
                   Prior Dose
-                </Button> */}
+                </Button>
 
                 {/* Pacemaker/ICD */}
                 <Button
@@ -712,116 +680,109 @@ const HomePage = () => {
               </SimpleGrid>
             </TabPanel>
 
-            {/* Other Tools Tab */}
+            {/* The Observatory Tab */}
             <TabPanel p={0}>
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-            <Card 
-              bg="gray.800"
-              borderTop="4px"
-              borderTopColor="teal.400"
-              borderColor="gray.600"
-              _hover={{ 
-                transform: "translateY(-2px)", 
-                boxShadow: "xl",
-                borderTopColor: "teal.300",
-                bg: "gray.750"
-              }}
-              transition="all 0.2s"
-            >
-              <CardHeader>
-                <Heading size="md" color="teal.200">
-                  QA Documentation System
-                  <Badge ml={2} colorScheme="gray" variant="subtle">
-                    Coming Soon
-                  </Badge>
-                </Heading>
-              </CardHeader>
-              <CardBody>
-                <Text color="gray.300">Advanced quality assurance platform for medical professionals</Text>
-              </CardBody>
-              <CardFooter>
-                <Button 
-                  colorScheme="teal"
-                  width="100%"
-                  variant="outline"
-                  isDisabled={true}
+              <Box maxW="container.lg" mx="auto">
+              <Box bg="gray.800" p={8} borderRadius="lg" border="1px" borderColor="gray.600">
+                <Flex 
+                  direction={{ base: "column", md: "row" }} 
+                  gap={8} 
+                  align="flex-start"
                 >
-                  Coming Soon
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card 
-              bg="gray.800"
-              borderTop="4px"
-              borderTopColor="teal.400"
-              borderColor="gray.600"
-              _hover={{ 
-                transform: "translateY(-2px)", 
-                boxShadow: "xl",
-                borderTopColor: "teal.300",
-                bg: "gray.750"
-              }}
-              transition="all 0.2s"
-            >
-              <CardHeader>
-                <Heading size="md" color="teal.200">
-                  Clinical Procedure Guides
-                  <Badge ml={2} colorScheme="gray" variant="subtle">
-                    Coming Soon
-                  </Badge>
-                </Heading>
-              </CardHeader>
-              <CardBody>
-                <Text color="gray.300">Step-by-step guides for plan review, TBI simulation, and more</Text>
-              </CardBody>
-              <CardFooter>
-                <Button 
-                  colorScheme="teal"
-                  width="100%"
-                  variant="outline"
-                  isDisabled={true}
-                >
-                  Coming Soon
-                </Button>
-              </CardFooter>
-            </Card>
-              </SimpleGrid>
+                  {/* Text Content - Left Side */}
+                  <VStack spacing={0} align="flex-start" flex="1" minW={{ base: "100%", md: "280px" }}>
+                    <Heading size="lg" color="teal.300" textAlign="left" lineHeight="1" mb={0}>
+                      Enjoying to Learn,
+                    </Heading>
+                    <Heading size="lg" color="teal.300" textAlign="left" lineHeight="1" mb={4}>
+                      Learning to Enjoy
+                    </Heading>
+                    <Text fontSize="lg" color="gray.300" textAlign="left">
+                      The Observatory is a medical physics educational game that teaches clinical concepts through creative and 
+                      interactive experiences. Spurred by a passion for video games, pixel art, and teaching,
+                      The Observatory is a passion project led by Luke Lussier and assisted by Zachariah Appelbaum. 
+                      The project is currently in development by Luke and Zach's game design studio: Questrium.
+                    </Text>
+                  </VStack>
+                  
+                  {/* Game Screenshots - Right Side */}
+                  <VStack spacing={4} flex="1" maxW={{ base: "100%", md: "520px" }}>
+                    <Box 
+                      borderRadius="lg" 
+                      overflow="hidden"
+                      cursor="pointer"
+                      onClick={() => setEnlargedImage(observatory1)}
+                      _hover={{ transform: "scale(1.02)", opacity: 0.9 }}
+                      transition="all 0.2s"
+                    >
+                      <Image
+                        src={observatory1}
+                        alt="The Observatory - Screenshot 1"
+                        style={{ width: '100%', height: 'auto' }}
+                        placeholder="blur"
+                      />
+                    </Box>
+                    <Box 
+                      borderRadius="lg" 
+                      overflow="hidden"
+                      cursor="pointer"
+                      onClick={() => setEnlargedImage(observatory2)}
+                      _hover={{ transform: "scale(1.02)", opacity: 0.9 }}
+                      transition="all 0.2s"
+                    >
+                      <Image
+                        src={observatory2}
+                        alt="The Observatory - Screenshot 2"
+                        style={{ width: '100%', height: 'auto' }}
+                        placeholder="blur"
+                      />
+                    </Box>
+                  </VStack>
+                </Flex>
+              </Box>
+              
+              {/* Enlarged Image Modal */}
+              <Modal isOpen={enlargedImage !== null} onClose={() => setEnlargedImage(null)} size="6xl" isCentered>
+                <ModalOverlay bg="blackAlpha.800" />
+                <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
+                  <ModalCloseButton color="white" size="lg" top={-10} right={-10} />
+                  <ModalBody p={0}>
+                    {enlargedImage && (
+                      <Image
+                        src={enlargedImage}
+                        alt="The Observatory - Enlarged"
+                        style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                        placeholder="blur"
+                      />
+                    )}
+                  </ModalBody>
+                </ModalContent>
+              </Modal>
+              </Box>
             </TabPanel>
 
             {/* About Tab */}
             <TabPanel p={0}>
-              <Box bg="gray.800" p={6} borderRadius="md" border="1px" borderColor="gray.600">
-                <Heading as="h3" size="md" mb={4} color="white">
-                  About Medical Physics Toolkit
-                </Heading>
-                <Text mb={4} color="gray.300">
-                  The Medical Physics Toolkit is designed to help radiation oncology residents and 
-                  physicists create standardized documentation quickly and accurately, improving clinical 
-                  workflow efficiency.
-                </Text>
-                
-                <Box mb={4} p={4} bg="green.900" borderRadius="md" border="1px" borderColor="green.700">
-                  <Heading as="h4" size="sm" mb={3} color="green.200">
-                    🎉 What's New in Version {VERSION_INFO.current}
-                  </Heading>
-                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
-                    {VERSION_INFO.updates[0].changes.map((change, index) => (
-                      <Text key={index} fontSize="sm" color="green.300">
-                        • {change}
-                      </Text>
-                    ))}
-                  </SimpleGrid>
-                </Box>
-                
-                <Text fontStyle="italic" color="gray.400">
-                  Version {VERSION_INFO.current} - Major update with complete pacemaker module and enhanced workflows
-                </Text>
+              <Box bg="gray.800" p={6} borderRadius="lg" border="1px" borderColor="gray.600">
+                <VStack spacing={6} align="start">
+                  {/* Studio Header */}
+                  <Box>
+                    <Heading as="h2" size="lg" mb={2} color="purple.200">
+                      Questrium
+                    </Heading>
+                    <Text fontSize="lg" color="gray.300">
+                      A small software studio founded by Luke Lussier and Zachariah Appelbaum dedicated to advancing medical physics through innovative tools and applications.
+                      The studio is currently focused on the development of Quickwrite, a clinical documentation tool, and The Observatory, a medical physics educational game.
+                      Questrium is known for its unique pixel art style and tight UI/UX design.
+                      The studio is located in the greater San Antonio area, USA.
+                    </Text>
+                  </Box>
+                </VStack>
               </Box>
             </TabPanel>
           </TabPanels>
-        </Tabs>
-      </Container>
+        </Container>
+      </Tabs>
     </Box>
   );
 };

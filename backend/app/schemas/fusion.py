@@ -10,9 +10,8 @@ class Registration(BaseModel):
 
 class FusionData(BaseModel):
     """Schema for fusion module-specific data."""
-    lesion: str = Field(..., description="The type of lesion or anatomical structure")
-    custom_lesion: Optional[str] = Field(None, description="Custom lesion name if not using a predefined lesion")
-    anatomical_region: str = Field(..., description="The anatomical region (e.g., head and neck, brain, thoracic)")
+    anatomical_region: str = Field(default="", description="The anatomical region (e.g., head and neck, brain, thoracic)")
+    custom_anatomical_region: Optional[str] = Field(None, description="Custom anatomical region if not using a predefined region")
     registrations: List[Registration] = Field(default=[], description="List of image registrations")
     is_bladder_filling_study: bool = Field(default=False, description="Whether this is a full/empty bladder study")
     immobilization_device: Optional[str] = Field(None, description="Immobilization device used for bladder filling study")

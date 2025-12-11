@@ -21,8 +21,7 @@ API_BASE_URL = "http://localhost:8000/api"
 # Standardized test inputs
 PHYSICIAN_NAME = "Galvan"
 PHYSICIST_NAME = "Kirby"
-LESION = "brain"
-ANATOMICAL_REGION = "brain"
+ANATOMICAL_REGION = "brain"  # Updated per Entry #55 - lesion field removed
 
 # Fusion type configurations
 FUSION_TYPES = {
@@ -42,9 +41,8 @@ def create_fusion_request(registrations: List[Dict]) -> Dict:
             "physicist": {"name": PHYSICIST_NAME}
         },
         "fusion_data": {
-            "lesion": LESION,
-            "custom_lesion": None,
             "anatomical_region": ANATOMICAL_REGION,
+            "custom_anatomical_region": None,
             "registrations": registrations,
             "is_bladder_filling_study": False,
             "immobilization_device": None
@@ -153,6 +151,7 @@ def generate_triple_fusion_combinations() -> List[Dict]:
 
 def generate_bladder_filling_combination() -> Dict:
     """Generate bladder filling study combination."""
+    # Updated per Entry #55 - lesion/custom_lesion fields removed, now using anatomical_region only
     return {
         "name": "Bladder_Filling_Study",
         "description": "Full/Empty bladder comparison study",
@@ -161,9 +160,8 @@ def generate_bladder_filling_combination() -> Dict:
             "physicist": {"name": PHYSICIST_NAME}
         },
         "fusion_data": {
-            "lesion": "prostate",
-            "custom_lesion": None,
             "anatomical_region": "pelvic",
+            "custom_anatomical_region": None,
             "registrations": [],
             "is_bladder_filling_study": True,
             "immobilization_device": "Vac-Lok"
@@ -194,7 +192,6 @@ def main():
     print(f"Standardized Inputs:")
     print(f"  Physician: Dr. {PHYSICIAN_NAME}")
     print(f"  Physicist: Dr. {PHYSICIST_NAME}")
-    print(f"  Lesion: {LESION}")
     print(f"  Anatomical Region: {ANATOMICAL_REGION}")
     print("=" * 80)
     print()
@@ -232,7 +229,6 @@ def main():
         f.write(f"**Standardized Test Inputs:**\n")
         f.write(f"- Physician: Dr. {PHYSICIAN_NAME}\n")
         f.write(f"- Physicist: Dr. {PHYSICIST_NAME}\n")
-        f.write(f"- Lesion: {LESION}\n")
         f.write(f"- Anatomical Region: {ANATOMICAL_REGION}\n\n")
         f.write("---\n\n")
         

@@ -1,6 +1,9 @@
 # DEVELOPMENT LOG
 *Linear session tracking - wiped and integrated into core docs periodically*
 
+![Observatory View 1](../frontend/src/images/observatory1.png)
+![Observatory View 2](../frontend/src/images/observatory2.png)
+
 ---
 
 <!-- TEMPLATE FOR NEW ENTRIES:
@@ -647,6 +650,372 @@ _placeholder={{ color: "gray.400" }}  // For text inputs
 **Friction:** Initial git push failed in sandbox due to SSL certificate verification - required running with 'all' permissions to bypass restriction. Standard pattern for network-dependent git operations.
 
 **Insight:** **VERSION_MANAGEMENT.md deployment process is bulletproof** - systematic checklist (version updates → production URL → commit → push → local URL) prevents common deployment mistakes like wrong API endpoints or missing files. **Comprehensive changelogs communicate user value** - v2.3.0 changelog focuses on QA validation results (13/13, 18/18, 21/21 tests passing), button-driven interfaces, and workflow improvements rather than internal implementation details. Users/stakeholders care about reliability and UX enhancements. **Git push triggers dual deployment** - single `git push origin main` automatically deploys backend to Railway and frontend to Vercel through configured webhooks. **Post-deployment DEV_LOG entry completes audit trail** - documenting deployment as Entry #48 provides version history, deployment date, and deployment-specific insights for future reference. Pattern now established: version bump → changelog → deployment checklist → DEV_LOG entry. Three major modules (TBI, HDR, Pacemaker) now production-ready with comprehensive automated QA validation. Total toolkit now has 8 modules (Fusion, DIBH, SBRT, Prior Dose, SRS, Pacemaker, TBI, HDR) all following consistent patterns from DEV_LOG Entries #1-47.
+
+---
+
+## Entry #49
+**Focus:** Version 2.3.1 patch deployment - confirm Prior Dose and SRS/SRT hidden from production
+
+**Smooth:** Quick patch release to clarify production module status. Added explicit production notes in index.js documenting that Prior Dose and SRS/SRT are intentionally hidden pending comprehensive QA validation. Updated version to 2.3.1, added clear changelog entry listing active modules (Fusion, DIBH, SBRT, TBI, HDR, Pacemaker). Followed VERSION_MANAGEMENT.md deployment process: production URL → git add/commit/push → local URL. Deployment triggers Vercel cache bust ensuring clean state for users.
+
+**Friction:** None - straightforward patch deployment. Buttons were already commented out in v2.3.0, but user report suggested potential caching issue or unclear production status. Adding explicit notes and patch version clarifies intended production state.
+
+**Insight:** **Patch versions useful for clarification deployments** - v2.3.1 doesn't add features but improves production clarity by explicitly documenting which modules are active vs pending QA. **Comment clarity prevents confusion** - changing from vague "TEMPORARY: Disabled modules" to explicit "PRODUCTION NOTE: Prior Dose and SRS/SRT hidden - pending comprehensive QA" communicates intent to future developers. **Cache busting through version bump** - even when code hasn't changed, incrementing version and redeploying forces Vercel to invalidate caches ensuring users see current state. **Production module management pattern** - as toolkit grows (8 modules total), clearly documenting which are production-ready (6) vs development (2) prevents deployment confusion. Pattern: use code comments + version changelog to communicate module status, not just button visibility. Active production modules now explicit: Fusion, DIBH, SBRT, TBI, HDR, Pacemaker. Prior Dose and SRS/SRT remain hidden until comprehensive QA testing (following Entries #27, #30, #39, #43, #47 patterns) validates them production-ready.
+
+---
+
+## Entry #50
+**Focus:** Prior Dose module Phase 1 UI polish and custom site implementation
+
+**Smooth:** Systematic inventory identified module status - backend 100% complete, frontend 95% complete, missing UI polish patterns from Entries #31-46. Applied all established patterns methodically: error brightening (red.300), cleared dropdown placeholders, side-by-side dose/fractions Grid layouts, home button styling (top-right, green.300/green.600). Additional refinements based on cross-module pattern analysis: converted dose calculation method from dropdown to button group (Raw Dose | EQD2), shortened all placeholders ("Enter dose" not "Enter dose in Gy"), added subsection headers ("Current Treatment", "Dose Analysis"), bolded critical Treatment Site label. Preview section removal from 3rd column followed TBI/HDR pattern (Entry #36, #42) - cleared ~100 lines of summary badges and checklists that added no value for button-driven form. Custom site logic implementation mirrored DIBH exactly (Entry #31) - conditional rendering with checkbox toggle for both current treatment and each prior treatment in accordion. Backend schema updates straightforward: added `custom_current_site` and `custom_site` fields with default empty strings, service logic checks custom field first then falls back to standard field. Zero linting errors throughout all changes.
+
+**Friction:** Initial button group implementation for dose calc method required adding Radio/RadioGroup imports and watching dose_calc_method value. Custom site checkbox logic for prior treatments in accordion needed careful conditional rendering - checking `watchPriorTreatments?.[index]?.custom_site` to toggle between Select and Input. Backend service had two locations updating prior treatment site display (single and multiple prior text generation) requiring `replace_all` flag for global update. Custom site field validation tricky - `custom_site` starts as empty string but needs to become truthy to trigger Input display, solved by setting to "custom" string on checkbox, then overwriting with actual text input value.
+
+**Insight:** **Systematic pattern inventory accelerates module refinement** - analyzing DEV_LOG Entries #31-46 identified 20 distinct UI/UX patterns, Prior Dose was missing 6 critical ones. Creating comparison checklist (already applied vs not applied) made systematic application trivial. **Button groups dramatically improve 2-option UX** - dose calculation method went from 2-option dropdown requiring click to 50/50 button layout with instant visual feedback. Pattern from SBRT (Entry #32), TBI (Entry #36), proven across 6 modules now. RadioGroup with hidden Radio inputs provides semantic correctness while buttons provide visual clarity. **Preview sections create false value** - summary counts ("2 of 5 treatments have overlap") and expected structure lists don't help users complete forms faster, just consume vertical space. Button-driven forms with clear labels are self-documenting, preview redundant. **Custom site pattern is universal** - DIBH implementation (Entry #31) transferred perfectly to Prior Dose with zero modifications needed. Pattern: state boolean, conditional Select/Input rendering, checkbox toggle below field, clear opposite field on toggle. Works for single fields (current treatment) and dynamic arrays (prior treatments accordion). **Backend custom field handling pattern** - using `custom_field if custom_field else standard_field` throughout service methods provides clean fallback logic. Pydantic schema with `Field(default="")` makes both fields optional, frontend decides which to populate. **3-column layout flexibility** - removing preview from 3rd column doesn't waste space, creates opportunity for future features (critical structures list, dose statistics quick-add, etc.). Prior Dose now matches all production modules (DIBH, SBRT, TBI, HDR, Pacemaker) for UI consistency. Ready for Phase 2 comprehensive QA testing following established pattern (Entries #27, #30, #39, #43, #47).
+
+---
+
+## Entry #51
+**Focus:** Prior Dose module Phase 2 - layout refinement, DICOM tracking, and core QA testing
+
+**Smooth:** Three-column layout optimized by moving Dose Analysis section to third column, improving logical flow (Staff | Treatment | Analysis). Added per-treatment DICOM unavailable tracking with checkbox under overlap - more granular than global flag. Backend schema update (`dicoms_unavailable: bool`) and service modifications straightforward - conditional text insertion in four locations (single/multiple prior, with/without overlap). Created core test script (`test_prior_dose_core.py`) covering three essential scenarios: single prior without overlap, single prior with overlap, multiple prior with mixed overlap. All 3/3 tests passed on first run. Fixed dose calculation method validation - changed default from EQD2 to empty string forcing user selection, added hidden input with required validation and error message display.
+
+**Friction:** Frontend failed to start during development with "EPERM: operation not permitted" on port 3000 - required full service restart with proper permissions. Initial form submission didn't work because dose calculation method had no validation when changed to empty default. Fixed by adding FormControl isInvalid, hidden registered input with required rule, and FormErrorMessage display. Prior treatment accordion layout needed reorganization - moved checkboxes (overlap, dicoms) from right column to left column with treatment site, moved dose/fractions from left to right for better visual grouping.
+
+**Insight:** **Per-item boolean flags more flexible than global flags** - DICOM unavailability is really a per-treatment property since some treatments may have files available while others don't. Matches pattern from Entry #20 (per-treatment overlap vs global mode). **Empty string defaults for critical clinical selections enforce explicit decision-making** - dose calculation method (Raw Dose vs EQD2) shouldn't silently default, user must choose. Pattern proven across SBRT breathing technique (Entry #32), TBI buttons (Entry #36). **Backend text generation with conditional insertions scales well** - single `if treatment.dicoms_unavailable:` check in four locations adds "DICOM files for this treatment were unavailable for reconstruction" sentence inline after dose/fractions. Clean, readable, maintainable. **Core test script validates essential workflows before comprehensive testing** - 3 core scenarios (no overlap, with overlap, multiple mixed) prove module functional, catch backend/frontend integration issues, generate documentation. Can expand to comprehensive suite later. **Validation must match UI patterns** - button groups with RadioGroup need hidden registered input for react-hook-form validation. Pattern: FormControl with isInvalid, hidden Input with register + required rule, FormErrorMessage with red.300 color. Prior Dose module now ready for expanded testing (custom sites, edge cases, quality checks) or production deployment. Backend handles all overlap scenarios, DICOM tracking, dose calculation methods correctly.
+
+---
+
+## Entry #52
+**Focus:** Prior Dose module comprehensive QA testing - clinically meaningful test coverage
+
+**Smooth:** Created comprehensive test script (`test_prior_dose_comprehensive.py`) following proven QA patterns from Entries #27 (Fusion), #30 (DIBH), #39 (TBI), #43 (HDR), #47 (Pacemaker). Five test suites organized around clinically meaningful scenarios rather than superficial permutations: (1) Dose Calculation Methods - Raw vs EQD2 critical for clinical decisions, (2) DICOM Unavailable Scenarios - common workflow issue with single/multiple/mixed cases, (3) Custom Site Functionality - real-world flexibility for non-standard anatomical regions, (4) Overlap Pattern Variations - all overlap, none overlap, mixed patterns, (5) Edge Cases - SBRT/SRS high doses, single fractions, many treatments (5), no prior baseline. Total 15 comprehensive tests. All 15/15 passed on first run. Automated quality checks validate: no patient demographics, proper Dr. prefix, correct dose calculation method mentioned in overlap cases, DICOM unavailable text when expected, overlap statement logic (reconstructed methodology for overlap, minimal/no overlap statement otherwise), custom site names appearing in writeup. Generated 1000+ line markdown report with full writeups and quality metrics for clinical review.
+
+**Friction:** None - systematic approach from established QA patterns transferred perfectly. Prior Dose complexity (dose calc methods, per-treatment flags, custom sites, constraint mapping) required more thoughtful test design than simpler modules like TBI, but focusing on "useful vs superficial" tests kept suite manageable at 15 tests instead of exhaustive permutations. Quality check for dose calculation method had to handle both overlap cases (should mention method) and no-overlap cases (method not relevant, skip check).
+
+**Insight:** **Clinically meaningful test design beats exhaustive permutation testing** - 15 carefully chosen tests covering dose calc methods (2), DICOM scenarios (3), custom sites (3), overlap patterns (3), edge cases (4) provide better validation than 50+ tests checking every anatomical site dropdown option. **Test organization by clinical scenario improves maintainability** - grouping tests into suites (Dose Calc, DICOM, Custom Sites, Overlap, Edge Cases) makes report scannable for clinical stakeholders and helps identify coverage gaps. **Quality checks should validate conditional logic** - dose calculation method check handles overlap cases (method mentioned in Methodology section) vs no-overlap cases (method not mentioned, skip check). Pattern: `if "Methodology:" not in writeup: return True`. **Automated demographics detection with regex word boundaries prevents false positives** - checking `\bhis\b` not substring "his" avoids flagging "this patient" as demographic reference. Pattern proven in Entry #47 (Pacemaker). **Edge case testing demonstrates real-world readiness** - SBRT doses (50 Gy/5 fx), SRS single fractions (20 Gy/1 fx), many prior treatments (5), and no prior baseline all handled correctly. **Results summary provides clear production signal** - Executive Summary shows 15/15 passed, quality metrics all 15/15 ✓, recommendations section states "ALL TESTS PASSED - module is production-ready". Pattern: comprehensive QA test suite → all pass → document in DEV_LOG → prepare for deployment. Prior Dose module now has automated QA validation matching other production modules (Fusion 33 tests, DIBH 20 tests, TBI 13 tests, HDR 18 tests, Pacemaker 21 tests). Total test count (15) appropriate for module complexity - fewer than Fusion (many combinations) or Pacemaker (multiple risk categories), more than TBI (standardized workflow).
+
+---
+
+## Entry #53
+**Focus:** Prior Dose module grammar fixes - singular fraction and patient placeholder consistency
+
+**Smooth:** Comprehensive QA testing (Entry #52) surfaced two grammatical errors through automated review. Fixed both issues in backend service (`prior_dose.py`) with surgical precision. Created `_format_fractions()` helper method returning "fraction" for count=1, "fractions" otherwise. Applied helper across all three text generation methods (_generate_no_prior_text, _generate_single_prior_text, _generate_multiple_prior_text) covering six locations total. Removed patient placeholder "for ---" from no-prior case to match all other prior dose writeups. Re-ran comprehensive test suite - all 15/15 tests still passed after fixes. Test 13 (single fraction SRS) now correctly shows "20 Gy in 1 fraction" and "18 Gy in 1 fraction" instead of "1 fractions". Test 15 (no prior) now shows "consultation for prior dose assessment" instead of "consultation for --- for prior dose assessment". Zero linting errors after changes.
+
+**Friction:** None - well-structured service methods made grammar fixes straightforward. Helper method pattern (similar to HDR's `_format_channels()` from Entry #19) provided clean abstraction. Backend auto-reload picked up changes after restart, no manual service restarts needed.
+
+**Insight:** **Comprehensive QA testing reveals subtle grammar issues** - automated testing with 15 scenarios caught singular/plural mismatch and placeholder inconsistency that manual review might miss. Single fraction scenarios (SRS, TBI 2 Gy/1fx) are edge cases often overlooked during development. **Helper methods for grammar patterns improve maintainability** - `_format_fractions(count)` eliminates six inline ternary checks, ensures consistency across all writeup methods, follows pattern from HDR channel formatting (Entry #19). Pattern: create helper for any text that needs singular/plural logic, call once per treatment description. **Patient placeholder usage should be consistent within module** - no-prior case had "for ---" while overlap/no-overlap cases didn't include placeholder in opening sentence. Consistency improves professional appearance. **Backend text generation errors require service restart** - unlike frontend hot-reload, backend service changes need explicit restart to pick up modifications (pattern from Entry #29). Use `./stop.sh && ./start.sh` for full reset. Test suite validation proves fixes without manual testing - re-running comprehensive suite after grammar changes confirmed all 15 tests still pass, specific tests (13, 15) show corrected output. Prior Dose module now has correct grammar for all fraction counts (1 to 50+) and consistent patient reference style across all three writeup patterns.
+
+---
+
+## Entry #54
+**Focus:** Fusion module stylistic updates from Dr. Papanikolaou's clinical review
+
+**Smooth:** Systematic application of 5 stylistic improvements across all fusion writeup templates. Changes applied uniformly through search-replace patterns targeting specific phrases. All 33 fusion combination tests passed after changes. Key updates: (1) CT/CT clarity - added "separate" before imported CT study to distinguish from planning CT, (2) registration methodology - added "which was then further" for smoother flow before "refined manually", (3) validation language - changed "verified" to "validated" and removed specific anatomical examples ("such as the liver"), (4) clinical purpose - modernized to "segmentation of organs at risk and targets as part of the treatment planning process", (5) final approval - changed "fusion for" to "fusion of" preposition. Zero linter errors after all changes.
+
+**Friction:** Had to ensure CT/CT "separate" change only applied to CT-to-CT fusions, not MRI or PET cases. Required conditional logic in intro text generation - CT gets "A separate CT study was imported" while MRI/PET keep their original phrasing. Also updated intro reference from "The CT study" to "This CT study" to match provided example output.
+
+**Insight:** **Stylistic polish from clinical stakeholders improves professional quality** - these weren't error corrections but readability improvements that make writeups scan better for clinicians. "Segmentation of organs at risk" is more precise than "identification of critical structures and targets and to accurately contour them" - fewer words, standard terminology. **Removing specific anatomical examples simplifies templates** - "validated using anatomical landmarks" is cleaner than "validated using anatomical landmarks such as the {landmark_text}" and eliminates need for complex landmark text generation logic. **Preposition changes matter** - "fusion of the image sets" reads more naturally than "fusion for the image sets". Small words have outsized impact on professional tone. Pattern: gather clinical feedback after initial deployment, apply as batch updates, verify with comprehensive test suite.
+
+---
+
+## Entry #55
+**Focus:** Fusion module simplification - replace 19-lesion dropdown with 7 anatomical region buttons
+
+**Smooth:** Recognized that after removing specific landmark references in Entry #54, the `lesion` field no longer influenced writeup output - only `anatomical_region` was used ("based on the {anatomical_region} anatomy"). Replaced complex lesion→region mapping with direct region selection via button grid. Seven regions defined: Brain, Head & Neck, Thoracic, Abdominal, Pelvic, Spinal, Extremity. Frontend updated with RadioGroup + Button pattern matching SBRT/TBI modules. Backend cleaned up - removed ~80 lines of dead code (lesion_to_region mapping, get_anatomical_region method, get_landmark_text method, pathology_terms set). Renamed `custom_lesion` to `custom_anatomical_region` throughout. Updated test scripts to use new field names. All 33 fusion tests + 17 region variation tests passed.
+
+**Friction:** Required updates across 6 files: FusionForm.jsx (UI changes), fusion.py service (remove dead code, update method signatures), fusion.py schema (rename fields), fusionService.js (remove getLesionRegions call), test_fusion_combinations.py (update payload), test_fusion_lesions.py (rewrite for regions instead of lesions). Had to trace through all _generate_*_text methods to remove lesion parameter and landmark_text variable usage.
+
+**Insight:** **Dead code should be removed immediately** - once Entry #54 removed all `{landmark_text}` references from templates, the entire lesion→landmark pipeline became vestigial. Keeping it would create confusion about what actually affects output. **Button grids superior to long dropdowns** - 7 buttons vs 19-item dropdown is more scannable, requires no scrolling, matches UI patterns from TBI/HDR/Pacemaker modules. **Simplification reveals true dependencies** - removing lesion showed that anatomical_region was the only clinically relevant field. Custom option preserved for unusual cases (shoulder, foot, sacrum all tested working).
+
+---
+
+## ⚠️ REVERSION NOTICE: Lesion Sites vs Anatomical Regions
+
+**Context:** Entry #55 replaced the original 19-lesion dropdown (brain, prostate, liver, oropharynx, etc.) with 7 anatomical region buttons (Brain, Head & Neck, Thoracic, Abdominal, Pelvic, Spinal, Extremity).
+
+**Why this might need reverting:**
+- Dr. Papanikolaou's feedback led to removing specific landmark references from writeups
+- This made the lesion field vestigial (only anatomical_region was used in text)
+- Other faculty may prefer the granular lesion selection for:
+  - Clinical documentation purposes
+  - Treatment site tracking/reporting
+  - Consistency with existing workflows
+  - Future feature requirements (e.g., lesion-specific templates)
+
+**If reverting is requested:**
+1. Restore `lesion_to_region` mapping in `backend/app/services/fusion.py`
+2. Restore `lesion` and `custom_lesion` fields in `backend/app/schemas/fusion.py`
+3. Restore lesion dropdown in `frontend/src/components/fusion/FusionForm.jsx`
+4. Restore `getLesionRegions` in `frontend/src/services/fusionService.js`
+5. Update test scripts to use lesion fields again
+6. Consider whether to restore "such as the {landmark}" text to writeups
+
+**Git reference:** Changes can be reverted by checking the commit history for files modified in this session (December 3, 2025).
+
+---
+
+## Entry #56
+**Focus:** Fusion module UI/UX alignment with patterns established in Entries #31-55
+
+**Smooth:** Systematic inventory identified 5 UI/UX gaps between Fusion module and newer modules (DIBH, SBRT, TBI, HDR, Pacemaker, Prior Dose). Applied all established patterns in single session: (1) Removed verbose preview section from 3rd column (~120 lines removed - Alert, Card with badges, blue info box), replaced with simple 3-line confirmation text; (2) Brightened error messages using `sx={{ color: 'red.300' }}` on all FormErrorMessage components; (3) Cleared dropdown placeholders (empty string instead of "Select a physician/physicist"); (4) Repositioned custom region checkbox below button grid (matching DIBH pattern); (5) Removed `as={Box}` from GridItems for semantic cleanup; (6) Cleaned up unused imports (Tabs, TabList, Tab, TabPanels, TabPanel, IconButton, VStack). Zero linting errors after all changes.
+
+**Friction:** None - well-established patterns from DEV_LOG entries made refactoring straightforward. Pattern comparison document created before implementation identified all gaps cleanly. Complex mode (registration management UI) preserved in 3rd column since it contains functional UI, not just preview.
+
+**Insight:** **Pattern inventory before refactoring prevents missed updates** - systematically comparing module code against established patterns (Entries #31-55) identified exactly which changes were needed. **Preview sections provide false value in button-driven forms** - when inputs are buttons/button groups showing exactly what will be used, additional "Expected Write-up Structure" previews add visual clutter without improving UX. **Cross-module UI consistency improves user experience** - applying same patterns (error colors, placeholder styles, checkbox position) across all modules creates predictable, learnable interface. **Unused import cleanup follows major refactoring** - removing preview section made Tabs, TabPanel, IconButton, VStack imports obsolete, cleaning these reduces bundle size. Fusion module now fully aligned with patterns from DIBH, SBRT, TBI, HDR, Pacemaker, and Prior Dose modules.
+
+---
+
+## Entry #57
+**Focus:** HDR and TBI form validation fixes - react-hook-form button integration
+
+**Smooth:** Identified root cause of validation errors blocking writeup generation - hidden Radio elements with `register()` only existed on first option in each button group. When users selected any other option, form validation still thought fields were empty. Fixed by removing RadioGroup/Radio components entirely, using plain Button components with `setValue()` calls, and adding properly registered hidden `<input>` elements at bottom of forms. Applied same fix pattern to both TBI and HDR modules. Additional HDR refinement: made Number of Channels field customizable for Utrecht/GENEVA/SYED applicators (blank by default, user enters value) while keeping VC/T&O read-only with fixed values (1/3 channels).
+
+**Friction:** Initial `setValue()` calls weren't triggering validation even with `{ shouldValidate: true }` because hidden Radio elements were creating conflicts. Removing RadioGroup/Radio entirely and using hidden inputs solved the issue cleanly. User testing revealed lung blocks still failing after first fix - required removing all Radio elements, not just the registration.
+
+**Insight:** **react-hook-form validation with button groups requires hidden input pattern** - RadioGroup with hidden Radio inside buttons creates registration conflicts. Clean pattern: Button onClick calls `setValue(field, value, { shouldValidate: true })`, hidden `<input type="hidden" {...register(field, { required: true })} />` at form bottom handles validation. **Conditional readonly improves UX for mixed-behavior fields** - HDR channels readonly for VC/T&O (fixed values) but editable for other applicators (variable channel counts). Visual cues (gray.400 text, not-allowed cursor) communicate readonly state. **Empty defaults force explicit user input for critical clinical values** - customizable channel fields now blank instead of preset numbers, ensuring user enters actual treatment configuration rather than accepting potentially wrong defaults.
+
+---
+
+## Entry #58
+**Focus:** Prior Dose module form validation fix - Dose Calculation Method toggle buttons
+
+**Smooth:** Identified root cause of "Generate Write-up" button not working - Dose Calculation Method toggle buttons weren't properly setting form values. Original implementation used `Button as="label"` with hidden `Radio` elements inside, but clicking these buttons didn't trigger RadioGroup's onChange because Radio had `display: none` and no proper label-to-input connection. Fixed by replacing RadioGroup/Radio pattern with `Controller` from react-hook-form - cleaner approach that wraps button group, provides `field.onChange()` callback directly, and handles validation automatically. Also added `required: 'Treatment year is required'` to prior treatment year field to match backend schema requirements (backend has `year: int = Field(...)` requiring the field). Removed unused imports (Radio, RadioGroup) and unused watch variable (watchDoseCalcMethod). Zero linting errors after all changes.
+
+**Friction:** Initial diagnosis required browser testing to confirm button clicks weren't setting values - accessibility snapshot showed buttons losing `[active]` state after other form interactions. Form was submitting to backend (frontend validation passing) but backend returned 422 Unprocessable Entity because `dose_calc_method` was empty. Console logs confirmed API request with missing field. Year field was also required by backend but not frontend, causing additional 422 errors even after dose calc fix.
+
+**Insight:** **Controller pattern superior to Button-as-label + hidden Radio** - when RadioGroup onChange depends on Radio elements receiving clicks, hiding those radios breaks the chain. Controller provides direct `field.onChange()` callback that Button onClick can call without intermediate Radio elements. Pattern: `<Controller name={field} control={control} rules={{ required: true }} render={({ field }) => <Button onClick={() => field.onChange(value)} ... />} />`. **Frontend/backend validation must align** - backend had `year: int = Field(...)` (required) while frontend had no `required` rule, causing silent form submission followed by 422 rejection. Always verify frontend validation rules match backend schema requirements. **Accessibility snapshots reveal state issues** - browser testing with `[active]` state tracking showed buttons losing selection after other form interactions, proving value wasn't persisting in form state. Pattern now proven across Prior Dose, TBI, HDR modules: avoid RadioGroup with hidden Radio inputs, use either Controller or hidden input pattern from Entry #57.
+
+---
+
+## Entry #59
+**Focus:** Prior Dose module dose statistics - auto-populate with optional inclusion and minimal UI
+
+**Smooth:** Implemented auto-populating dose statistics based on treatment site combinations. Added new backend endpoint `/api/prior-dose/suggested-constraints` that returns relevant QUANTEC/Timmerman constraints based on current and prior treatment sites. Frontend useEffect watches for overlap changes and auto-populates the dose_statistics field array with suggested constraints. Values are optional - only filled statistics are included in the writeup. Frontend filters out empty statistics before submitting, backend only renders constraints with values. UI refactored for minimal design matching app aesthetic: simple "Dose Statistics" header with small + IconButton, single-row layout per constraint (Structure name | Input | Unit | Delete button), uses same gray background as other form sections. Removed colorful badges, nested boxes, and verbose descriptions from initial implementation.
+
+**Friction:** None in implementation. The auto-populate relies on the backend API which requires deployment for production use. Local development testing confirmed all features working correctly via curl tests.
+
+**Insight:** **Minimal single-row layouts scale better than card-based designs** - each constraint as `Structure | Input | Unit | Delete` in one HStack is cleaner than nested boxes with badges and labels. Users can scan multiple constraints quickly. **IconButton for compact actions** - using small ghost-variant IconButtons instead of full Button components with text keeps the UI tight. Pattern: `<IconButton icon={<AddIcon />} size="xs" variant="ghost" />`. **Consistent section styling** - matching the formBg and borderColor variables from other sections makes the dose statistics feel integrated rather than a special highlighted area. **Optional fields with smart defaults provide better UX** - auto-populating suggested constraints gives users guidance without forcing them to fill every field. Placeholder shows the limit value as guidance. **Filtering on submission is cleaner than validation** - simply filter out empty entries before sending to backend. Backend only renders what it receives.
+
+---
+
+## Entry #60
+**Focus:** Prior Dose module Dose Statistics UI refinement and standardization
+
+**Smooth:** Systematic UI refinements to Dose Statistics section following established patterns. Fixed font sizes from `xs` to `sm` to match all other form fields. Changed layout from single-row horizontal (structure + input + unit + delete all inline) to two-row vertical layout per constraint card (structure name on line 1, input/unit/delete on line 2). This allows long constraint names like "Bilateral Lungs Mean Lung Dose" to display fully without truncation. Updated grid from 2-column to 3-column on large screens for better space utilization. Removed generic fallback constraints from backend ("Adjacent critical structures Per QUANTEC", "Overlapping normal tissue Composite dose evaluation") - now only specific predefined QUANTEC/Timmerman constraints auto-populate. Unmapped site combinations show "No constraints added - click + to add" instead of vague generic placeholders.
+
+**Friction:** Initial single-row layout with `noOfLines={1}` caused text truncation on longer constraint names. Switching to Box container with Text on first row and HStack on second row solved the display issue while maintaining compact card appearance. Backend change required service restart to take effect (standard pattern from Entry #29).
+
+**Insight:** **Two-row card layouts handle variable-length content better than single-row** - structure names vary from short ("Heart Mean dose") to long ("Bilateral Lungs Mean Lung Dose"). Putting label on its own row eliminates truncation without sacrificing compactness. **Remove generic fallbacks for standardization** - vague constraints like "Per QUANTEC" and "Composite dose evaluation" added confusion rather than value. Users who need custom constraints can add them manually via + button. Only specific, standardized constraints should auto-populate. **Constraint mapping system enables smart defaults** - backend maintains predefined mappings for common site combinations (lung+thorax, brain+head/neck, pelvis+pelvis, etc.) returning QUANTEC/Timmerman limits. Frontend auto-populates when overlap detected, won't overwrite user-entered values. Pattern: specific mappings > generic fallbacks > empty state with manual add option.
+
+---
+
+## Entry #61
+**Focus:** Prior Dose dose statistics simplification - site-based constraints instead of combination-based
+
+**Smooth:** Refactored constraint auto-population from combination-based mapping (e.g., `("lung", "thorax")`) to per-site constraints. Each treatment site now has its own list of relevant dose constraints (brain → brainstem/optic chiasm/optic nerves, lung → spinal cord/bilateral lungs/heart/esophagus, pelvis → rectum/bladder/femoral heads/small bowel, etc.). All sites present (current + overlapping prior sites) contribute their constraints to a single deduplicated list. Backend uses Set-based deduplication keyed on `structure_constraint` to ensure if two sites share the same constraint (e.g., pelvis and prostate both have Rectum V50 Gy), it only appears once. API simplified from two-parameter (`current_site`, `prior_site`) to single comma-separated `sites` parameter. Frontend updated to collect all unique sites and make single API call.
+
+**Friction:** None - clean refactor with clear before/after semantics. Previous system required defining every pairwise combination explicitly (lung+lung, lung+thorax, thorax+lung, thorax+thorax = 4 entries for just 2 sites). New system defines each site once (lung, thorax = 2 entries) and deduplication handles overlaps automatically.
+
+**Insight:** **Per-site constraints scale better than pairwise combinations** - with N sites, old system needed up to N² mappings while new system needs exactly N mappings. **Deduplication by structure+constraint key is the right abstraction** - if Spinal Cord Max dose matters for both lung and thorax treatments, it should appear once, not twice. Users fill in one value that applies to the composite dose analysis. **Single API call vs loop of calls improves performance and simplicity** - frontend collects all sites into array, joins with comma, single request returns complete deduplicated constraint list. **Clear site-to-constraints mapping improves maintainability** - adding new treatment site is now just adding one dictionary entry, not N entries for all possible combinations with other sites.
+
+---
+
+## Entry #62
+**Focus:** Prior Dose dose statistics reactive updates - auto-update when sites change
+
+**Smooth:** Fixed dose statistics to update automatically when any treatment site changes, not just when toggling the overlap checkbox. Added `useMemo` to create a `sitesKey` that changes when relevant sites change. Key fix was using `JSON.stringify(watchPriorTreatments)` to detect nested property changes - React's shallow comparison on the array reference doesn't catch changes to `.site` within array items. Added `watchCustomCurrentSite` to track custom site field changes. Preserved user-entered values when constraints update by matching on `structure_constraint_type` key.
+
+**Friction:** Initial implementation with `watchPriorTreatments` in dependencies didn't trigger re-renders when changing prior treatment sites. Root cause: React's useEffect/useMemo do shallow comparison on array references. When you change `prior_treatments[0].site`, the array reference stays the same, so React doesn't see it as a change. Solution: `priorTreatmentsString = JSON.stringify(watchPriorTreatments)` creates a string that changes when ANY nested property changes.
+
+**Insight:** **JSON.stringify for deep dependency tracking** - when you need useEffect/useMemo to respond to nested property changes in arrays/objects, stringify the watched value and use the string as the dependency. The string comparison will detect any nested change. **Computed keys for multi-value dependencies** - `sitesKey = JSON.stringify([currentSite, ...priorSites.sort()])` provides stable, comparable value that changes when any contributing value changes. **Preserve user values during updates** - when auto-populating constraints, create a Map of existing values keyed by `structure_constraintType`, then restore those values to matching constraints in the new list. Users don't lose their work when sites change.
+
+---
+
+## Entry #63
+**Focus:** Fractionation-sensitive dose constraint system - QUANTEC vs Timmerman vs SRS
+
+**Smooth:** Comprehensive implementation based on user-provided clinical reference document (`docs/dose constraints reference.md`). Created three regime-specific constraint tables: QUANTEC (~65 constraints for conventional fractionation/EQD2), Timmerman with 3fx and 5fx sub-tables (~80 constraints each for SBRT), and SRS constraints (~15 for single-fraction). Added regime detection function that classifies treatments: SRS (1 fx ≥10 Gy), SBRT_3fx (2-3 fx ≥5 Gy/fx), SBRT_5fx (4-8 fx ≥5 Gy/fx), CONVENTIONAL (~2 Gy/fx). Updated API to accept `dose_calc_method`, `current_dose`, `current_fractions` parameters. Frontend passes fractionation info to constraint API automatically. All tests passed: conventional returns QUANTEC limits (Spinal Cord Dmax 50 Gy), SBRT returns Timmerman limits (Spinal Cord Dmax 0.035cc <20.3-22.5 Gy), SRS returns single-fraction limits (Brainstem <15 Gy, V12 <5cc). Added α/β ratio reference table and new `/fractionation-regime` endpoint.
+
+**Friction:** None - comprehensive clinical reference document provided exact numeric limits, volume metrics, sources, and decision logic needed. Clear user specification that EQD2 toggle is for **documentation** (not calculation) and **constraint selection** (EQD2 → always use QUANTEC since values are EQD2₂ equivalent).
+
+**Insight:** **EQD2 toggle serves two purposes**: (1) documentation - writeup says "we used EQD2 methodology", (2) constraint selection - when EQD2 selected, use QUANTEC limits regardless of fractionation since user has converted values to 2 Gy equivalents. **Edge case handled correctly**: 50 Gy/25 fx (2 Gy/fx) has Raw Dose = EQD2, so same QUANTEC constraints apply either way. **Fractionation-specific constraints are critical for clinical accuracy** - SBRT spinal cord tolerance (20-22 Gy in 3 fx) is fundamentally different from conventional (50 Gy), can't just use one table for everything. **Three-table architecture scales well** - each regime has its own complete constraint set with appropriate volume specifications (Dmax vs D0.035cc), limits, and endpoints. Source attribution (QUANTEC, Timmerman/TG-101, HyTEC, SRS) provides clinical transparency. Pattern: regime detection → constraint table selection → site-based filtering → deduplication → source labeling.
+
+---
+
+## Entry #64
+**Focus:** Prior Dose module edge case audit - fixing contradictory and nonsensical writeup scenarios
+
+**Smooth:** Systematic investigation of Prior Dose module identified 10 edge cases where writeups could be contradictory or clinically nonsensical. Prioritized 6 fixes based on user feedback. All changes completed in single session with zero linter errors. Key fixes: (1) Removed dead `composite_dose_computed` checkbox - field existed in schema/frontend but was never used in backend writeup generation, and created impossible scenario (checking "composite computed" while DICOMs unavailable), (2) Removed template placeholders `[IF ALL CONSTRAINTS MET:]`, `[IF ANY CONSTRAINT EXCEEDED...]`, `[Figures]` from assessment section - these were appearing verbatim in final output, (3) Fixed DICOM unavailable logic for no-overlap cases - removed mention of DICOM availability when there's no overlap (irrelevant since no reconstruction needed), (4) Required at least one dose statistic when overlap exists - frontend validation with toast error message, (5) Auto-derive critical structures from dose statistics - removed redundant input field.
+
+**Friction:** Initial implementation added separate "Critical Structures at Risk" input field with comma-separated values. User correctly identified this as redundant - dose statistics already contain structure names (Spinal Cord, Lungs, etc.), so we can extract them automatically. Refactored to derive `critical_structures` array from filled dose statistics on submit: `[...new Set(filledStats.map(stat => stat.structure))]`. Much cleaner UX.
+
+**Insight:** **Dead code creates impossible UI states** - the `composite_dose_computed` checkbox could be checked while DICOMs were marked unavailable, which is physically impossible (can't compute composite without DICOM data). Removing unused fields prevents nonsensical combinations. **Template placeholders should never reach production** - bracketed instructions like `[IF ALL CONSTRAINTS MET:]` are developer scaffolding, not user-facing text. Clean assessment text on generation, not on display. **DICOM availability is context-dependent** - only matters when you're actually reconstructing dose (overlap cases). Mentioning it for no-overlap cases creates confusion. **Derive don't duplicate** - when data already exists (structure names in dose statistics), extract it rather than asking user to re-enter. Pattern: `filledStats.map(stat => stat.structure)` gives critical structures for free. **Edge case audits should be systematic** - listing all field combinations and asking "can this combination produce nonsensical output?" catches issues that normal testing misses. Prior Dose module now has logical consistency: overlap → requires dose statistics → structures auto-extracted → writeup mentions those specific structures.
+
+---
+
+## Entry #65
+**Focus:** Prior Dose module smart assessment and grouped constraints UI
+
+**Smooth:** Two significant improvements completed in single session. (1) **Smart assessment logic** - backend now parses entered dose values against constraint limits to determine if any are exceeded. New helper methods `_parse_limit_value()` and `_compare_value_to_limit()` handle various limit formats (<54 Gy, ≤50%, 30-32 Gy ranges). New `_generate_smart_assessment()` method categorizes constraints as exceeded/within/unknown and generates appropriate clinical text. When constraints exceeded: lists specific violations with values vs limits, recommends clinical judgment. When all within limits: states "acceptable normal tissue doses". (2) **Grouped constraints UI** - frontend now displays dose statistics grouped by anatomical region (Brain, Spine, Head & Neck, Thorax, Abdomen, Pelvis, Extremity) using Chakra UI Accordion. Each region has distinct color coding and badge showing constraint count. Backend updated to include `region` field in constraint API response with `_get_region_for_structure()` helper mapping 40+ structures to their anatomical regions.
+
+**Friction:** None - both features implemented cleanly following established patterns. Smart assessment parsing handles various limit formats (< vs ≤, ranges like 30-32, different units). Frontend grouping required useMemo-style inline function in JSX to dynamically group constraints by region on each render.
+
+**Insight:** **Smart text generation adds clinical value** - hardcoded "acceptable" assessments were misleading when constraints were exceeded (80 Gy brainstem vs <54 Gy limit). Parsing and comparing values programmatically catches these issues automatically. **Anatomical grouping improves constraint navigation** - when many constraints populate (12+ across Brain, Spine, Thorax, Lungs), collapsible region groups make finding specific structures much easier than flat grid. **Structure-to-region mapping scales well** - single dictionary (40+ entries) maps all structures to regions, called once per constraint. New structures easily added. **Color-coded region headers aid visual scanning** - Brain=purple, Spine=blue, Thorax=orange, etc. creates instant visual hierarchy. Pattern now proven: backend generates clinically-smart text (not just templates), frontend presents constraints in logical clinical groupings. Prior Dose module now catches exceeded constraints automatically and presents OARs in intuitive anatomical organization.
+
+---
+
+## Entry #66
+**Focus:** Prior Dose constraint grouping refinement - CNS and Optics & Hearing
+
+**Smooth:** Quick refinement to anatomical region groupings based on clinical feedback. Two key changes: (1) Renamed "Brain" to "CNS" and merged Spinal Cord into this group - clinically appropriate since both are central nervous system structures with similar radiosensitivity considerations (α/β ~2). (2) Renamed "Optics" to "Optics & Hearing" and moved Cochlea from Brain into this group - sensory organs often evaluated together in head/brain cases. Backend STRUCTURE_TO_REGION mapping updated for 6 CNS structures (brainstem, brain, normal brain, spinal cord, cauda equina, sacral plexus) and 5 Optics & Hearing structures (optic chiasm, optic nerves, lens, retina, cochlea). Frontend regionOrder and regionColors updated to match.
+
+**Friction:** None - straightforward renaming and regrouping. Removed now-empty "Spine" region from frontend since all spine structures moved to CNS.
+
+**Insight:** **Clinical groupings should reflect clinical workflows** - physicians often evaluate CNS structures together (brain + cord have similar tolerance concerns), and sensory organs (vision + hearing) together. **Naming matters for usability** - "CNS" is more medically accurate than "Brain" when spinal cord is included, "Optics & Hearing" clearly indicates cochlea belongs there. **Region consolidation reduces visual clutter** - fewer columns (7 instead of 8) when regions are logically combined, easier to scan. Structure-to-region mapping remains easily extensible - just add new entries to dictionary. Pattern: group structures by clinical evaluation workflow, not just anatomical proximity.
+
+---
+
+## Entry #67
+**Focus:** Prior Dose clinical QA script - testing for clinically meaningful inconsistencies
+
+**Smooth:** Created comprehensive clinical QA test script (`test_prior_dose_clinical_qa.py`) with 13 tests across 6 suites, specifically designed to catch clinically nonsensical writeups. Tests organized around clinical scenarios: (1) DICOM-Overlap logical consistency - DICOM availability only relevant when overlap exists, (2) Fraction grammar edge cases - singular "fraction" vs plural "fractions", (3) Chronological ordering - multiple prior treatments sorted oldest-to-newest, (4) Overlap statement logic - "one of the previous" vs "2 of the previous" grammar, (5) Clinical plausibility edge cases - high cumulative dose warnings, SBRT re-treating SBRT, distant site overlap claims (brain+pelvis), (6) Dose calculation method consistency - EQD2 vs Raw Dose methodology text. All 13 tests passed on first run with all 11 clinical check types passing across every test.
+
+**Friction:** None - systematic approach following DEV_LOG Entry #64 edge case audit informed test design. Clinical checks implemented as separate functions returning (passed, message) tuples for clean reporting. Plausibility checks generate warnings rather than failures - clinically suspicious scenarios like brain+pelvis overlap are flagged but not blocked since they may be legitimate (e.g., craniospinal treatments).
+
+**Insight:** **Clinical QA differs from functional QA** - the original comprehensive test (`test_prior_dose_comprehensive.py`) verified the module generates writeups and handles various inputs; the new clinical script verifies the writeups make clinical sense. Key clinical checks: (1) DICOM unavailable + no overlap should NOT mention DICOM (irrelevant since no reconstruction needed), (2) DICOM unavailable + overlap must mention "conservative" approach not claim reconstruction, (3) Treatments must list chronologically (oldest first) for clinical timeline clarity, (4) Overlap statement grammar must match count ("one of" vs "2 of" vs "with the previous"), (5) High cumulative dose (>100 Gy) generates warning, (6) SBRT re-treating SBRT generates BED warning, (7) Anatomically distant overlap claims (brain+pelvis) generate suspicion warning. **Warnings vs failures pattern** - clinical plausibility issues shouldn't block writeup generation but should be flagged for review. Report shows green checkmarks for all structural checks plus warning details where clinically relevant. Test script pattern now established for catching nonsensical writeups: define clinical rules → implement as check functions → run against edge case scenarios → generate markdown report with detailed results and warnings.
+
+---
+
+## Entry #68
+**Focus:** Prior Dose fractionation regime detection and constraint source methodology
+
+**Smooth:** Implemented three enhancements following user specification. (1) **Fractionation regime detection** - Updated `detect_fractionation_regime()` with clearer categorization: single fraction → SRS, ≥5 Gy/fx with ≤8 fx → SBRT, 2.5-5 Gy/fx → MODERATE_HYPOFX, <2.5 Gy/fx → CONVENTIONAL. Added helper methods `get_regime_label()` and `get_constraint_source_text()`. (2) **Constraint source in methodology** - Updated `_generate_methodology_text()` and `_generate_multi_methodology_text()` to include constraint reference source. SBRT/SRS with Raw Dose now shows "referencing Timmerman/TG-101 SBRT constraints", while conventional/EQD2 shows "referencing QUANTEC dose-volume constraints". (3) **Dose statistics format** - Already implemented, verified format includes structure, constraint type, value, limit in brackets, and source in parentheses. Updated fractionation regime endpoint in router to include MODERATE_HYPOFX info. Added Suite 6 (Fractionation Regime Detection) with 5 new tests to comprehensive test script. All 20/20 tests passed including constraint source verification.
+
+**Friction:** None - systematic implementation following established patterns. EQD2 toggle logic clarified: serves two purposes (documentation of methodology used, and constraint table selection since EQD2 values are EQD2₂ equivalent so QUANTEC limits apply regardless of original fractionation).
+
+**Insight:** **Fractionation determines clinical constraint reference** - SBRT spinal cord tolerance (20-22 Gy in 3 fx per Timmerman) is fundamentally different from conventional (50 Gy per QUANTEC). Including source reference in methodology section adds clinical transparency. **EQD2 simplifies constraint selection** - when user selects EQD2, all values are expressed as 2 Gy/fx equivalents, so QUANTEC limits (designed for conventional fractionation) apply universally regardless of original fractionation scheme. **Raw Dose requires regime detection** - without biologic correction, constraints must match the fractionation being delivered. Regime detection based on current treatment (not prior) because that's what's being planned and constrained. **Moderate hypofractionation (2.5-5 Gy/fx) uses QUANTEC** - common in breast (2.67 Gy), prostate (2.5-3 Gy), and modern regimens; QUANTEC tolerances still generally applicable, unlike true SBRT (>5 Gy/fx) which requires specialized Timmerman limits. Test coverage now includes regime-specific constraint source verification ensuring writeups reference appropriate clinical literature.
+
+---
+
+## Entry #69
+**Focus:** Prior Dose methodology consistency and writeup format standardization
+
+**Smooth:** Three fixes applied systematically to resolve clinical inconsistencies. (1) **Alpha/beta ratio logic** - methodology text now correctly includes alpha/beta ratios only for EQD2/BED methods, not for Raw Dose. Previously said "Raw Dose methodology with an alpha/beta ratio of 2..." which was contradictory (α/β ratios only apply to biologically corrected doses). Now says "Raw Dose methodology, referencing QUANTEC dose-volume constraints." (2) **Section header consolidation** - merged "Patient Information" and "Prior Radiation History" under single "Patient Information:" header. Prior treatment details now flow naturally after current treatment description in same paragraph. (3) **Patient placeholder "---"** - added standard placeholder to intro text matching other modules: "Dr. {physician} requested a medical physics consultation for --- for a prior dose assessment." Changes applied to all four writeup generation methods (`_generate_no_prior_text`, `_generate_single_prior_text`, `_generate_multiple_prior_text` for both overlap and no-overlap cases). All 20 comprehensive tests and 13 clinical QA tests passed after changes.
+
+**Friction:** None - well-structured service methods with clear separation between EQD2 and Raw Dose paths made changes surgical. Created `uses_biologic_correction` boolean check (`method_abbreviation in ["EQD2", "BED"]`) to conditionally include alpha/beta text.
+
+**Insight:** **Methodology text must match dose calculation method** - claiming "Raw Dose methodology with alpha/beta ratios" is clinically nonsensical since Raw Dose by definition doesn't apply radiobiological correction. Alpha/beta ratios only appear when EQD2 or BED is selected. **Consistent section structure improves readability** - single "Patient Information:" section containing current treatment, prior radiation history, and overlap statement flows better than multiple headers. Prior treatments listed inline after current treatment description. **Patient placeholder maintains clinical convention** - "for ---" placeholder where patient name would be inserted follows institutional documentation standards. Pattern established: EQD2/BED → include α/β text + QUANTEC reference; Raw Dose → just constraint source reference (QUANTEC or Timmerman based on regime).
+
+---
+
+## Entry #70
+**Focus:** Prior Dose section header refinement - "Methodology" renamed to "Analysis" with integrated dose statistics
+
+**Smooth:** Two additional refinements to writeup structure. (1) **Renamed "Methodology" to "Analysis"** - cleaner, more clinically appropriate header for the section describing reconstruction approach and dose evaluation method. (2) **Integrated dose statistics under Analysis** - removed separate "Dose Constraint Evaluation:" header, added transition sentence "Below are the dose statistics:" to flow naturally under Analysis section. Changes applied to both single and multiple prior treatment functions. All 20 comprehensive tests passed after changes.
+
+**Friction:** None - straightforward text replacements in both `_generate_single_prior_text` and `_generate_multiple_prior_text` functions.
+
+**Insight:** **Fewer section headers improves document flow** - consolidating from four headers (Patient Information, Methodology, Dose Constraint Evaluation, Assessment) to three (Patient Information, Analysis, Assessment) creates more natural reading experience. Dose statistics are logically part of the analysis, not a separate section. **Transition sentences connect sections smoothly** - "Below are the dose statistics:" provides clear signal that bullet list follows without needing another header. Pattern established for Prior Dose writeup structure: Patient Information (current + prior treatments + overlap) → Analysis (methodology + dose stats) → Assessment (clinical interpretation).
+
+---
+
+## Entry #71
+**Focus:** Homepage rebrand - The Observatory tab and Cobalt-60 studio identity
+
+**Smooth:** Replaced "Other Tools" tab with "The Observatory" - a placeholder for game development showcase. Updated About section to introduce Cobalt-60 as the studio behind QuickWrite and The Observatory. Added "Our Projects" grid showcasing both products. Clean separation of concerns: Observatory tab for game assets/previews, About tab for studio identity and QuickWrite updates.
+
+**Friction:** None - straightforward tab content replacement and About section restructure.
+
+**Insight:** **Tab structure supports product expansion** - dedicated tabs allow showcasing multiple projects without cluttering QuickWrite functionality. Observatory placeholder ready for game assets when available. About section now serves dual purpose: studio branding and QuickWrite changelog.
+
+---
+
+## Entry #72
+**Focus:** Site-wide emoji removal for cleaner aesthetic
+
+**Smooth:** Systematic removal of all emojis across 5 files: `index.js` (homepage tabs and sections), `version.js` (40+ changelog entries), `QAToolForm.jsx` (vault titles, workflow icons, modal content), `GuidesForm.jsx` (category titles, help buttons, alerts), `UpdateNotification.jsx` (version badge). Grep verification confirmed complete removal.
+
+**Friction:** Emojis were deeply embedded in content strings, modal data objects, and UI labels. Required careful replacement to maintain readability without decorative elements - replaced icon placeholders with empty strings, emoji-prefixed labels with plain text.
+
+**Insight:** **Emojis add visual noise in professional tools** - clean text-only UI feels more polished for clinical software. **Centralized icon definitions** would have simplified removal - icons scattered across component files required file-by-file cleanup. For future projects, consider icon components or constants that can be globally toggled.
+
+---
+
+## Entry #73
+**Focus:** Homepage cleanup and Observatory screenshots integration
+
+**Smooth:** Multiple UI refinements completed: (1) Embedded observatory screenshots in Observatory tab with click-to-enlarge modal functionality using Next.js Image component with blur placeholder. (2) Removed redundant UI elements: "X fusions configured" badge from Fusions card, "In Development" badge from Observatory, "Our Projects" and "What's New" sections from About tab. (3) Updated Observatory description to emphasize educational game purpose. (4) Made Fusion third column transparent/invisible for pre-configured modes while maintaining layout.
+
+**Friction:** Initial text search for user-reported strings ("Select consultation types to include", "Configure and launch fusion write-ups") didn't match exactly - likely cached content or already removed. Image lightbox required adding Modal components and state management.
+
+**Insight:** **Click-to-enlarge images improve UX** - simple modal overlay with transparent background works well for screenshots. **Invisible columns maintain layout** - setting `bg="transparent"` and `borderWidth="0"` keeps grid structure while hiding unused content areas. **Less is more** - removing redundant labels and badges (fusion count, development status) creates cleaner interface without losing functionality.
+
+---
+
+## Entry #74
+**Focus:** Module subtitle removal and PET+CT fusion mode bug fix
+
+**Smooth:** (1) Removed "Generate standardized write-up for..." subtitles from all 7 module pages (Fusion, Prior Dose, SBRT, HDR, DIBH, SRS/SRT, TBI) - cleaner headers with just the generator title. (2) Fixed critical fusion bug where PET+CT combinations (without MRI) fell through to 'complex' mode showing old interface. Added complete PET+CT mode support: `pet-ct-single-rigid-rigid`, `pet-ct-single-rigid-deformable`, `pet-ct-single-deformable-rigid`, `pet-ct-single-deformable-deformable`, and `pet-ct-multiple`.
+
+**Friction:** PET+CT combinations were missing from mode detection logic - all existing mixed-modality handlers required MRI (`mriCount > 0`). User-reported "glitch" when selecting 1 PET deformable + 1 CT deformable was actually falling through to legacy complex mode at line 238.
+
+**Insight:** **Mode detection requires exhaustive coverage** - the fusion config parser has many conditional branches and missing cases silently fall to 'complex' mode. When adding new modality combinations, must add: (1) mode detection in useEffect, (2) mode helper variables, (3) combined helper for conditional checks, (4) auto-population logic, (5) heading title mapping, (6) all button/column conditionals. **Test all modality permutations** - PET+CT without MRI is a valid clinical scenario that was overlooked.
+
+---
+
+## Entry #75
+**Focus:** Prior Dose fractionation regime detection and custom constraint labeling
+
+**Smooth:** (1) Removed "(Custom)" label from user-added dose statistics in writeup output - custom constraints now display without source attribution for cleaner clinical documentation. (2) Redesigned fractionation mismatch detection to compare **regimes** instead of dose per fraction. For SBRT/SRS, constraint tables are organized by number of fractions (1fx SRS, 3fx SBRT, 5fx SBRT), not dose per fraction - so 22 Gy/1fx + 30 Gy/1fx are both SRS and use same constraint table.
+
+**Friction:** Original logic compared dose per fraction (Gy/fx), triggering false warnings when combining hypofractionated treatments with same fraction count but different doses. User correctly identified that QUANTEC requires ~2 Gy/fx, but Timmerman/TG-101 constraints are fraction-count-specific regardless of dose per fraction.
+
+**Insight:** **Constraint table selection is regime-based, not dose-per-fraction-based for SBRT/SRS.** Key regimes: SRS (1fx), SBRT_3fx (≥5 Gy/fx, ≤3fx), SBRT_5fx (≥5 Gy/fx, 4-8fx), MODERATE_HYPOFX (2.5-5 Gy/fx), CONVENTIONAL (<2.5 Gy/fx). When comparing treatments across different regimes (e.g., SRS vs SBRT_3fx), raw dose addition isn't valid and EQD2 conversion is needed. But within same regime, raw dose comparison is clinically appropriate.
+
+---
+
+## Entry #76
+**Focus:** Aseprite pixel font integration and UI cleanup
+
+**Smooth:** (1) Integrated Aseprite pixel font via `@font-face` in Chakra theme - font file placed in `frontend/public/fonts/`. (2) Dramatically increased all font sizes (xs: 24px through 6xl: 160px, body: 32px) to accommodate pixel font aesthetic. (3) Applied global `fontWeight: 'normal !important'` to remove all bold styling - pixel fonts render better with uniform weight. (4) Moved homepage tabs to sticky top navigation bar, removed title/subtitle for cleaner layout. (5) Relocated "Submit MPC Writeup Time" button to top-right header alongside version badge.
+
+**Friction:** Pixel font initially rendered too small at default Chakra sizes - required significant upscaling. Bold text looked inconsistent with pixel aesthetic. Line spacing at 1.5 was too spread out - reduced to 1.0 for tighter layout.
+
+**Insight:** Pixel fonts require: (1) Large base sizes (2x-3x normal), (2) Uniform font weight (no bold), (3) Tight line spacing. Global CSS overrides via `*` selector effectively normalize font weight across all Chakra components. Section headings ("Staff Info", "Treatment Info") provide useful structure; redundant sub-headings within sections can be removed for cleaner forms.
+
+---
+
+## Entry #77
+**Focus:** Font consistency across dropdowns and textarea outputs
+
+**Smooth:** (1) Added universal font override via `*, *::before, *::after` selector in global styles to force Aseprite font everywhere. (2) Separated `select` vs `option` styling - select field keeps normal theme size while dropdown options get smaller 14px font. (3) Updated all form Textarea components (Fusion, DIBH, Prior Dose, SBRT, SRS, TBI, HDR) to explicitly use Aseprite font via `sx` prop instead of `fontFamily="mono"`. (4) Renamed "Fusions" to "Fusion MPCs" and centered both column headers on hub page. (5) Added configurable line spacing to fusion configuration table.
+
+**Friction:** Native browser `<select>` dropdown options have fundamental CSS limitations - most browsers ignore font-family on `<option>` elements. Font size can be controlled but custom fonts in dropdown lists would require replacing native Select with custom Menu component.
+
+**Insight:** Native HTML select dropdowns are a styling dead-end for custom fonts. Accept the limitation or switch to custom dropdown components. When styling forms, check all Textarea components for hardcoded `fontFamily` props that override global theme settings. Chakra's `sx` prop with `!important` is the most reliable way to enforce font consistency.
+
+---
+
+## Entry #78
+**Focus:** Observatory page redesign, SBRT label fixes, Prior Dose constraint verification system
+
+**Smooth:** (1) Redesigned Observatory tab - left-aligned text, changed title to "Enjoying to Learn, Learning to Enjoy" split across two tight lines (lineHeight="1", spacing={0}), softer teal.300 color, photos stacked vertically on right side using Flex layout. (2) Shortened SBRT form labels to prevent pixel font line-wrapping: "Prescription Dose" → "Rx Dose", "Number of Fractions" → "Fractions", "Breathing/Imaging Technique" → "Technique", "PTV receiving Rx" → "Vol at Rx", "100% Isodose Vol" → "100% Vol", etc. (3) Implemented constraint verification system for Prior Dose - added `verified` boolean to all 100+ constraints across QUANTEC, Timmerman (3fx/5fx), and SRS tables.
+
+**Friction:** Pixel font caused label wrapping in SBRT's 2-column grid layouts - many clinical field names are inherently long. Prior Dose constraint suggestions were comprehensive but unverified clinically - needed way to gradually roll out constraints after team review instead of all-or-nothing.
+
+**Insight:** **Verified constraint pattern enables clinical governance** - adding `"verified": True/False` to each constraint plus filtering in `get_constraints_for_sites()` allows gradual rollout. Only "Spinal Cord Dmax <45 Gy" for conventional currently verified. Team can verify constraints individually without code changes - just flip boolean in backend. **Label brevity for pixel fonts** - standard clinical terminology often too long; use abbreviations (Rx, Dmax, Vol) that clinicians recognize. **Tight title typography** - VStack spacing={0} + lineHeight="1" creates compact multi-line headings.
+
+---
+
+## Entry #79
+**Focus:** Observatory tab layout refinement and branding updates
+
+**Smooth:** Narrowed Observatory container from full `container.xl` to `container.lg` (1024px) with `mx="auto"` centering - provides focused reading experience without feeling cramped. Increased image column max-width from 420px to 520px for better screenshot visibility. Updated Observatory description to highlight Luke Lussier and Zachariah Appelbaum as leads, renamed studio from "Cobalt-60" to "Questrium" throughout About section.
+
+**Friction:** Initial container sizing (`container.md` at 768px) was too narrow - needed iteration to find balance between focused layout and content breathing room.
+
+**Insight:** **Container sizing for content types** - documentation/promotional pages benefit from narrower containers than tool interfaces. `container.lg` works well for mixed text/image layouts. Wrap tab-specific content in its own Box with maxW rather than changing the parent Container shared across all tabs.
 
 ---
 

@@ -73,7 +73,6 @@ const PacemakerForm = () => {
         device_serial: '',
         pacing_dependent: '',
         tps_max_dose: '',
-        tps_mean_dose: '',
         osld_mean_dose: 0.0,
         risk_level: null
       }
@@ -222,7 +221,7 @@ const PacemakerForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="xl" mb={2}>Pacemaker / CIED Documentation</Heading>
+            <Heading size="md" mb={2}>Pacemaker / CIED Documentation</Heading>
             <Text opacity={0.9}>Cardiac Implantable Electronic Device (CIED) management for radiation therapy</Text>
           </Box>
         </Flex>
@@ -240,7 +239,7 @@ const PacemakerForm = () => {
               }} 
               gap={6}
             >
-              {/* Column 1: Staff & Patient */}
+              {/* Column 1: Staff Info */}
               <GridItem 
                 as={Box} 
                 p={4} 
@@ -250,10 +249,8 @@ const PacemakerForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Staff & Patient</Heading>
-                
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Staff Information</Heading>
                   
                   <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
@@ -317,10 +314,8 @@ const PacemakerForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Information</Heading>
-                
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Info</Heading>
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Treatment Site</Heading>
                   
                   <FormControl isInvalid={errors.pacemaker_data?.treatment_site} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
@@ -501,37 +496,20 @@ const PacemakerForm = () => {
                 <Box mt={4}>
                   <Heading size="xs" mb={2} color="gray.300">Dosimetry Information</Heading>
                   
-                  <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
-                    <FormControl>
-                      <FormLabel fontSize="sm" color="gray.300">TPS Max Dose (Gy)</FormLabel>
-                      <Input 
-                        size="sm"
-                        type="number"
-                        step="0.01"
-                        {...register('pacemaker_data.tps_max_dose')}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: "gray.400" }}
-                      />
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel fontSize="sm" color="gray.300">TPS Mean Dose (Gy)</FormLabel>
-                      <Input 
-                        size="sm"
-                        type="number"
-                        step="0.01"
-                        {...register('pacemaker_data.tps_mean_dose')}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: "gray.400" }}
-                      />
-                    </FormControl>
-                  </Grid>
+                  <FormControl mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300">TPS Max Dose (Gy)</FormLabel>
+                    <Input 
+                      size="sm"
+                      type="number"
+                      step="0.01"
+                      {...register('pacemaker_data.tps_max_dose')}
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _hover={{ borderColor: "gray.500" }}
+                      _placeholder={{ color: "gray.400" }}
+                    />
+                  </FormControl>
                 </Box>
 
                 <Box mt={4}>
