@@ -11,7 +11,6 @@ import {
   CardFooter,
   Button,
   Center,
-  Badge,
   HStack,
   VStack,
   Checkbox,
@@ -397,15 +396,6 @@ const HomePage = () => {
             </CardHeader>
             
             <CardBody>
-              {/* Bladder Status Badge (only shows when active) */}
-              {fusionConfig.ct.bladderStatus && (
-                <HStack mb={4} justify="flex-end">
-                  <Badge colorScheme="yellow" fontSize="xs">
-                    Bladder Comparison Active
-                  </Badge>
-                </HStack>
-              )}
-
               {/* Compact Table Layout */}
               <Box overflowX="auto" mb={4}>
                 <Table size="sm" variant="simple" sx={{ '& td, & th': { py: 2, lineHeight: '1' } }}>
@@ -518,7 +508,7 @@ const HomePage = () => {
                   const configString = encodeURIComponent(JSON.stringify(fusionConfig));
                   router.push(`/fusion?config=${configString}`);
                 }}
-                isDisabled={fusionConfig.mri.rigid === 0 && fusionConfig.pet.rigid === 0 && fusionConfig.pet.deformable === 0 && fusionConfig.ct.rigid === 0 && fusionConfig.ct.deformable === 0}
+                isDisabled={!fusionConfig.ct.bladderStatus && fusionConfig.mri.rigid === 0 && fusionConfig.pet.rigid === 0 && fusionConfig.pet.deformable === 0 && fusionConfig.ct.rigid === 0 && fusionConfig.ct.deformable === 0}
               >
                 Launch Fusion Setup
               </Button>

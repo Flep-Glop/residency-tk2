@@ -405,7 +405,7 @@ const DIBHForm = () => {
                 
                 <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
                   <FormControl isInvalid={errors.dibh_data?.dose}>
-                    <FormLabel fontSize="sm" color="gray.300">Prescription Dose (Gy)</FormLabel>
+                    <FormLabel fontSize="sm" color="gray.300">Rx Dose (Gy)</FormLabel>
                     <Input
                       size="sm"
                       type="number"
@@ -426,7 +426,7 @@ const DIBHForm = () => {
                   </FormControl>
                   
                   <FormControl isInvalid={errors.dibh_data?.fractions}>
-                    <FormLabel fontSize="sm" color="gray.300">Number of Fractions</FormLabel>
+                    <FormLabel fontSize="sm" color="gray.300">Number of Fx</FormLabel>
                     <Input
                       size="sm"
                       type="number"
@@ -464,7 +464,7 @@ const DIBHForm = () => {
                   <>
                     <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
                       <FormControl isInvalid={errors.dibh_data?.boost_dose}>
-                        <FormLabel fontSize="sm" color="gray.300">Boost Dose (Gy)</FormLabel>
+                        <FormLabel fontSize="sm" color="gray.300">Boost Rx (Gy)</FormLabel>
                         <Input
                           size="sm"
                           type="number"
@@ -485,7 +485,7 @@ const DIBHForm = () => {
                       </FormControl>
                       
                       <FormControl isInvalid={errors.dibh_data?.boost_fractions}>
-                        <FormLabel fontSize="sm" color="gray.300">Boost Fractions</FormLabel>
+                        <FormLabel fontSize="sm" color="gray.300">Boost Fx</FormLabel>
                         <Input
                           size="sm"
                           type="number"
@@ -542,7 +542,6 @@ const DIBHForm = () => {
           {/* Generated Write-up Section - Below Form */}
           {writeup && (
             <Box mt={6}>
-              <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
               <Box
                 p={4}
                 borderWidth={1}
@@ -551,11 +550,29 @@ const DIBHForm = () => {
                 borderColor={borderColor}
                 boxShadow="md"
               >
+                <Flex justify="space-between" align="center" mb={3}>
+                  <Heading size="sm" color="white">Generated Write-up</Heading>
+                  <Button
+                    size="sm"
+                    colorScheme="green"
+                    onClick={() => {
+                      navigator.clipboard.writeText(writeup);
+                      toast({
+                        title: "Copied to clipboard",
+                        status: "success",
+                        duration: 2000,
+                      });
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                </Flex>
                 <Textarea
                   value={writeup}
                   height="300px"
                   isReadOnly
                   fontSize="sm"
+                  lineHeight="1"
                   resize="vertical"
                   aria-label="Generated write-up"
                   bg="gray.700"
@@ -564,21 +581,6 @@ const DIBHForm = () => {
                   _focus={{ borderColor: "green.500" }}
                   sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
-                <Button 
-                  mt={3} 
-                  colorScheme="green"
-                  onClick={() => {
-                    navigator.clipboard.writeText(writeup);
-                    toast({
-                      title: "Copied to clipboard",
-                      status: "success",
-                      duration: 2000,
-                    });
-                  }}
-                  aria-label="Copy to clipboard"
-                >
-                  Copy to Clipboard
-                </Button>
               </Box>
             </Box>
           )}

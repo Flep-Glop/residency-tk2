@@ -240,7 +240,7 @@ const TBIForm = () => {
                           borderColor={watchRegimen === '2gy1fx' ? 'blue.500' : 'gray.600'}
                           _hover={{ borderColor: watchRegimen === '2gy1fx' ? 'blue.400' : 'gray.500' }}
                         >
-                          2 Gy in 1 fx
+                          2 Gy / 1 fx
                         </Button>
                         <Button
                           size="sm"
@@ -252,11 +252,11 @@ const TBIForm = () => {
                           borderColor={watchRegimen === '4gy1fx' ? 'blue.500' : 'gray.600'}
                           _hover={{ borderColor: watchRegimen === '4gy1fx' ? 'blue.400' : 'gray.500' }}
                         >
-                          4 Gy in 1 fx
+                          4 Gy / 1 fx
                         </Button>
                       </VStack>
                       
-                      {/* BID Column */}
+                      {/* Fractionated Column */}
                       <VStack spacing={2}>
                         <Button
                           size="sm"
@@ -268,7 +268,7 @@ const TBIForm = () => {
                           borderColor={watchRegimen === '12gy6fx' ? 'blue.500' : 'gray.600'}
                           _hover={{ borderColor: watchRegimen === '12gy6fx' ? 'blue.400' : 'gray.500' }}
                         >
-                          12 Gy in 6 fx (BID)
+                          12 Gy / 6 fx
                         </Button>
                         <Button
                           size="sm"
@@ -280,7 +280,7 @@ const TBIForm = () => {
                           borderColor={watchRegimen === '13.2gy8fx' ? 'blue.500' : 'gray.600'}
                           _hover={{ borderColor: watchRegimen === '13.2gy8fx' ? 'blue.400' : 'gray.500' }}
                         >
-                          13.2 Gy in 8 fx (BID)
+                          13.2 Gy / 8 fx
                         </Button>
                       </VStack>
                     </Grid>
@@ -446,7 +446,7 @@ const TBIForm = () => {
                   <Heading size="sm" color="white">Generated Write-up</Heading>
                   <Button
                     size="sm"
-                    colorScheme="blue"
+                    colorScheme="green"
                     onClick={copyToClipboard}
                   >
                     Copy to Clipboard
@@ -460,6 +460,7 @@ const TBIForm = () => {
                   color="white"
                   borderColor="gray.600"
                   fontSize="sm"
+                  lineHeight="1"
                   _hover={{ borderColor: 'gray.500' }}
                   sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />

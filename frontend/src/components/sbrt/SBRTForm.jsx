@@ -960,11 +960,30 @@ const SBRTForm = () => {
                 borderColor={borderColor}
                 boxShadow="md"
               >
+                <Flex justify="space-between" align="center" mb={3}>
+                  <Heading size="sm" color="white">Generated Write-up</Heading>
+                  <Button
+                    size="sm"
+                    colorScheme="green"
+                    onClick={() => {
+                      navigator.clipboard.writeText(writeup);
+                      toast({
+                        title: 'Copied to clipboard',
+                        status: 'success',
+                        duration: 2000,
+                        isClosable: true,
+                      });
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                </Flex>
                 <Textarea
                   value={writeup}
                   height="400px"
                   isReadOnly
                   fontSize="sm"
+                  lineHeight="1"
                   resize="vertical"
                   aria-label="Generated write-up"
                   bg="gray.700"
@@ -973,21 +992,6 @@ const SBRTForm = () => {
                   _hover={{ borderColor: "gray.500" }}
                   sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
-                <Button
-                  mt={3}
-                  colorScheme="green"
-                  onClick={() => {
-                    navigator.clipboard.writeText(writeup);
-                    toast({
-                      title: 'Copied to clipboard',
-                      status: 'success',
-                      duration: 2000,
-                      isClosable: true,
-                    });
-                  }}
-                >
-                  Copy to Clipboard
-                </Button>
               </Box>
             </Box>
           )}

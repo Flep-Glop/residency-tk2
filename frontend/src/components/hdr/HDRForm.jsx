@@ -347,14 +347,16 @@ const HDRForm = () => {
                         min: { value: 1, message: 'Must be at least 1' },
                         max: { value: 30, message: 'Must be 30 or less' }
                       })}
-                      placeholder={!watchApplicator ? 'Choose applicator first' : ''}
+                      placeholder={!watchApplicator ? 'Select applicator first' : ''}
+                      isDisabled={!watchApplicator}
                       readOnly={watchApplicator === 'VC' || watchApplicator === 'T&O'}
-                      bg="gray.700"
+                      bg={!watchApplicator ? 'gray.800' : 'gray.700'}
                       borderColor="gray.600"
-                      color={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'gray.400' : 'white'}
-                      _hover={{ borderColor: 'gray.500' }}
-                      _placeholder={{ color: 'gray.400' }}
-                      cursor={watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'not-allowed' : 'text'}
+                      color={!watchApplicator || watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'gray.400' : 'white'}
+                      _hover={{ borderColor: watchApplicator ? 'gray.500' : 'gray.600' }}
+                      _placeholder={{ color: 'gray.500' }}
+                      _disabled={{ bg: 'gray.800', cursor: 'not-allowed', opacity: 0.6 }}
+                      cursor={!watchApplicator || watchApplicator === 'VC' || watchApplicator === 'T&O' ? 'not-allowed' : 'text'}
                     />
                     <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.hdr_data?.number_of_channels?.message}
@@ -409,7 +411,7 @@ const HDRForm = () => {
               <Flex justify="space-between" align="center" mb={4}>
                 <Heading size="md" color="white">Generated Write-up</Heading>
                 <Button
-                  colorScheme="blue"
+                  colorScheme="green"
                   size="sm"
                   onClick={copyToClipboard}
                 >
@@ -425,7 +427,7 @@ const HDRForm = () => {
                 color="white"
                 borderColor="gray.600"
                 fontSize="sm"
-                lineHeight="1.6"
+                lineHeight="1"
                 sx={{ fontFamily: '"Aseprite", monospace !important' }}
               />
             </Box>

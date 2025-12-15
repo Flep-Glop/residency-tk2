@@ -23,7 +23,8 @@ import {
   HStack,
   Container,
   Spinner,
-  Center
+  Center,
+  Checkbox
 } from '@chakra-ui/react';
 import { WarningIcon, CheckIcon } from '@chakra-ui/icons';
 import { 
@@ -44,6 +45,7 @@ const PacemakerForm = () => {
   const [writeup, setWriteup] = useState('');
   const [riskAssessment, setRiskAssessment] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState('');
+  const [isCustomDevice, setIsCustomDevice] = useState(false);
   const toast = useToast();
   
   // Default staff lists (can be moved to a service later)
@@ -70,6 +72,8 @@ const PacemakerForm = () => {
         neutron_producing: 'No',
         device_vendor: '',
         device_model: '',
+        custom_device_vendor: '',
+        custom_device_model: '',
         device_serial: '',
         pacing_dependent: '',
         tps_max_dose: '',
@@ -123,6 +127,19 @@ const PacemakerForm = () => {
     setValue('pacemaker_data.device_model', ''); // Reset model when vendor changes
   };
 
+  // Handle custom device checkbox
+  const handleCustomDeviceChange = (e) => {
+    setIsCustomDevice(e.target.checked);
+    if (e.target.checked) {
+      setValue('pacemaker_data.device_vendor', '');
+      setValue('pacemaker_data.device_model', '');
+      setSelectedVendor('');
+    } else {
+      setValue('pacemaker_data.custom_device_vendor', '');
+      setValue('pacemaker_data.custom_device_model', '');
+    }
+  };
+
   // Calculate risk assessment when relevant fields change
   useEffect(() => {
     const calculateRisk = async () => {
@@ -162,8 +179,15 @@ const PacemakerForm = () => {
         throw new Error('Please select both physician and physicist');
       }
 
-      if (!pacemaker_data.treatment_site || !pacemaker_data.device_vendor || !pacemaker_data.field_distance) {
+      const hasVendor = isCustomDevice ? pacemaker_data.custom_device_vendor : pacemaker_data.device_vendor;
+      if (!pacemaker_data.treatment_site || !hasVendor || !pacemaker_data.field_distance) {
         throw new Error('Please fill in all required fields');
+      }
+      
+      // If custom device, copy custom values to main fields for backend
+      if (isCustomDevice) {
+        data.pacemaker_data.device_vendor = pacemaker_data.custom_device_vendor;
+        data.pacemaker_data.device_model = pacemaker_data.custom_device_model || '';
       }
 
       // Check for high risk warning
@@ -221,8 +245,7 @@ const PacemakerForm = () => {
       <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
-            <Heading size="md" mb={2}>Pacemaker / CIED Documentation</Heading>
-            <Text opacity={0.9}>Cardiac Implantable Electronic Device (CIED) management for radiation therapy</Text>
+            <Heading size="md">Pacemaker / CIED Documentation</Heading>
           </Box>
         </Flex>
       </Box>
@@ -344,8 +367,6 @@ const PacemakerForm = () => {
                 </Box>
 
                 <Box mt={4}>
-                  <Heading size="xs" mb={2} color="gray.300">Field Proximity</Heading>
-                  
                   <FormControl isInvalid={errors.pacemaker_data?.field_distance} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Distance from Field to CIED</FormLabel>
                     <Grid templateColumns="repeat(2, 1fr)" gap={2}>
@@ -403,8 +424,6 @@ const PacemakerForm = () => {
                 </Box>
 
                 <Box mt={4}>
-                  <Heading size="xs" mb={2} color="gray.300">Pacing Status</Heading>
-                  
                   <FormControl>
                     <FormLabel fontSize="sm" color="gray.300">Pacing Dependency</FormLabel>
                     <RadioGroup 
@@ -451,8 +470,6 @@ const PacemakerForm = () => {
                 <Heading size="sm" mb={3} textAlign="center" color="white">Treatment & Risk Assessment</Heading>
                 
                 <Box>
-                  <Heading size="xs" mb={2} color="gray.300">Prescription</Heading>
-                  
                   <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
                     <FormControl isInvalid={errors.pacemaker_data?.dose}>
                       <FormLabel fontSize="sm" color="gray.300">Dose (Gy)</FormLabel>
@@ -494,8 +511,6 @@ const PacemakerForm = () => {
                 </Box>
 
                 <Box mt={4}>
-                  <Heading size="xs" mb={2} color="gray.300">Dosimetry Information</Heading>
-                  
                   <FormControl mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">TPS Max Dose (Gy)</FormLabel>
                     <Input 
@@ -513,59 +528,103 @@ const PacemakerForm = () => {
                 </Box>
 
                 <Box mt={4}>
-                  <Heading size="xs" mb={2} color="gray.300">Device Information</Heading>
-                  
                   <Grid templateColumns="1fr 1fr" gap={2} mb={3}>
-                    <FormControl isInvalid={errors.pacemaker_data?.device_vendor}>
-                      <FormLabel fontSize="sm" color="gray.300">Device Vendor</FormLabel>
-                      <Select 
-                        size="sm"
-                        value={selectedVendor}
-                        onChange={(e) => handleVendorChange(e.target.value)}
-                        bg="gray.700" 
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
-                        {deviceInfo.vendors.map(vendor => (
-                          <option key={vendor} value={vendor} style={{ backgroundColor: '#2D3748', color: 'white' }}>{vendor}</option>
-                        ))}
-                      </Select>
-                      <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.device_vendor?.message}</FormErrorMessage>
-                    </FormControl>
+                    {!isCustomDevice ? (
+                      <>
+                        <FormControl isInvalid={errors.pacemaker_data?.device_vendor}>
+                          <FormLabel fontSize="sm" color="gray.300">Device Vendor</FormLabel>
+                          <Select 
+                            size="sm"
+                            value={selectedVendor}
+                            onChange={(e) => handleVendorChange(e.target.value)}
+                            bg="gray.700" 
+                            borderColor="gray.600"
+                            color="white"
+                            _hover={{ borderColor: "gray.500" }}
+                            data-theme="dark"
+                            sx={{
+                              '& option': {
+                                backgroundColor: 'gray.700',
+                                color: 'white',
+                              }
+                            }}
+                          >
+                            <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
+                            {deviceInfo.vendors.map(vendor => (
+                              <option key={vendor} value={vendor} style={{ backgroundColor: '#2D3748', color: 'white' }}>{vendor}</option>
+                            ))}
+                          </Select>
+                          <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.device_vendor?.message}</FormErrorMessage>
+                        </FormControl>
 
-                    <FormControl>
-                      <FormLabel fontSize="sm" color="gray.300">Device Model</FormLabel>
-                      <Select 
-                        size="sm"
-                        {...register('pacemaker_data.device_model')} 
-                        bg="gray.700" 
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
-                        {selectedVendor && deviceInfo.models_by_vendor[selectedVendor]?.map(model => (
-                          <option key={model} value={model} style={{ backgroundColor: '#2D3748', color: 'white' }}>{model}</option>
-                        ))}
-                      </Select>
-                    </FormControl>
+                        <FormControl>
+                          <FormLabel fontSize="sm" color="gray.300">Device Model</FormLabel>
+                          <Select 
+                            size="sm"
+                            {...register('pacemaker_data.device_model')} 
+                            bg="gray.700" 
+                            borderColor="gray.600"
+                            color="white"
+                            _hover={{ borderColor: "gray.500" }}
+                            data-theme="dark"
+                            sx={{
+                              '& option': {
+                                backgroundColor: 'gray.700',
+                                color: 'white',
+                              }
+                            }}
+                          >
+                            <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
+                            {selectedVendor && deviceInfo.models_by_vendor[selectedVendor]?.map(model => (
+                              <option key={model} value={model} style={{ backgroundColor: '#2D3748', color: 'white' }}>{model}</option>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </>
+                    ) : (
+                      <>
+                        <FormControl isInvalid={errors.pacemaker_data?.custom_device_vendor}>
+                          <FormLabel fontSize="sm" color="gray.300">Device Vendor</FormLabel>
+                          <Input 
+                            size="sm"
+                            placeholder="e.g., Medtronic"
+                            {...register('pacemaker_data.custom_device_vendor', {
+                              required: isCustomDevice ? 'Vendor is required' : false
+                            })}
+                            bg="gray.700"
+                            borderColor="gray.600"
+                            color="white"
+                            _hover={{ borderColor: "gray.500" }}
+                            _placeholder={{ color: "gray.400" }}
+                          />
+                          <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.custom_device_vendor?.message}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl>
+                          <FormLabel fontSize="sm" color="gray.300">Device Model</FormLabel>
+                          <Input 
+                            size="sm"
+                            placeholder="e.g., Evera MRI"
+                            {...register('pacemaker_data.custom_device_model')}
+                            bg="gray.700"
+                            borderColor="gray.600"
+                            color="white"
+                            _hover={{ borderColor: "gray.500" }}
+                            _placeholder={{ color: "gray.400" }}
+                          />
+                        </FormControl>
+                      </>
+                    )}
                   </Grid>
+                  <Checkbox 
+                    size="sm" 
+                    isChecked={isCustomDevice} 
+                    onChange={handleCustomDeviceChange}
+                    colorScheme="blue"
+                    color="gray.300"
+                  >
+                    <Text fontSize="sm" color="gray.300">Custom Device?</Text>
+                  </Checkbox>
                 </Box>
 
                 {/* Risk Assessment Display */}
@@ -637,6 +696,7 @@ const PacemakerForm = () => {
                   setWriteup('');
                   setRiskAssessment(null);
                   setSelectedVendor('');
+                  setIsCustomDevice(false);
                   toast({
                     title: 'Form reset',
                     status: 'info',
@@ -659,9 +719,9 @@ const PacemakerForm = () => {
           {/* Write-up Section */}
           {writeup && (
             <Box mt={8} bg={writeupBg} p={6} borderRadius="lg" border="1px" borderColor={borderColor}>
-              <Flex justify="space-between" align="center" mb={4}>
-                <Heading size="md" color="white">Generated Write-Up</Heading>
-                <Button size="sm" onClick={copyToClipboard} colorScheme="green">
+              <Flex justify="space-between" align="center" mb={3}>
+                <Heading size="sm" color="white">Generated Write-up</Heading>
+                <Button size="sm" colorScheme="green" onClick={copyToClipboard}>
                   Copy to Clipboard
                 </Button>
               </Flex>
@@ -674,6 +734,9 @@ const PacemakerForm = () => {
                 color="white"
                 border="1px solid"
                 borderColor={borderColor}
+                fontSize="sm"
+                lineHeight="1"
+                sx={{ fontFamily: '"Aseprite", monospace !important' }}
               />
             </Box>
           )}

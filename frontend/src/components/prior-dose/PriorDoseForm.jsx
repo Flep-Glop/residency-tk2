@@ -30,7 +30,7 @@ import {
   AlertIcon,
   AlertDescription,
 } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon, CopyIcon } from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import { getTreatmentSites, getDoseCalcMethods, generatePriorDoseWriteup, getSuggestedConstraints } from '../../services/priorDoseService';
 
 const PriorDoseForm = () => {
@@ -1308,7 +1308,6 @@ const PriorDoseForm = () => {
         {/* Generated Write-up Section - Below Form */}
         {writeup && (
           <Box mt={6}>
-            <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
             <Box
               p={4}
               borderWidth={1}
@@ -1317,11 +1316,22 @@ const PriorDoseForm = () => {
               borderColor={borderColor}
               boxShadow="md"
             >
+              <Flex justify="space-between" align="center" mb={3}>
+                <Heading size="sm" color="white">Generated Write-up</Heading>
+                <Button
+                  size="sm"
+                  colorScheme="green"
+                  onClick={copyToClipboard}
+                >
+                  Copy to Clipboard
+                </Button>
+              </Flex>
               <Textarea
                 value={writeup}
                 height="300px"
                 isReadOnly
                 fontSize="sm"
+                lineHeight="1"
                 resize="vertical"
                 aria-label="Generated write-up"
                 bg="gray.700"
@@ -1330,15 +1340,6 @@ const PriorDoseForm = () => {
                 _focus={{ borderColor: "green.500" }}
                 sx={{ fontFamily: '"Aseprite", monospace !important' }}
               />
-              <Button 
-                mt={3} 
-                colorScheme="green"
-                leftIcon={<CopyIcon />}
-                onClick={copyToClipboard}
-                aria-label="Copy to clipboard"
-              >
-                Copy to Clipboard
-              </Button>
             </Box>
           </Box>
         )}

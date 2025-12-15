@@ -46,7 +46,6 @@ const ANATOMICAL_REGIONS = [
   { value: 'abdominal', label: 'Abdominal' },
   { value: 'pelvic', label: 'Pelvic' },
   { value: 'spinal', label: 'Spinal' },
-  { value: 'extremity', label: 'Extremity' },
 ];
 
 const FusionForm = () => {
@@ -76,6 +75,12 @@ const FusionForm = () => {
         try {
           const config = JSON.parse(decodeURIComponent(router.query.config));
           setParsedConfig(config);
+          
+          // Check for bladder filling study first (overrides all other modes)
+          if (config.ct?.bladderStatus) {
+            setFusionMode('bladder-filling');
+            return;
+          }
           
           // Determine fusion mode based on config
           const mriCount = config.mri?.rigid || 0;
@@ -270,6 +275,7 @@ const FusionForm = () => {
   }, [router.isReady, router.query.config]);
   
   // For backward compatibility
+  const isBladderFillingMode = fusionMode === 'bladder-filling';
   const isSingleMriMode = fusionMode === 'single-mri';
   const isMultipleMriMode = fusionMode === 'multiple-mri';
   const isSinglePetMode = fusionMode === 'single-pet-rigid' || fusionMode === 'single-pet-deformable';
@@ -762,8 +768,8 @@ const FusionForm = () => {
   }, [fusionMode, registrationMethods, setValue, isPetCtMode, isMriPetMode, isMriCtMode, isMriCtPetMode, parsedConfig]);
 
   const onSubmit = async (data) => {
-    // Validate that we have at least one registration (unless it's single or multiple mode)
-    if (!isSingleMriMode && !isMultipleMriMode && !isSinglePetMode && !isSingleCtMode && 
+    // Validate that we have at least one registration (unless it's single, multiple, or bladder filling mode)
+    if (!isBladderFillingMode && !isSingleMriMode && !isMultipleMriMode && !isSinglePetMode && !isSingleCtMode && 
         !isMultiplePetRigidMode && !isMultiplePetDeformableMode && !isMultiplePetRigidDeformableMode &&
         !isMultipleCtRigidMode && !isMultipleCtDeformableMode && !isMultipleCtRigidDeformableMode &&
         !isPetCtMode && !isMriPetMode && !isMriCtMode && !isMriCtPetMode && data.fusion_data.registrations.length === 0) {
@@ -775,6 +781,11 @@ const FusionForm = () => {
         isClosable: true,
       });
       return;
+    }
+    
+    // Set bladder filling study flag if in bladder mode
+    if (isBladderFillingMode) {
+      data.fusion_data.is_bladder_filling_study = true;
     }
     
     setLoading(true);
@@ -1083,7 +1094,8 @@ const FusionForm = () => {
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
             <Heading size="md" mb={2}>
-              {fusionMode === 'single-mri' ? 'MRI/CT Fusion Write-up' 
+              {fusionMode === 'bladder-filling' ? 'Full/Empty Bladder Comparison Write-up'
+               : fusionMode === 'single-mri' ? 'MRI/CT Fusion Write-up' 
                : fusionMode === 'multiple-mri' ? 'Multiple MRI/CT Fusion Write-up'
                : fusionMode === 'single-pet-rigid' ? 'PET/CT Rigid Fusion Write-up'
                : fusionMode === 'single-pet-deformable' ? 'PET/CT Deformable Fusion Write-up'
@@ -1204,18 +1216,28 @@ const FusionForm = () => {
                 </Box>
               </GridItem>
               
-              {/* Anatomical Region Section */}
+              {/* Anatomical Region Section - hidden for complex and bladder filling modes */}
               <GridItem 
                 p={4} 
-                borderWidth="1px" 
+                borderWidth="0"
                 borderRadius="md" 
-                bg={formBg}
-                borderColor={borderColor}
-                boxShadow="sm"
+                bg="transparent"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Anatomical Region</Heading>
-                
-                {!isCustomRegion ? (
+                {!isBladderFillingMode && (isSingleMriMode || isMultipleMriMode || isSinglePetMode || isSingleCtMode || 
+                  isMultiplePetRigidMode || isMultiplePetDeformableMode || isMultiplePetRigidDeformableMode ||
+                  isMultipleCtRigidMode || isMultipleCtDeformableMode || isMultipleCtRigidDeformableMode ||
+                  isPetCtMode || isMriPetMode || isMriCtMode || isMriCtPetMode) ? (
+                  <Box
+                    p={4}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    bg={formBg}
+                    borderColor={borderColor}
+                    boxShadow="sm"
+                  >
+                    <Heading size="sm" mb={3} textAlign="center" color="white">Anatomical Region</Heading>
+                    
+                    {!isCustomRegion ? (
                   <FormControl isInvalid={errors.fusion_data?.anatomical_region} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300" fontWeight="bold">Select Region</FormLabel>
                     <Input
@@ -1284,6 +1306,11 @@ const FusionForm = () => {
                 >
                   <Text fontSize="sm" color="gray.300">Custom Region?</Text>
                 </Checkbox>
+                  </Box>
+                ) : (
+                  // Empty for complex mode - column kept for layout
+                  null
+                )}
               </GridItem>
               
               {/* Third Column - Fusion Configuration Summary */}
@@ -1293,11 +1320,11 @@ const FusionForm = () => {
                   borderRadius="md" 
                   bg="transparent"
                 >
-                {(isSingleMriMode || isMultipleMriMode || isSinglePetMode || isSingleCtMode || 
+                {(isBladderFillingMode || isSingleMriMode || isMultipleMriMode || isSinglePetMode || isSingleCtMode || 
                   isMultiplePetRigidMode || isMultiplePetDeformableMode || isMultiplePetRigidDeformableMode ||
                   isMultipleCtRigidMode || isMultipleCtDeformableMode || isMultipleCtRigidDeformableMode ||
                   isPetCtMode || isMriPetMode || isMriCtMode || isMriCtPetMode) ? (
-                  // Empty for pre-configured fusion modes - column kept for layout
+                  // Empty for pre-configured fusion modes and bladder filling - column kept for layout
                   null
                 ) : (
                   // Original registration input for complex cases
@@ -1443,7 +1470,7 @@ const FusionForm = () => {
                 colorScheme="green"
                 isLoading={loading}
                 type="submit"
-                isDisabled={!isSingleMriMode && !isMultipleMriMode && !isSinglePetMode && !isSingleCtMode && 
+                isDisabled={!isBladderFillingMode && !isSingleMriMode && !isMultipleMriMode && !isSinglePetMode && !isSingleCtMode && 
                            !isMultiplePetRigidMode && !isMultiplePetDeformableMode && !isMultiplePetRigidDeformableMode &&
                            !isMultipleCtRigidMode && !isMultipleCtDeformableMode && !isMultipleCtRigidDeformableMode &&
                            !isPetCtMode && !isMriPetMode && !isMriCtMode && !isMriCtPetMode && fields.length === 0}
@@ -1473,7 +1500,6 @@ const FusionForm = () => {
           
           {writeup && (
             <Box mt={6}>
-              <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
               <Box
                 p={4}
                 borderWidth={1}
@@ -1482,11 +1508,29 @@ const FusionForm = () => {
                 borderColor={borderColor}
                 boxShadow="md"
               >
+                <Flex justify="space-between" align="center" mb={3}>
+                  <Heading size="sm" color="white">Generated Write-up</Heading>
+                  <Button
+                    size="sm"
+                    colorScheme="green"
+                    onClick={() => {
+                      navigator.clipboard.writeText(writeup);
+                      toast({
+                        title: "Copied to clipboard",
+                        status: "success",
+                        duration: 2000,
+                      });
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                </Flex>
                 <Textarea
                   value={writeup}
                   height="300px"
                   isReadOnly
                   fontSize="sm"
+                  lineHeight="1"
                   resize="vertical"
                   aria-label="Generated write-up"
                   bg="gray.700"
@@ -1495,21 +1539,6 @@ const FusionForm = () => {
                   _focus={{ borderColor: "green.500" }}
                   sx={{ fontFamily: '"Aseprite", monospace !important' }}
                 />
-                <Button 
-                  mt={3} 
-                  colorScheme="green"
-                  onClick={() => {
-                    navigator.clipboard.writeText(writeup);
-                    toast({
-                      title: "Copied to clipboard",
-                      status: "success",
-                      duration: 2000,
-                    });
-                  }}
-                  aria-label="Copy to clipboard"
-                >
-                  Copy to Clipboard
-                </Button>
               </Box>
             </Box>
           )}

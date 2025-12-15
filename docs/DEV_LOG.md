@@ -1019,5 +1019,49 @@ _placeholder={{ color: "gray.400" }}  // For text inputs
 
 ---
 
+## Entry #80
+**Focus:** Fusion module polish - terminology clarity, anatomical regions, and UI refinements
+
+**Smooth:** Six targeted improvements completed in single session. (1) Removed "Extremity" from anatomical regions - now 6 options (Brain, Head & Neck, Thoracic, Abdominal, Pelvic, Spinal). (2) Changed "anatomical landmarks" to "nearby anatomical landmarks" across all 27 occurrences for clinical precision. (3) Added "In addition to the planning CT, " prefix to all 10 fusion intro text locations - eliminates ambiguity about which CT is being referenced, especially critical for CT-to-CT fusions mixed with other modalities. (4) Applied same visibility logic from third column to second column - when complex mode active (registration UI visible), anatomical region column now hidden to reduce visual clutter. (5) Shortened DIBH labels: "Prescription Dose (Gy)" → "Rx Dose (Gy)", "Number of Fractions" → "Number of Fx", "Boost Dose (Gy)" → "Boost Rx (Gy)", "Boost Fractions" → "Boost Fx". Zero linting errors across all changes.
+
+**Friction:** Initial "separate" terminology investigation revealed CT-to-CT fusions only used "separate" in single-fusion scenarios. Mixed modality combinations (MRI+CT, CT+PET, MRI+CT+PET) just said "one CT study" which could be confused with the planning CT. User suggested "In addition to the planning CT, " prefix as universal solution - cleaner than adding "separate" to each CT mention.
+
+**Insight:** **Establishing context upfront eliminates ambiguity** - "In addition to the planning CT, multiple image studies including one MRI study and one CT study were imported..." immediately clarifies that ALL mentioned studies are imported/separate from the planning CT. Works universally for all modality combinations without needing conditional "separate" logic. **Column visibility patterns are reusable** - same conditional checks used for third column transparency applied cleanly to second column. **Label abbreviations improve pixel font layouts** - "Rx" and "Fx" are standard clinical abbreviations that reduce line-wrapping issues while remaining immediately recognizable to medical physics staff.
+
+---
+
+## Entry #81
+**Focus:** TBI/HDR UI polish and SYED template fix
+
+**Smooth:** Four targeted improvements completed in single session. (1) **TBI fraction regimen formatting** - changed button labels from verbose "2 Gy in 1 fx" to cleaner "2 Gy / 1 fx" format, removed "(BID)" from fractionated options since it's implied. (2) **HDR channel number conditional behavior** - input now disabled with "Select applicator first" placeholder until applicator is chosen; VC/T&O remain read-only with fixed values (1/3 channels), while Utrecht/GENEVA/SYED applicators allow custom channel entry. (3) **SYED template wording** - removed "in our clinic" from implant paragraph for SYED-Gyn and SYED-Prostate applicators (these procedures are performed in OR, not clinic). (4) **Fusion custom region investigation** - confirmed custom anatomical region already flows correctly to writeup text ("based on the right shoulder anatomy" when user enters "right shoulder" in custom region field).
+
+**Friction:** None - all changes were surgical. HDR channel input required adding `isDisabled={!watchApplicator}` plus conditional styling (darker background, disabled cursor) in addition to existing `readOnly` logic for VC/T&O. Backend SYED fix required passing `applicator_type` to `_generate_implant_paragraph()` method and adding conditional check.
+
+**Insight:** **Conditional input states communicate workflow clearly** - disabled vs read-only vs editable are three distinct states that help users understand what's expected. HDR channels: disabled (no applicator selected) → read-only (fixed applicators VC/T&O) → editable (variable applicators). **Implied information doesn't need labels** - BID fractionation for 12 Gy/6 fx and 13.2 Gy/8 fx is clinically obvious, explicit label was redundant. **Location-specific template text** - SYED procedures happen in OR with patient under anesthesia, not "in our clinic" like other HDR applicators. Small wording changes matter for clinical accuracy. **Backend variable flow verification** - fusion custom_anatomical_region was already properly cascading through `anatomical_region = fusion_data.custom_anatomical_region if fusion_data.custom_anatomical_region else fusion_data.anatomical_region` at line 34 of fusion.py; user's earlier bug may have been caching issue.
+
+---
+
+## Entry #82
+**Focus:** Full/Empty Bladder Comparison fusion mode - connecting disconnected feature
+
+**Smooth:** Systematic investigation revealed a three-layer disconnect: home page had UI (checkbox + badge), backend had full support (`is_bladder_filling_study` field + dedicated writeup method), but FusionForm.jsx had no detection or handling for `bladderStatus`. Fix implemented cleanly: (1) Added early mode detection in config parsing - checks `bladderStatus` first, returns `'bladder-filling'` mode before other checks. (2) Added `isBladderFillingMode` helper variable. (3) Added heading title "Full/Empty Bladder Comparison Write-up". (4) Hidden columns 2 and 3 for bladder mode (only staff info needed). (5) Updated validation to skip registration requirement for bladder mode. (6) Added `is_bladder_filling_study = true` to form data on submit. (7) Fixed home page Launch button to enable when `bladderStatus` is true. (8) Removed "Bladder Comparison Active" badge for cleaner UI. Zero linting errors.
+
+**Friction:** Initial discovery required tracing through all three layers to understand why feature wasn't working. Home page checkbox disabled all fusion counts when checked, but Launch button validation still required counts > 0 - so button remained disabled even with bladderStatus true. Backend already had complete implementation (`_generate_bladder_filling_writeup` method at line 594) that was never being called.
+
+**Insight:** **Disconnected features are worse than missing features** - having UI that appears functional but produces wrong results (falling through to 'complex' mode showing registration management) creates user confusion. Better to hide incomplete features until fully wired. **Backend-first development pays off** - the backend bladder filling support was complete and correct, just needed frontend wiring. Backend defaults (Vac-Lok immobilization, pelvic anatomy) made frontend implementation simpler. **Mode detection order matters** - checking bladderStatus first with early return prevents it from falling through the extensive modality count logic. Pattern: special modes checked first, then single-modality modes, then multi-modality modes, then 'complex' fallback.
+
+---
+
+## Entry #83
+**Focus:** Cross-module UI standardization - writeup output styling and Copy to Clipboard consistency
+
+**Smooth:** Systematic audit and standardization across all 8 modules. (1) **Line spacing reduction** - changed all writeup Textarea components from default/1.6 to `lineHeight="1"` for tighter text display matching pixel font aesthetic. (2) **Copy to Clipboard standardization** - discovered inconsistent patterns (some below Textarea, some in header Flex; mix of green/blue colorScheme; some with CopyIcon, some without). Standardized all to Option B pattern: header Flex with `justify="space-between"`, `Heading size="sm"`, `Button size="sm" colorScheme="green"`. Applied to Fusion, DIBH, Prior Dose, SBRT (had button below), and verified SRS, TBI, HDR, Pacemaker (already had header pattern but some used blue). (3) **Pacemaker form cleanup** - removed 5 section subheadings (Device Information, Dosimetry Information, Prescription, Field Proximity, Pacing Status) and subtitle for cleaner layout. (4) **Custom Device feature** - added "Custom Device?" checkbox following Fusion's custom region pattern, allowing users to enter custom vendor/model as text inputs instead of dropdowns. Zero linting errors across all changes.
+
+**Friction:** Initial Copy to Clipboard audit revealed significant divergence - 4 modules had button below Textarea with `mt={3}`, 4 had header Flex pattern. Some had `leftIcon={<CopyIcon />}`, some didn't. Some used `colorScheme="blue"`, others "green". Required reading 8 files to document current state before standardizing.
+
+**Insight:** **Cross-module audits reveal pattern drift** - even with established patterns, modules built at different times accumulate inconsistencies. Periodic standardization passes keep codebase cohesive. **Table format for pattern comparison** - documenting current state (position, color, icon, size) in table format made discrepancies immediately visible and standardization decisions clear. **Checkbox-driven conditional UI is reusable** - the "Custom X?" pattern (state boolean, conditional Select/Input rendering, clear opposite field on toggle) transfers cleanly between modules: Fusion has custom region, Pacemaker now has custom device. Same pattern could apply to custom treatment site, custom applicator, etc. **Subheading removal improves density** - field labels already describe content; section headers like "Prescription" above Dose/Fractions fields are redundant with well-labeled inputs.
+
+---
+
 *Next consolidation: When new architectural patterns emerge or significant lessons accumulate*
 

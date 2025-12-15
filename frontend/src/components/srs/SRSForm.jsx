@@ -736,7 +736,7 @@ const SRSForm = () => {
                     Generated Write-up
                   </Heading>
                   <Button
-                    colorScheme="blue"
+                    colorScheme="green"
                     size="sm"
                     onClick={copyToClipboard}
                   >
@@ -752,6 +752,7 @@ const SRSForm = () => {
                   borderColor="gray.600"
                   color="white"
                   fontSize="sm"
+                  lineHeight="1"
                   whiteSpace="pre-wrap"
                   _focus={{ borderColor: 'blue.400' }}
                   sx={{ fontFamily: '"Aseprite", monospace !important' }}

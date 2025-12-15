@@ -94,7 +94,8 @@ class HDRService:
         writeup += self._generate_implant_paragraph(
             physician, patient_position,
             ct_slice_thickness, critical_structures,
-            planning_system, data.number_of_channels
+            planning_system, data.number_of_channels,
+            data.applicator_type
         )
         
         writeup += "\n\n"
@@ -124,9 +125,14 @@ class HDRService:
     def _generate_implant_paragraph(self, physician: str,
                                      patient_position: str, ct_slice_thickness: float,
                                      critical_structures: List[str],
-                                     planning_system: str, num_channels: int) -> str:
+                                     planning_system: str, num_channels: int,
+                                     applicator_type: str = "") -> str:
         """Generate implant and planning paragraph."""
-        text = f"The applicator was implanted in our clinic with the patient "
+        # SYED applicators are implanted in OR, not our clinic
+        if applicator_type in ["SYED-Gyn", "SYED-Prostate"]:
+            text = f"The applicator was implanted with the patient "
+        else:
+            text = f"The applicator was implanted in our clinic with the patient "
         text += f"in the {patient_position} position. Once the applicator was implanted and fixed to the patient, "
         text += f"a CT scan of {self._format_number(ct_slice_thickness)} mm slice thickness was acquired. "
         

@@ -77,13 +77,13 @@ class FusionService:
             secondary = reg.secondary
             
             if secondary == "CT":
-                intro_text = f"A separate {secondary} study was imported into the Velocity software. "
+                intro_text = f"In addition to the planning CT, a separate {secondary} study was imported into the Velocity software. "
                 intro_text += f"A fusion study was created between the planning CT and the imported CT image set. "
             elif secondary == "MRI":
-                intro_text = f"An {secondary} study was imported into the Velocity software. "
+                intro_text = f"In addition to the planning CT, an {secondary} study was imported into the Velocity software. "
                 intro_text += f"A fusion study was created between the planning CT and the imported image set. "
             else:
-                intro_text = f"A {secondary} study was imported into the Velocity software. "
+                intro_text = f"In addition to the planning CT, a {secondary} study was imported into the Velocity software. "
                 intro_text += f"A fusion study was created between the planning CT and the imported image set. "
             
         else:
@@ -102,13 +102,13 @@ class FusionService:
                 # Single modality type but potentially multiple studies
                 desc = modality_descriptions[0]
                 if desc.startswith("one"):
-                    intro_text = f"A {desc.replace('one ', '')} was imported into the Velocity software. "
+                    intro_text = f"In addition to the planning CT, a {desc.replace('one ', '')} was imported into the Velocity software. "
                 else:
                     # For plural like "two MRI studies"
                     parts = desc.split(' ', 2)  # Split into ["two", "MRI", "studies"]
-                    intro_text = f"{parts[0].capitalize()} {parts[1]} {parts[2]} were imported into the Velocity software. "
+                    intro_text = f"In addition to the planning CT, {parts[0]} {parts[1]} {parts[2]} were imported into the Velocity software. "
             else:
-                intro_text = f"Multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
+                intro_text = f"In addition to the planning CT, multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
             intro_text += "Fusion studies were created between the planning CT and each of the imported image sets. "
         
         # Registration process description
@@ -166,9 +166,9 @@ class FusionService:
         
         if mri_registrations:
             if len(mri_registrations) == 1:
-                reg_text += f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                reg_text += f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
-                reg_text += f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks."
+                reg_text += f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         if pet_registrations:
             if mri_registrations:
@@ -180,9 +180,9 @@ class FusionService:
             if len(pet_registrations) == 1:
                 # Single PET/CT registration - similar to MRI approach
                 if has_deformable_pet:
-                    pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks."
+                    pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using nearby anatomical landmarks."
                 else:
-                    pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                    pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
                 # Multiple PET/CT registrations - handle different combinations
                 rigid_count = sum(1 for reg in pet_registrations if reg.method.lower() == "rigid")
@@ -211,7 +211,7 @@ class FusionService:
                         deformable_word = "study" if deformable_count == 1 else "studies"
                         pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for {rigid_count} {rigid_word} and rigid registration followed by deformable registration for {deformable_count} {deformable_word}."
                 
-                pet_text += f" The accuracy of these fusions was validated using anatomical landmarks."
+                pet_text += f" The accuracy of these fusions was validated using nearby anatomical landmarks."
             
             reg_text += pet_text
         
@@ -225,9 +225,9 @@ class FusionService:
             if len(ct_registrations) == 1:
                 # Single CT/CT registration - similar to MRI and PET/CT approach
                 if has_deformable_ct:
-                    ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks."
+                    ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using nearby anatomical landmarks."
                 else:
-                    ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                    ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
                 # Multiple CT/CT registrations - handle different combinations using PET/CT patterns
                 rigid_count = sum(1 for reg in ct_registrations if reg.method.lower() == "rigid")
@@ -256,7 +256,7 @@ class FusionService:
                         deformable_word = "study" if deformable_count == 1 else "studies"
                         ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for {rigid_count} {rigid_word} and rigid registration followed by deformable registration for {deformable_count} {deformable_word}."
                 
-                ct_text += f" The accuracy of these fusions was validated using anatomical landmarks."
+                ct_text += f" The accuracy of these fusions was validated using nearby anatomical landmarks."
             
             reg_text += ct_text
         
@@ -302,7 +302,7 @@ class FusionService:
             modality_descriptions.append(f"{count_word} PET/CT studies")
         
         # Generate proper introduction
-        intro_text = f"Multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
+        intro_text = f"In addition to the planning CT, multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
         intro_text += "Fusion studies were created between the planning CT and each of the imported image sets. "
         
         # Generate comprehensive registration text for all MRI+PET combinations
@@ -310,9 +310,9 @@ class FusionService:
         
         # Handle MRI portion (always rigid for MRI/CT)
         if mri_count == 1:
-            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
-            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks."
+            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += mri_text + "\n\n"
         
@@ -320,9 +320,9 @@ class FusionService:
         if pet_count == 1:
             # Single PET/CT with MRI
             if has_deformable_pet:
-                pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks."
+                pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
-                pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
             # Multiple PET/CT with MRI - handle all cases
             if pet_deformable_count == 0:
@@ -346,7 +346,7 @@ class FusionService:
                     deformable_word = "study" if pet_deformable_count == 1 else "studies"
                     pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for {pet_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {pet_deformable_count} {deformable_word}."
             
-            pet_text += f" The accuracy of these fusions was validated using anatomical landmarks."
+            pet_text += f" The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += pet_text
         
@@ -392,7 +392,7 @@ class FusionService:
             modality_descriptions.append(f"{count_word} CT studies")
         
         # Generate proper introduction
-        intro_text = f"Multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
+        intro_text = f"In addition to the planning CT, multiple image studies including {' and '.join(modality_descriptions)} were imported into the Velocity software. "
         intro_text += "Fusion studies were created between the planning CT and each of the imported image sets. "
         
         # Generate comprehensive registration text for all MRI+CT combinations
@@ -400,9 +400,9 @@ class FusionService:
         
         # Handle MRI portion (always rigid for MRI/CT)
         if mri_count == 1:
-            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
-            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks."
+            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += mri_text + "\n\n"
         
@@ -410,9 +410,9 @@ class FusionService:
         if ct_count == 1:
             # Single CT/CT with MRI
             if has_deformable_ct:
-                ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks."
+                ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
-                ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
             # Multiple CT/CT with MRI - handle all cases
             if ct_deformable_count == 0:
@@ -436,7 +436,7 @@ class FusionService:
                     deformable_word = "study" if ct_deformable_count == 1 else "studies"
                     ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for {ct_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {ct_deformable_count} {deformable_word}."
             
-            ct_text += f" The accuracy of these fusions was validated using anatomical landmarks."
+            ct_text += f" The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += ct_text
         
@@ -497,9 +497,9 @@ class FusionService:
         
         # Generate proper introduction with oxford comma for three items
         if len(modality_descriptions) == 3:
-            intro_text = f"Multiple image studies including {modality_descriptions[0]}, {modality_descriptions[1]}, and {modality_descriptions[2]} were imported into the Velocity software. "
+            intro_text = f"In addition to the planning CT, multiple image studies including {modality_descriptions[0]}, {modality_descriptions[1]}, and {modality_descriptions[2]} were imported into the Velocity software. "
         else:
-            intro_text = f"Multiple image studies including {', '.join(modality_descriptions[:-1])}, and {modality_descriptions[-1]} were imported into the Velocity software. "
+            intro_text = f"In addition to the planning CT, multiple image studies including {', '.join(modality_descriptions[:-1])}, and {modality_descriptions[-1]} were imported into the Velocity software. "
         
         intro_text += "Fusion studies were created between the planning CT and each of the imported image sets. "
         
@@ -508,9 +508,9 @@ class FusionService:
         
         # Handle MRI portion (always rigid for MRI/CT)
         if mri_count == 1:
-            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
-            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using anatomical landmarks."
+            mri_text = f"The CT and MRI image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += mri_text + "\n\n"
         
@@ -518,9 +518,9 @@ class FusionService:
         if ct_count == 1:
             # Single CT/CT with MRI and PET
             if has_deformable_ct:
-                ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks."
+                ct_text = f"The planning CT and imported CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
-                ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                ct_text = f"The planning CT and imported CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
             # Multiple CT/CT with MRI and PET - handle all cases
             if ct_deformable_count == 0:
@@ -544,7 +544,7 @@ class FusionService:
                     deformable_word = "study" if ct_deformable_count == 1 else "studies"
                     ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for {ct_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {ct_deformable_count} {deformable_word}."
             
-            ct_text += f" The accuracy of these fusions was validated using anatomical landmarks."
+            ct_text += f" The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += ct_text + "\n\n"
         
@@ -552,9 +552,9 @@ class FusionService:
         if pet_count == 1:
             # Single PET/CT with MRI and CT
             if has_deformable_pet:
-                pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using anatomical landmarks."
+                pet_text = f"The CT and PET/CT image sets were aligned using a rigid registration algorithm followed by deformable image registration to enhance the results. The accuracy of this fusion was validated using nearby anatomical landmarks."
             else:
-                pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using anatomical landmarks."
+                pet_text = f"The CT and PET/CT image sets were initially aligned using a rigid registration algorithm based on the {anatomical_region} anatomy, which was then further refined manually. The accuracy of this fusion was validated using nearby anatomical landmarks."
         else:
             # Multiple PET/CT with MRI and CT - handle all cases
             if pet_deformable_count == 0:
@@ -578,7 +578,7 @@ class FusionService:
                     deformable_word = "study" if pet_deformable_count == 1 else "studies"
                     pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for {pet_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {pet_deformable_count} {deformable_word}."
             
-            pet_text += f" The accuracy of these fusions was validated using anatomical landmarks."
+            pet_text += f" The accuracy of these fusions was validated using nearby anatomical landmarks."
         
         reg_text += pet_text
         
@@ -608,7 +608,7 @@ class FusionService:
         write_up += "The CT studies were then exported to the Velocity imaging registration software. "
         write_up += "A fusion study of the two CT sets (empty and full bladder) was then created. "
         write_up += "The CT image sets were registered using a rigid registration algorithm based on the pelvic anatomy. "
-        write_up += "The accuracy of these fusions was validated using anatomical landmarks. "
+        write_up += "The accuracy of these fusions was validated using nearby anatomical landmarks. "
         write_up += "The fused images were used to improve the segmentation of organs at risk and targets as part of the treatment planning process.\n\n"
         
         write_up += f"The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, "
