@@ -75,10 +75,10 @@ Log every session in DEV_LOG.md:
 
 ## DOCUMENTATION VERSIONS
 - HUB: v1.1 (Dec 2025)
-- ARCHITECTURE: v1.0 (Oct 2025)
-- PATTERNS: v1.0 (Oct 2025)
-- SPRITES: v1.0 (Oct 2025)
-- STACK: v1.0 (Oct 2025)
+- ARCHITECTURE: v1.1 (Dec 2025)
+- PATTERNS: v1.1 (Dec 2025)
+- SPRITES: v1.1 (Dec 2025)
+- STACK: v1.1 (Dec 2025)
 - DEV_LOG: Rolling (wiped periodically)
-- Last updated: December 11, 2025
+- Last updated: December 17, 2025
 

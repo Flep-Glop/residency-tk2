@@ -176,41 +176,28 @@ class PacemakerService:
         tps_max_dose = pacemaker_data.tps_max_dose
         osld_mean_dose = pacemaker_data.osld_mean_dose
         
-        # Calculate risk level if not provided (critical for accurate writeup)
-        if pacemaker_data.risk_level:
-            risk_level = pacemaker_data.risk_level
-        else:
-            # Calculate risk using TG-203 algorithm
-            from app.schemas.pacemaker_schemas import PacemakerRiskAssessmentRequest
-            risk_request = PacemakerRiskAssessmentRequest(
-                pacing_dependent=pacing_dependent,
-                field_distance=pacemaker_data.field_distance,
-                neutron_producing=pacemaker_data.neutron_producing,
-                tps_max_dose=tps_max_dose
-            )
-            risk_assessment = self.calculate_risk_assessment(risk_request)
-            risk_level = risk_assessment.risk_level
+        # Always recalculate risk level to ensure accuracy (never trust frontend)
+        from app.schemas.pacemaker_schemas import PacemakerRiskAssessmentRequest
+        risk_request = PacemakerRiskAssessmentRequest(
+            pacing_dependent=pacing_dependent,
+            field_distance=pacemaker_data.field_distance,
+            neutron_producing=pacemaker_data.neutron_producing,
+            tps_max_dose=tps_max_dose
+        )
+        risk_assessment = self.calculate_risk_assessment(risk_request)
+        risk_level = risk_assessment.risk_level
         
-        # Format device information
+        # Block high risk cases from generating writeup
+        if risk_level == "High":
+            raise ValueError("HIGH RISK case detected. Consult with cardiologist before proceeding. No writeup will be generated for high risk cases.")
+        
+        # Format device information for natural reading (model only)
         if device_model:
-            model_text = f"model number {device_model}"
+            device_description = f"{device_vendor} {device_model}"
             model_unknown = False
         else:
-            model_text = "implanted cardiac device"
+            device_description = f"{device_vendor} implanted cardiac device"
             model_unknown = True
-        
-        serial_text = f"serial number {device_serial}" if device_serial else ""
-        if model_text and serial_text:
-            device_info = f"{model_text}, {serial_text},"
-        elif model_text:
-            device_info = f"{model_text},"
-        elif serial_text:
-            device_info = f"{serial_text},"
-        else:
-            device_info = ""
-        
-        # Determine correct article (a vs an) based on device_info
-        article = "an" if device_info.startswith("implanted") else "a"
         
         # Format pacing dependent information
         if pacing_dependent == "Yes":
@@ -222,9 +209,9 @@ class PacemakerService:
         
         # Use the clinical template structure
         write_up = f"Dr. {physician} requested a medical physics consultation for ---. The patient is undergoing radiation treatment to their {treatment_site} at a dose of {dose} Gy in {fractions} fractions. "
-        write_up += f"The patient has {article} {device_info} from {device_vendor}. {pacing_text}\n\n"
+        write_up += f"The patient has a {device_description}. {pacing_text}\n\n"
         
-        write_up += "Our treatment plan follows the guidelines of the manufacturer for radiation therapy. "
+        write_up += "The treatment plan was designed with consideration for the presence of the cardiac device per AAPM TG-203 guidelines. "
         
         # Field intercept statement - conditional based on field distance (CRITICAL SAFETY)
         field_distance = pacemaker_data.field_distance
@@ -238,18 +225,11 @@ class PacemakerService:
         
         # Conditional dose comparison based on actual dose value
         if tps_max_dose < 2.0:
-            write_up += ", which is well below the AAPM recommended total dose of 2 Gy. "
+            write_up += ", which is well below the AAPM TG-203 recommended total dose of 2 Gy. "
         elif tps_max_dose == 2.0:
-            write_up += ", which meets the AAPM recommended total dose limit of 2 Gy. "
+            write_up += ", which meets the AAPM TG-203 recommended total dose limit of 2 Gy. "
         else:
-            write_up += ", which exceeds the AAPM recommended total dose of 2 Gy. "
-        
-        # Unknown model documentation (TG-203 recommendation)
-        if model_unknown:
-            write_up += "The specific device model was not available at the time of planning. "
-            write_up += "Manufacturer-specific recommendations could not be fully assessed. "
-        else:
-            write_up += "It is noted that no specific dose tolerance was provided by the manufacturer. "
+            write_up += ", which exceeds the AAPM TG-203 recommended total dose of 2 Gy. "
         
         write_up += "\n\n"
         
@@ -267,8 +247,8 @@ class PacemakerService:
             write_up += "A defibrillator is always available during treatment in case of emergency. "
             write_up += "A heart rate monitor is then used to monitor for events that would require the defibrillator. "
             write_up += "The patient had their device interrogated before the start of treatment. "
-            write_up += "Per TG-203 guidelines, the device will be interrogated at mid-treatment and again after completion, "
-            write_up += "with a follow-up interrogation within 1 month of treatment end."
+            write_up += "Per TG-203 guidelines, the device will be interrogated at mid-treatment and again after completion of the course, "
+            write_up += "with a follow-up interrogation at 1 and 6 months."
         elif risk_level == "High":
             write_up += f"However, our dosimetry analysis puts this patient at a {risk_level.lower()} risk for any radiation induced cardiac complications. "
             write_up += "A defibrillator is always available during treatment in case of emergency. "

@@ -155,6 +155,75 @@ NEXT_PUBLIC_API_URL=https://residency-tk2-production.up.railway.app/api
 
 ---
 
+## ADVANCED UI ARCHITECTURE PATTERNS
+
+### Grid-Based Selection for 2D Choices
+**Decision:** When users need to select both a category AND provide a value, use grid-based selection matrices instead of sequential dropdowns.
+
+**Example:** SRS/SRT module lesion creation
+- Traditional: Select type dropdown → Click add → Enter site → Submit
+- Grid-based: Click "+ New SRS" cell → Select preset → Type site (auto-focused)
+
+**Benefits:**
+- Single click initiates action with category pre-selected
+- Visual affordance (grid cells show available options)
+- Faster for power users
+- Scales for 2-4 categories
+
+**Implementation:**
+```jsx
+<Grid templateColumns="repeat(2, 1fr)" gap={2}>
+  <Button onClick={() => createItem('CategoryA')}>
+    + New Category A
+  </Button>
+  <Button onClick={() => createItem('CategoryB')}>
+    + New Category B
+  </Button>
+</Grid>
+```
+
+### Two-Step Preset Workflows
+**Decision:** For fields with standardized clinical values (doses, fractionation), use two-step creation: select preset first, then add custom details.
+
+**Rationale:** 
+- 80%+ of cases use standard values (SRS: 18-21 Gy, SRT: 25/5 or 30/5)
+- Reduces manual entry errors
+- Speeds up common workflows
+
+**Pattern:**
+1. User initiates action (e.g., "+ New SRS")
+2. System shows preset buttons (14, 16, 18, 20, 22 Gy)
+3. User selects preset → item created with preset values
+4. User fills remaining custom field (site name)
+5. Preset displayed as clickable badge for non-destructive editing
+
+### Form Validation Evolution
+**Decision:** Use react-hook-form `Controller` for button group validation instead of RadioGroup with hidden Radio inputs.
+
+**Problem:** RadioGroup requires Radio elements to receive clicks for onChange to fire. Hiding them with `display: none` breaks this chain.
+
+**Solution:**
+```jsx
+<Controller
+  name="field"
+  control={control}
+  rules={{ required: true }}
+  render={({ field }) => (
+    <Button onClick={() => field.onChange(value)}>
+      {label}
+    </Button>
+  )}
+/>
+```
+
+**Benefits:**
+- Direct field.onChange() callback
+- No hidden input elements
+- Cleaner code
+- Proper validation integration
+
+---
+
 ## KEY DECISIONS
 
 ### Backend Controls Text Generation
@@ -177,9 +246,18 @@ NEXT_PUBLIC_API_URL=https://residency-tk2-production.up.railway.app/api
 
 ### Why Fusion is Reference Implementation?
 - Most sophisticated module (1,722 lines)
-- Handles all edge cases
-- Proven UI patterns
+- Handles all edge cases (20+ mode detection scenarios)
+- Proven 3-column layout with column spanning
+- Bladder filling toggle demonstrates special mode handling
 - All new modules should copy its structure
+
+### When to Innovate Beyond Fusion?
+While Fusion is the reference, SRS/SRT demonstrates when innovation makes sense:
+- **Grid-based selection** (Entry #86) improved upon traditional dropdowns
+- **Two-step preset workflow** (Entry #87) reduced manual entry for standardized values
+- **Clickable badges** (Entry #87) enabled non-destructive editing
+
+**Guideline:** Copy Fusion structure for fundamentals (layout, styling, validation), innovate for domain-specific workflows when clear UX benefit exists.
 
 ---
 
@@ -218,7 +296,7 @@ NEXT_PUBLIC_API_URL=https://residency-tk2-production.up.railway.app/api
 ---
 
 ## DOCUMENTATION VERSIONS
-- ARCHITECTURE: v1.0 (Oct 2025)
-- Last updated: November 20, 2025
+- ARCHITECTURE: v1.1 (Dec 2025)
+- Last updated: December 17, 2025
 - Next review: When architectural decisions change or new patterns emerge
 

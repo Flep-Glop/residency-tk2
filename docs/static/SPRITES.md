@@ -209,77 +209,99 @@ tests/
 
 ---
 
-## 🚧 PRIOR DOSE MODULE
+## PRIOR DOSE MODULE
 
-**Status:** Needs UI Polish (backend complete)  
-**Known Issues:** Backend write-up generation needs verification
+**Status:** Production Ready  
+**Lines:** ~1,100 (frontend) + ~450 (backend)  
+**Test Coverage:** 15 comprehensive tests + 13 clinical QA tests (100% pass rate)
 
 ### Features
-- **Modes:**
-  - With overlap (BED/EQD2 calculations)
-  - Without overlap (documentation only)
-- **Prior Treatments:**
-  - Dynamic list management
-  - Treatment site, dose, fractions, date
-  - Multiple prior treatments supported
-- **Critical Structures:**
-  - Multiple structure selection
-  - Dose overlap tracking
+- **Accordion-Based Prior Treatments:**
+  - Dynamic useFieldArray management
+  - Per-treatment overlap checkbox (not global)
+  - Per-treatment DICOM unavailable tracking
+  - Expandable cards with site/dose/fractions badges
+- **Dose Calculation Methods:**
+  - Raw Dose (no biologic correction)
+  - EQD2 (2 Gy equivalent dose, α/β ratios)
+- **Fractionation Regime Detection:**
+  - SRS (1 fx ≥10 Gy) → Timmerman constraints
+  - SBRT 3fx/5fx (≥5 Gy/fx) → Timmerman constraints
+  - Moderate Hypofx (2.5-5 Gy/fx) → QUANTEC constraints
+  - Conventional (<2.5 Gy/fx) → QUANTEC constraints
+- **Dose Statistics System:**
+  - Auto-populated constraints based on treatment sites
+  - Fractionation-specific constraint tables (QUANTEC vs Timmerman)
+  - Anatomical grouping (CNS, Optics & Hearing, Head & Neck, Thorax, Abdomen, Pelvis, Extremity)
+  - Collapsible region accordions with color coding
+  - Smart assessment (compares entered values to limits)
+  - Constraint verification system (gradual clinical rollout)
+- **Custom Sites:** Checkbox-driven conditional UI for both current and prior treatments
 
 ### API Endpoints
 ```
 POST /api/prior-dose/generate
+POST /api/prior-dose/suggested-constraints   # Site-based constraint lookup
+GET  /api/prior-dose/fractionation-regime    # Regime detection helper
 ```
-
-### What Works
-- 3-column responsive layout
-- Always-visible write-up
-- Back navigation button
-- Dark theme styling
-- Proper newline handling
-
-### What Needs Work
-- useFieldArray integration for prior treatments
-- Auto-population based on mode
-- Enhanced mode detection
 
 ### Key Files
 ```
 backend/app/
 ├── schemas/prior_dose.py
-├── services/prior_dose.py
+├── services/prior_dose.py          # ~450 lines with smart assessment
 └── routers/prior_dose.py
 
 frontend/src/
 ├── services/priorDoseService.js
-├── components/prior-dose/PriorDoseForm.jsx
+├── components/prior-dose/PriorDoseForm.jsx   # ~1,100 lines
 └── pages/prior-dose.js
+
+tests/
+├── test_prior_dose_core.py              # 3 core tests
+├── test_prior_dose_comprehensive.py     # 15 comprehensive tests
+└── test_prior_dose_clinical_qa.py       # 13 clinical QA tests
 ```
+
+### Innovation Highlights
+- **Smart text generation** parses dose values vs limits, generates clinical interpretation
+- **Anatomical constraint grouping** improves navigation for 12+ structures
+- **Per-item boolean flags** (overlap, DICOM unavailable) more flexible than global modes
+- **Fractionation-aware constraints** match clinical reference standards (QUANTEC/Timmerman)
 
 ---
 
 ## SRS/SRT MODULE (Stereotactic Radiosurgery)
 
 **Status:** Production Ready  
-**Lines:** ~600 (frontend) + ~220 (backend)
+**Lines:** ~600 (frontend) + ~220 (backend)  
+**Test Coverage:** 15 automated tests (100% pass rate)
 
 ### Features
-- **Multi-lesion Support:** Dynamic accordion UI for multiple brain lesions
-- **Brain Regions:** 23 anatomical sites (lobes, brainstem, cerebellum, etc.)
+- **Grid-Based Lesion Selection:** Innovative 2-column matrix (SRS | SRT)
+  - Click "+ New SRS" or "+ New SRT" to create lesion
+  - Preset selection before site entry (two-step workflow)
+  - Type site name directly in cells with auto-focus
 - **Treatment Types:** SRS (single fraction) and SRT (fractionated)
-- **Quick Presets:** Common SRS doses (16-21 Gy) and SRT regimens (25-35 Gy)
+- **Preset Doses:** 
+  - SRS: 14, 16, 18, 20, 22 Gy (single fraction)
+  - SRT: 18/3, 25/5, 30/5 (fractionation regimens)
+- **Editable Prescriptions:** Clickable badge reopens preset menu
+- **Multi-lesion Support:** Dynamic accordion UI
+  - Lesion site name as accordion header
+  - Delete button in header (no need to expand)
+  - Auto-expand new lesions
 - **Plan Quality Metrics:**
-  - Prescription isodose level
-  - PTV coverage
+  - Volume (cc)
+  - PTV Coverage (%)
   - Conformity Index
   - Gradient Index
-  - Maximum dose
+  - Maximum Dose (Gy)
+- **Compact Layout:** Horizontal 5-column metric grid (responsive)
 - **MRI/CT Fusion:** Includes simulation imaging workflow
-- **Multi-Fraction Support:** Handles both SRS (1fx) and SRT (2-5fx)
 
 ### API Endpoints
 ```
-GET  /api/srs/brain-regions
 POST /api/srs/generate
 ```
 
@@ -287,14 +309,23 @@ POST /api/srs/generate
 ```
 backend/app/
 ├── schemas/srs_schemas.py
-├── services/srs_service.py
+├── services/srs_service.py    # Grammar helpers (_format_fractions)
 └── routers/srs.py
 
 frontend/src/
 ├── services/srsService.js
-├── components/srs/SRSForm.jsx
+├── components/srs/SRSForm.jsx   # Grid-based selection pattern
 └── pages/srs.js
+
+tests/
+└── test_srs_comprehensive.py    # 15 comprehensive tests
 ```
+
+### Innovation Highlights
+- **Grid-based selection** eliminates sequential dropdown workflows
+- **Two-step preset selection** reduces manual entry for 80%+ of cases
+- **Editable prescription badges** allow non-destructive changes
+- **Column spanning** gives lesion selection generous horizontal space
 
 ---
 

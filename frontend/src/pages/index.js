@@ -75,6 +75,7 @@ const HomePage = () => {
       medium: false,
       high: false
     },
+    neurostimulator: false,
     specialTreatmentTypes: {
       sbrt: false,
       srs: false,
@@ -123,107 +124,47 @@ const HomePage = () => {
     });
   };
   
+  // All General MPC options are mutually exclusive - only one can be selected at a time
   const toggleMpcItem = (section, item) => {
+    // Reset state - all options cleared
+    const clearedState = {
+      prior: false,
+      pacemaker: {
+        enabled: false,
+        low: false,
+        medium: false,
+        high: false
+      },
+      neurostimulator: false,
+      specialTreatmentTypes: {
+        sbrt: false,
+        srs: false,
+        tbi: false,
+        hdr: false
+      },
+      dibh: false
+    };
+    
     if (section === 'dibh') {
-      // DIBH is a simple boolean - TEMPORARY: mutually exclusive with SBRT
+      setMpcChecklist(prev => prev.dibh ? clearedState : { ...clearedState, dibh: true });
+    } else if (section === 'prior') {
+      setMpcChecklist(prev => prev.prior ? clearedState : { ...clearedState, prior: true });
+    } else if (section === 'neurostimulator') {
+      setMpcChecklist(prev => prev.neurostimulator ? clearedState : { ...clearedState, neurostimulator: true });
+    } else if (section === 'specialTreatmentTypes') {
       setMpcChecklist(prev => {
-        // If DIBH is already selected, just deselect it
-        if (prev.dibh) {
-          return {
-            ...prev,
-            dibh: false
-          };
+        const wasSelected = prev.specialTreatmentTypes[item];
+        if (wasSelected) {
+          return clearedState;
         }
-        // If DIBH is not selected, select it and clear SBRT
         return {
-          ...prev,
-          dibh: true,
-          specialTreatmentTypes: {
-            ...prev.specialTreatmentTypes,
-            sbrt: false
-          }
+          ...clearedState,
+          specialTreatmentTypes: { ...clearedState.specialTreatmentTypes, [item]: true }
         };
       });
-    } else if (section === 'prior') {
-      // Prior is now a simple boolean
-      setMpcChecklist(prev => ({
-        ...prev,
-        prior: !prev.prior
-      }));
-    } else if (section === 'specialTreatmentTypes') {
-      // Special treatment types have mutual exclusion
-      setMpcChecklist(prev => {
-        const currentValue = prev.specialTreatmentTypes[item];
-        
-        if (currentValue) {
-          // If currently selected, just unselect it
-          return {
-            ...prev,
-            specialTreatmentTypes: {
-              ...prev.specialTreatmentTypes,
-              [item]: false
-            },
-            // Re-enable DIBH if no blocking treatments are selected
-            dibh: (item === 'srs' || item === 'tbi' || item === 'hdr') ? prev.dibh : prev.dibh
-          };
-        } else {
-          // If not selected, select it and unselect all others
-          const newSpecialTypes = {
-            sbrt: false,
-            srs: false,
-            tbi: false,
-            hdr: false,
-            [item]: true
-          };
-          
-          // TEMPORARY: Disable DIBH if selecting SBRT (and switch from DIBH if it was active)
-          const shouldDisableDibh = item === 'sbrt' || item === 'srs' || item === 'tbi' || item === 'hdr';
-          
-          return {
-            ...prev,
-            specialTreatmentTypes: newSpecialTypes,
-            dibh: shouldDisableDibh ? false : prev.dibh
-          };
-        }
-      });
-    } else if (section === 'pacemaker') {
-      // Pacemaker has sub-items
-      if (item === 'enabled') {
-        // Toggle main checkbox and reset sub-items if disabling
-        setMpcChecklist(prev => ({
-          ...prev,
-          pacemaker: {
-            ...prev.pacemaker,
-            enabled: !prev.pacemaker.enabled,
-            // Reset sub-items if disabling main item
-            ...(prev.pacemaker.enabled ? 
-              { low: false, medium: false, high: false } : 
-              {}
-            )
-          }
-        }));
-      } else {
-        // Toggle sub-item (mutually exclusive within section)
-        setMpcChecklist(prev => ({
-          ...prev,
-          pacemaker: {
-            ...prev.pacemaker,
-            low: item === 'low',
-            medium: item === 'medium',
-            high: item === 'high'
-          }
-        }));
-      }
+    } else if (section === 'pacemaker' && item === 'enabled') {
+      setMpcChecklist(prev => prev.pacemaker.enabled ? clearedState : { ...clearedState, pacemaker: { ...clearedState.pacemaker, enabled: true } });
     }
-  };
-
-  // Helper function to determine if DIBH should be disabled
-  const isDibhDisabled = () => {
-    // TEMPORARY: SBRT also disables DIBH (mutually exclusive)
-    return mpcChecklist.specialTreatmentTypes.sbrt ||
-           mpcChecklist.specialTreatmentTypes.srs || 
-           mpcChecklist.specialTreatmentTypes.tbi || 
-           mpcChecklist.specialTreatmentTypes.hdr;
   };
 
   // Helper function to check if MPC checklist is valid
@@ -231,16 +172,17 @@ const HomePage = () => {
     // Check if anything is selected at all
     const hasPriorSelection = mpcChecklist.prior;
     const hasPacemakerSelection = mpcChecklist.pacemaker.enabled;
+    const hasNeurostimulatorSelection = mpcChecklist.neurostimulator;
     const hasSpecialTreatment = Object.values(mpcChecklist.specialTreatmentTypes).some(Boolean);
     const hasDibhSelection = mpcChecklist.dibh;
     
     // Must have at least one main category selected
-    return hasPriorSelection || hasPacemakerSelection || hasSpecialTreatment || hasDibhSelection;
+    return hasPriorSelection || hasPacemakerSelection || hasNeurostimulatorSelection || hasSpecialTreatment || hasDibhSelection;
   };
 
   // Helper function to determine which MPC module to route to
   const getMpcRoute = (mpcConfig) => {
-    // Priority order: Prior Dose → Pacemaker → Treatment Types (SBRT/SRS/TBI/HDR) → DIBH
+    // Priority order: Prior Dose → Pacemaker → Neurostimulator → Treatment Types (SBRT/SRS/TBI/HDR) → DIBH
     
     if (mpcConfig.prior) {
       return '/prior-dose';
@@ -248,6 +190,10 @@ const HomePage = () => {
     
     if (mpcConfig.pacemaker.enabled) {
       return '/pacemaker';
+    }
+    
+    if (mpcConfig.neurostimulator) {
+      return '/neurostimulator';
     }
     
     const specialTypes = mpcConfig.specialTreatmentTypes;
@@ -532,8 +478,7 @@ const HomePage = () => {
             <CardBody>
               <SimpleGrid columns={2} spacing={3}>
                 
-                {/* PRODUCTION NOTE: SRS/SRT module hidden - pending comprehensive QA */}
-                {/* Prior Dose - Phase 1 UI polish complete, available for review */}
+                {/* PRODUCTION NOTE: Prior Dose module hidden - pending comprehensive QA */}
                 
                 {/* Prior Dose */}
                 <Button
@@ -582,22 +527,6 @@ const HomePage = () => {
                 >
                   SBRT
                 </Button>
-
-                {/* SRS/SRT - HIDDEN */}
-                {/* <Button
-                  size="md"
-                  variant={mpcChecklist.specialTreatmentTypes.srs ? "solid" : "outline"}
-                  colorScheme={mpcChecklist.specialTreatmentTypes.srs ? "orange" : "gray"}
-                  onClick={() => toggleMpcItem('specialTreatmentTypes', 'srs')}
-                  borderColor="gray.600"
-                  color={mpcChecklist.specialTreatmentTypes.srs ? "white" : "gray.300"}
-                  _hover={{ 
-                    bg: mpcChecklist.specialTreatmentTypes.srs ? "orange.600" : "gray.700",
-                    borderColor: mpcChecklist.specialTreatmentTypes.srs ? "orange.300" : "gray.500"
-                  }}
-                >
-                  SRS/SRT
-                </Button> */}
 
                 {/* TBI */}
                 <Button

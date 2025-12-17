@@ -277,7 +277,7 @@ const DIBHForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}>Select a physician</option>
+                      <option value=""></option>
                       {physicians.map(physician => (
                         <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
                       ))}
@@ -307,7 +307,7 @@ const DIBHForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}>Select a physicist</option>
+                      <option value=""></option>
                       {physicists.map(physicist => (
                         <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
                       ))}
@@ -351,7 +351,7 @@ const DIBHForm = () => {
                         }
                       }}
                     >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}>Select a treatment site</option>
+                      <option value=""></option>
                       {treatmentSites.map(site => (
                         <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
                       ))}

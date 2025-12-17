@@ -369,7 +369,7 @@ const PacemakerForm = () => {
                 <Box mt={4}>
                   <FormControl isInvalid={errors.pacemaker_data?.field_distance} mb={3}>
                     <FormLabel fontSize="sm" color="gray.300">Distance from Field to CIED</FormLabel>
-                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                    <Grid templateColumns="repeat(4, 1fr)" gap={2}>
                       <Button
                         size="sm"
                         onClick={() => setValue('pacemaker_data.field_distance', 'More than 10 cm from treatment field edge')}
@@ -404,7 +404,7 @@ const PacemakerForm = () => {
                         height="auto"
                         py={2}
                       >
-                        Within 3 cm
+                        &lt; 3 cm
                       </Button>
                       <Button
                         size="sm"
@@ -650,15 +650,6 @@ const PacemakerForm = () => {
                         </Badge>
                       </Box>
                     </Grid>
-
-                    <Box mb={3}>
-                      <Text fontSize="xs" color="gray.400" mb={1}>Recommendations:</Text>
-                      <VStack align="start" spacing={0}>
-                        {riskAssessment.recommendations.map((rec, index) => (
-                          <Text key={index} fontSize="xs" color="gray.300">• {rec}</Text>
-                        ))}
-                      </VStack>
-                    </Box>
 
                     {riskAssessment.is_high_risk_warning && (
                       <Alert status="error" size="sm" mb={3}>

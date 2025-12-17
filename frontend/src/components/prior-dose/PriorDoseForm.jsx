@@ -69,7 +69,7 @@ const PriorDoseForm = () => {
             custom_site: '',
             dose: '',
             fractions: '',
-            month: 'January',
+            month: '',
             year: '',
             spine_location: '',
             has_overlap: false,
@@ -969,7 +969,9 @@ const PriorDoseForm = () => {
                             <FormLabel fontSize="sm" color="gray.300">Treatment Month</FormLabel>
                             <Select
                               size="sm"
-                              {...register(`prior_dose_data.prior_treatments.${index}.month`)}
+                              {...register(`prior_dose_data.prior_treatments.${index}.month`, {
+                                required: 'Treatment month is required'
+                              })}
                               bg="gray.700"
                               borderColor="gray.600"
                               color="white"
@@ -978,6 +980,7 @@ const PriorDoseForm = () => {
                               aria-label="Treatment month"
                               sx={{ '& option': { backgroundColor: 'gray.700', color: 'white' }}}
                             >
+                              <option value=""></option>
                               {['January', 'February', 'March', 'April', 'May', 'June', 
                                 'July', 'August', 'September', 'October', 'November', 'December'].map((month) => (
                                 <option key={month} value={month} style={{ backgroundColor: '#2D3748', color: 'white' }}>

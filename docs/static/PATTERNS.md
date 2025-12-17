@@ -383,6 +383,295 @@ http://localhost:8000/docs
 
 ---
 
+## ADVANCED UI PATTERNS
+
+### Grid-Based Selection Matrices
+✅ **PREFERRED for 2D choice workflows:**
+```jsx
+// When users need to assign both category AND value
+// Example: SRS/SRT lesion selection (type + site name)
+<Grid templateColumns="repeat(2, 1fr)" gap={2}>
+  <Button onClick={() => createItem('SRS')}>
+    + New SRS
+  </Button>
+  <Button onClick={() => createItem('SRT')}>
+    + New SRT
+  </Button>
+</Grid>
+
+// Clicking cell creates item AND selects category in one action
+```
+
+**Why it works:**
+- Eliminates sequential dropdown → button → dropdown workflows
+- Visual affordance shows what will be created
+- Faster for power users (single click vs. multiple interactions)
+- Scales well for 2-4 categories
+
+### Two-Step Workflows with Presets
+✅ **PREFERRED for standardized clinical values:**
+```jsx
+// Step 1: Show preset buttons when initiating action
+const handleNewItem = (category) => {
+  setShowPresets(true);
+  setSelectedCategory(category);
+};
+
+// Step 2: Preset selection creates item with values pre-filled
+const selectPreset = (presetValues) => {
+  append({ 
+    category: selectedCategory,
+    ...presetValues,
+    customField: '' // User fills this
+  });
+  setShowPresets(false);
+};
+```
+
+**Use cases:**
+- SRS doses (16, 18, 20, 21 Gy) - most cases use standards
+- SRT regimens (18/3, 25/5, 30/5) - predefined fractionation
+- TBI fractionation (12 Gy/6fx, 12 Gy/8fx) - institutional protocols
+
+### Clickable Badges for Non-Destructive Editing
+✅ **PATTERN for editable display values:**
+```jsx
+// Display selection as clickable badge
+<Badge 
+  colorScheme="blue" 
+  cursor="pointer"
+  onClick={() => setShowPresetMenu(true)}
+>
+  {currentValue}
+</Badge>
+
+// Reopens preset menu without destroying item
+{showPresetMenu && (
+  <HStack>
+    {presets.map(preset => (
+      <Button 
+        key={preset}
+        variant={currentValue === preset ? 'solid' : 'outline'}
+        onClick={() => updateValue(preset)}
+      >
+        {preset}
+      </Button>
+    ))}
+  </HStack>
+)}
+```
+
+**Benefits:**
+- Users can change selections without delete/re-add
+- Current selection highlighted in preset menu
+- Reduces workflow friction
+
+### Column Spanning for Layout Flexibility
+✅ **PATTERN for dynamic column usage:**
+```jsx
+<Grid templateColumns="repeat(3, 1fr)" gap={4}>
+  <GridItem>
+    {/* Always visible: Staff info */}
+  </GridItem>
+  
+  <GridItem colSpan={{ base: 1, lg: 2 }}>
+    {/* Spans 2 columns when needed */}
+    {showComplexUI ? (
+      <ComplexSelectionGrid />
+    ) : (
+      <SimpleSummary />
+    )}
+  </GridItem>
+</Grid>
+```
+
+**Use cases:**
+- Fusion mode: invisible/spanning columns based on complexity
+- SRS/SRT: lesion selection grid spans columns 2-3
+- Maintains consistent grid structure across modules
+
+### Header Actions with Event Propagation
+✅ **CRITICAL for accordion header buttons:**
+```jsx
+<AccordionButton>
+  <Box flex="1" textAlign="left">
+    {itemTitle}
+  </Box>
+  <Button
+    size="sm"
+    onClick={(e) => {
+      e.stopPropagation();  // CRITICAL: prevents accordion toggle
+      handleDelete(index);
+    }}
+  >
+    Delete
+  </Button>
+  <AccordionIcon />
+</AccordionButton>
+```
+
+**Why e.stopPropagation() matters:**
+- Without it, clicking Delete also toggles accordion
+- Applies to any interactive elements in clickable parents
+- Pattern: stop propagation on inner action, let parent handle outer click
+
+### Conditional Input States
+✅ **THREE distinct states for inputs:**
+```jsx
+// State 1: DISABLED (can't interact yet)
+<Input
+  isDisabled={!prerequisiteSelected}
+  placeholder="Select prerequisite first"
+  bg="gray.750"
+  cursor="not-allowed"
+/>
+
+// State 2: READONLY (auto-configured, view only)
+<Input
+  readOnly
+  value={autoCalculatedValue}
+  color="gray.400"
+  cursor="not-allowed"
+/>
+
+// State 3: EDITABLE (user enters value)
+<Input
+  value={userValue}
+  onChange={(e) => setValue(e.target.value)}
+  color="white"
+  cursor="text"
+/>
+```
+
+**Visual cues:**
+- Disabled: darker background (gray.750), not-allowed cursor
+- Readonly: grayed text (gray.400), not-allowed cursor, fixed value
+- Editable: white text, normal cursor, responds to input
+
+**Use cases:**
+- HDR channels: disabled until applicator selected → readonly for VC/T&O → editable for others
+- SRS volume: editable input
+- SBRT calculated metrics: readonly display
+
+---
+
+## FORM VALIDATION ADVANCED PATTERNS
+
+### Button Groups with Controller
+✅ **PREFERRED for button group validation:**
+```jsx
+import { Controller } from 'react-hook-form';
+
+<Controller
+  name="fieldName"
+  control={control}
+  rules={{ required: 'Selection is required' }}
+  render={({ field }) => (
+    <HStack>
+      {options.map(option => (
+        <Button
+          key={option.value}
+          colorScheme={field.value === option.value ? "blue" : "gray"}
+          variant={field.value === option.value ? "solid" : "outline"}
+          onClick={() => field.onChange(option.value)}
+        >
+          {option.label}
+        </Button>
+      ))}
+    </HStack>
+  )}
+/>
+{errors.fieldName && (
+  <FormErrorMessage sx={{ color: 'red.300' }}>
+    {errors.fieldName.message}
+  </FormErrorMessage>
+)}
+```
+
+**Why Controller pattern:**
+- RadioGroup with hidden Radio inputs breaks validation
+- Controller provides direct field.onChange() callback
+- Cleaner than hidden input pattern for button groups
+- Works seamlessly with react-hook-form validation
+
+❌ **AVOID: RadioGroup with hidden Radio elements**
+```jsx
+// This breaks validation when Radio has display:none
+<RadioGroup value={value} onChange={setValue}>
+  <Button as="label">
+    <Radio value="option" display="none" />
+    Option
+  </Button>
+</RadioGroup>
+```
+
+### Cross-Module Standardization Patterns
+
+#### Copy to Clipboard Button Placement
+✅ **STANDARD pattern (all modules must match):**
+```jsx
+<Flex justify="space-between" align="center" mb={2}>
+  <Heading size="sm">Write-up</Heading>
+  <Button
+    size="sm"
+    colorScheme="green"
+    onClick={copyToClipboard}
+  >
+    Copy to Clipboard
+  </Button>
+</Flex>
+<Textarea
+  value={writeup}
+  readOnly
+  rows={20}
+  sx={{ fontFamily: '"AsepriteFont", monospace !important' }}
+  lineHeight="1"
+/>
+```
+
+**Specifications:**
+- Button in header Flex, right-aligned
+- `size="sm"`, `colorScheme="green"`
+- Heading `size="sm"` on left
+- Textarea below with consistent styling
+
+#### Line Spacing for Pixel Fonts
+✅ **REQUIRED for all Textarea outputs:**
+```jsx
+<Textarea
+  lineHeight="1"  // Tight spacing for pixel font
+  sx={{ 
+    fontFamily: '"AsepriteFont", monospace !important',
+    fontSize: '14px'
+  }}
+/>
+```
+
+**Why:** Pixel fonts render poorly with default line-height (1.5+). Use lineHeight="1" for compact, readable output.
+
+#### Error Message Brightness
+✅ **REQUIRED for all FormErrorMessage:**
+```jsx
+<FormErrorMessage sx={{ color: 'red.300' }}>
+  {errors.fieldName?.message}
+</FormErrorMessage>
+```
+
+**Why:** Default red.500 too dark on gray.800 background. red.300 (#FC8181) provides better contrast.
+
+#### Dropdown Placeholders
+✅ **STANDARD pattern (empty by default):**
+```jsx
+<Select placeholder="" {...register('field')}>
+  <option value="">Select...</option>
+  <option value="option1">Option 1</option>
+</Select>
+```
+
+**Why:** Forces explicit user selection, prevents false defaults. Validation catches empty submissions.
+
+---
+
 ## KEY PRINCIPLES
 
 1. **Backend controls content** (never override in frontend)
@@ -392,11 +681,14 @@ http://localhost:8000/docs
 5. **Mobile-first responsive** (works everywhere)
 6. **Always-visible results** (no scrolling UX)
 7. **Environment verification** (check before debugging)
+8. **Grid-based selection for 2D choices** (faster than sequential workflows)
+9. **Presets for standardized values** (reduce manual entry errors)
+10. **Controller for button validation** (cleaner than hidden inputs)
 
 ---
 
 ## DOCUMENTATION VERSIONS
-- PATTERNS: v1.0 (Oct 2025)
-- Last updated: November 20, 2025
+- PATTERNS: v1.1 (Dec 2025)
+- Last updated: December 17, 2025
 - Next review: When new proven patterns are discovered or existing patterns evolve
 

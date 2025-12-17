@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Container } from '@chakra-ui/react';
+import { Box, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { SRSForm } from '../components/srs';
 
@@ -8,22 +8,24 @@ const SRSPage = () => {
 
   return (
     <Box bg="gray.900" minH="100vh">
-      <Container maxW="100%" p={0}>
-        <Box p={4} bg="gray.800" borderBottom="1px" borderColor="gray.700">
-          <Button
-            colorScheme="blue"
-            variant="ghost"
-            onClick={() => router.push('/')}
-            size="sm"
-          >
-            ← Home
-          </Button>
-        </Box>
-        <SRSForm />
-      </Container>
+      {/* Home button positioned absolutely */}
+      <Box position="absolute" top={4} right={4} zIndex={10}>
+        <Button 
+          size="sm"
+          variant="outline"
+          colorScheme="green"
+          color="green.300"
+          borderColor="green.600"
+          _hover={{ bg: "green.800", borderColor: "green.400" }}
+          onClick={() => router.push('/')}
+        >
+          ← Home
+        </Button>
+      </Box>
+      
+      <SRSForm />
     </Box>
   );
 };
 
 export default SRSPage;
-

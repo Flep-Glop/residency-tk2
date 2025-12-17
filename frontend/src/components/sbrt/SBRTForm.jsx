@@ -534,8 +534,6 @@ const SBRTForm = () => {
                   </Box>
 
                   <Box>
-                    <Heading size="xs" mb={2} color="gray.300">Treatment Parameters</Heading>
-                    
                     <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
                       <FormControl isInvalid={errors.sbrt_data?.dose}>
                         <FormLabel fontSize="sm" color="gray.300">Rx Dose (Gy)</FormLabel>
