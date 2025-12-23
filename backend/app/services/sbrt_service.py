@@ -132,7 +132,7 @@ class SBRTService:
             r50 = float(calculated_metrics.r50)
             gradient_measure = float(calculated_metrics.gradientMeasure)
             max_dose_2cm_ring = float(calculated_metrics.maxDose2cmRingPercent)
-            heterogeneity_index = float(calculated_metrics.heterogeneityIndex)
+            heterogeneity_index = float(calculated_metrics.homogeneityIndex)
         else:
             # Fallback values if no calculated metrics
             coverage = vol_ptv_receiving_rx

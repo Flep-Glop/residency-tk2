@@ -174,7 +174,7 @@ const SBRTForm = () => {
         
         // Heterogeneity Index: needs Dmax Target and Rx Dose
         if (watchMaxDoseInTarget && watchDose) {
-          metrics.heterogeneityIndex = watchMaxDoseInTarget / watchDose;
+          metrics.homogeneityIndex = watchMaxDoseInTarget / watchDose;
         }
         
         // Calculate deviations if we have PTV volume for tolerance lookup
@@ -833,7 +833,7 @@ const SBRTForm = () => {
                         size="xs"
                         type="number"
                         step="any"
-                        placeholder="100% Vol"
+                        placeholder="100% Vol (cc)"
                         {...register('sbrt_data.vol_100_rx_isodose', { 
                           required: 'Required',
                           min: { value: 0.01, message: '> 0' }
@@ -851,7 +851,7 @@ const SBRTForm = () => {
                         size="xs"
                         type="number"
                         step="any"
-                        placeholder="50% Vol"
+                        placeholder="50% Vol (cc)"
                         {...register('sbrt_data.vol_50_rx_isodose', { 
                           required: 'Required',
                           min: { value: 0.01, message: '> 0' }
@@ -870,10 +870,11 @@ const SBRTForm = () => {
                         size="xs"
                         type="number"
                         step="any"
-                        placeholder="Dmax 2cm"
+                        placeholder="Dmax 2cm (Gy)"
                         {...register('sbrt_data.max_dose_2cm_ring', { 
                           required: 'Required',
-                          min: { value: 0.01, message: '> 0' }
+                          min: { value: 0.01, message: '> 0' },
+                          max: { value: 200, message: 'Must be in Gy, not cGy' }
                         })}
                         bg="gray.700"
                         borderColor="gray.600"
@@ -888,10 +889,11 @@ const SBRTForm = () => {
                         size="xs"
                         type="number"
                         step="any"
-                        placeholder="Dmax Tgt"
+                        placeholder="Dmax Tgt (Gy)"
                         {...register('sbrt_data.max_dose_in_target', { 
                           required: 'Required',
-                          min: { value: 0.01, message: '> 0' }
+                          min: { value: 0.01, message: '> 0' },
+                          max: { value: 200, message: 'Must be in Gy, not cGy' }
                         })}
                         bg="gray.700"
                         borderColor="gray.600"
@@ -977,7 +979,7 @@ const SBRTForm = () => {
                     <Text fontSize="xs" color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "gray.500"} textAlign="center">
                       {calculatedMetrics ? `${formatNumber(calculatedMetrics.maxDose2cmRingPercent, 1)}` : '---'}
                     </Text>
-                    <Text fontSize="xs" color={calculatedMetrics?.heterogeneityIndex ? "green.300" : "gray.500"} textAlign="center">{formatNumber(calculatedMetrics?.heterogeneityIndex, 2)}</Text>
+                    <Text fontSize="xs" color={calculatedMetrics?.homogeneityIndex ? "green.300" : "gray.500"} textAlign="center">{formatNumber(calculatedMetrics?.homogeneityIndex, 2)}</Text>
                   </Grid>
                 </Box>
 
