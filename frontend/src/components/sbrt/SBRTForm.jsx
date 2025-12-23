@@ -273,12 +273,26 @@ const SBRTForm = () => {
       
     setLoading(true);
     try {
+      // Convert calculated metrics to strings for backend schema
+      const metricsAsStrings = calculatedMetrics ? {
+        coverage: String(calculatedMetrics.coverage || ''),
+        conformityIndex: String(calculatedMetrics.conformityIndex || ''),
+        r50: String(calculatedMetrics.r50 || ''),
+        gradientMeasure: String(calculatedMetrics.gradientMeasure || ''),
+        maxDose2cmRingPercent: String(calculatedMetrics.maxDose2cmRingPercent || ''),
+        homogeneityIndex: String(calculatedMetrics.homogeneityIndex || ''),
+        conformityDeviation: calculatedMetrics.conformityDeviation || '',
+        r50Deviation: calculatedMetrics.r50Deviation || '',
+        maxDose2cmDeviation: calculatedMetrics.maxDose2cmDeviation || '',
+        toleranceRow: calculatedMetrics.toleranceRow || {}
+      } : null;
+      
       // Add calculated metrics to the form data
       const dataWithMetrics = {
         ...data,
         sbrt_data: {
           ...data.sbrt_data,
-          calculated_metrics: calculatedMetrics,
+          calculated_metrics: metricsAsStrings,
           is_sib: isSIB
         }
       };
