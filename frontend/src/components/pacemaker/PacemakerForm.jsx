@@ -492,9 +492,11 @@ const PacemakerForm = () => {
                         colorScheme={pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'blue' : 'gray'}
                         variant={pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'solid' : 'outline'}
                         color={pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
                         whiteSpace="normal"
                         height="auto"
                         py={2}
+                        _hover={{ bg: pacemakerData.field_distance === 'More than 10 cm from treatment field edge' ? 'blue.600' : 'gray.700' }}
                       >
                         &gt; 10 cm
                       </Button>
@@ -504,9 +506,11 @@ const PacemakerForm = () => {
                         colorScheme={pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'blue' : 'gray'}
                         variant={pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'solid' : 'outline'}
                         color={pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
                         whiteSpace="normal"
                         height="auto"
                         py={2}
+                        _hover={{ bg: pacemakerData.field_distance === 'Less than 10 cm from field edge but not in direct field' ? 'blue.600' : 'gray.700' }}
                       >
                         3-10 cm
                       </Button>
@@ -516,9 +520,11 @@ const PacemakerForm = () => {
                         colorScheme={pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'blue' : 'gray'}
                         variant={pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'solid' : 'outline'}
                         color={pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
                         whiteSpace="normal"
                         height="auto"
                         py={2}
+                        _hover={{ bg: pacemakerData.field_distance === 'Within 3 cm of field edge' ? 'blue.600' : 'gray.700' }}
                       >
                         &lt; 3 cm
                       </Button>
@@ -528,11 +534,13 @@ const PacemakerForm = () => {
                         colorScheme={pacemakerData.field_distance === 'CIED in direct beam' ? 'blue' : 'gray'}
                         variant={pacemakerData.field_distance === 'CIED in direct beam' ? 'solid' : 'outline'}
                         color={pacemakerData.field_distance === 'CIED in direct beam' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
                         whiteSpace="normal"
                         height="auto"
                         py={2}
+                        _hover={{ bg: pacemakerData.field_distance === 'CIED in direct beam' ? 'blue.600' : 'gray.700' }}
                       >
-                        Direct Beam
+                        In Beam
                       </Button>
                     </Grid>
                     <FormErrorMessage sx={{ color: 'red.300' }}>{errors.pacemaker_data?.field_distance?.message}</FormErrorMessage>
@@ -553,6 +561,8 @@ const PacemakerForm = () => {
                           colorScheme={pacemakerData.pacing_dependent === 'No' ? 'blue' : 'gray'}
                           variant={pacemakerData.pacing_dependent === 'No' ? 'solid' : 'outline'}
                           color={pacemakerData.pacing_dependent === 'No' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{ bg: pacemakerData.pacing_dependent === 'No' ? 'blue.600' : 'gray.700' }}
                           flex={1}
                         >
                           Independent
@@ -563,6 +573,8 @@ const PacemakerForm = () => {
                           colorScheme={pacemakerData.pacing_dependent === 'Yes' ? 'blue' : 'gray'}
                           variant={pacemakerData.pacing_dependent === 'Yes' ? 'solid' : 'outline'}
                           color={pacemakerData.pacing_dependent === 'Yes' ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
+                          _hover={{ bg: pacemakerData.pacing_dependent === 'Yes' ? 'blue.600' : 'gray.700' }}
                           flex={1}
                         >
                           Dependent

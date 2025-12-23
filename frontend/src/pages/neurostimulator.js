@@ -11,12 +11,13 @@ const NeurostimulatorPage = () => {
       {/* Home button positioned absolutely */}
       <Box position="absolute" top={4} right={4} zIndex={10}>
         <Button 
-          onClick={() => router.push('/')} 
-          colorScheme="green" 
+          size="sm"
           variant="outline"
+          colorScheme="green"
           color="green.300"
           borderColor="green.600"
           _hover={{ bg: "green.800", borderColor: "green.400" }}
+          onClick={() => router.push('/')}
         >
           ← Home
         </Button>

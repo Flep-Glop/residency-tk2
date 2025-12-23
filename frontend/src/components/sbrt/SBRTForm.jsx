@@ -20,12 +20,6 @@ import {
   HStack,
   Spinner,
   Center,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Badge,
 } from '@chakra-ui/react';
 import { generateSBRTWriteup } from '../../services/sbrtService';
@@ -87,7 +81,7 @@ const SBRTForm = () => {
         breathing_technique: '',
         target_name: '',
         ptv_volume: '',
-        vol_ptv_receiving_rx: '',
+        vol_ptv_receiving_rx: '', // Now stores coverage % (0-100)
         vol_100_rx_isodose: '',
         vol_50_rx_isodose: '',
         max_dose_2cm_ring: '',
@@ -114,7 +108,7 @@ const SBRTForm = () => {
   const watchBreathingTechnique = watch('sbrt_data.breathing_technique');
   const watchTargetName = watch('sbrt_data.target_name');
   const watchPTVVolume = watch('sbrt_data.ptv_volume');
-  const watchVolPTVReceivingRx = watch('sbrt_data.vol_ptv_receiving_rx');
+  const watchCoveragePercent = watch('sbrt_data.vol_ptv_receiving_rx'); // Now stores coverage % directly
   const watchVol100RxIsodose = watch('sbrt_data.vol_100_rx_isodose');
   const watchVol50RxIsodose = watch('sbrt_data.vol_50_rx_isodose');
   const watchMaxDose2cmRing = watch('sbrt_data.max_dose_2cm_ring');
@@ -139,60 +133,87 @@ const SBRTForm = () => {
       }
       setValue('sbrt_data.custom_treatment_site', '');
       setValue('sbrt_data.anatomical_clarification', '');
+      
+      // Auto-select FB (freebreathe) and Standard as defaults
+      setValue('sbrt_data.breathing_technique', 'freebreathe');
+      setIsSIB(false);
     }
   };
   
-  // Calculate derived values and tolerance check
-  useEffect(() => {
-    const calculateMetrics = () => {
-      if (!watchPTVVolume || !watchDose || !watchVolPTVReceivingRx || 
-          !watchVol100RxIsodose || !watchVol50RxIsodose || !watchMaxDose2cmRing || !watchMaxDoseInTarget) {
-        setCalculatedMetrics(null);
-        return;
-      }
-
-      // Calculate metrics
-      const coverage = (watchVolPTVReceivingRx / watchPTVVolume) * 100;
-      const conformityIndex = watchVol100RxIsodose / watchPTVVolume;
-      const r50 = watchVol50RxIsodose / watchPTVVolume;
-      const gradientMeasure = Math.pow((3 * watchVol50RxIsodose) / (4 * Math.PI), 1/3) - 
-                             Math.pow((3 * watchVol100RxIsodose) / (4 * Math.PI), 1/3);
-      const maxDose2cmRingPercent = (watchMaxDose2cmRing / watchDose) * 100;
-      const homogeneityIndex = watchMaxDoseInTarget / watchDose;
-
-      // Find tolerance values (use next higher volume)
-      const toleranceRow = toleranceTable.find(row => watchPTVVolume <= row.ptvVol) || 
-                          toleranceTable[toleranceTable.length - 1];
-
-      // Determine deviations (only if not SIB)
-      const getDeviation = (value, noneLimit, minorLimit) => {
-        if (isSIB) return 'N/A (SIB)';
-        if (value <= noneLimit) return 'None';
-        if (value <= minorLimit) return 'Minor';
-        return 'Major';
+    // Calculate derived values and tolerance check (incrementally as fields are filled)
+    useEffect(() => {
+      const calculateMetrics = () => {
+        // Calculate individual metrics as their required inputs become available
+        const metrics = {};
+        
+        // Coverage (direct input, no calculation needed)
+        if (watchCoveragePercent) {
+          metrics.coverage = parseFloat(watchCoveragePercent);
+        }
+        
+        // Conformity Index: needs 100% Vol and PTV Vol
+        if (watchVol100RxIsodose && watchPTVVolume) {
+          metrics.conformityIndex = watchVol100RxIsodose / watchPTVVolume;
+        }
+        
+        // R50: needs 50% Vol and PTV Vol
+        if (watchVol50RxIsodose && watchPTVVolume) {
+          metrics.r50 = watchVol50RxIsodose / watchPTVVolume;
+        }
+        
+        // Gradient Measure: needs both 100% Vol and 50% Vol
+        if (watchVol100RxIsodose && watchVol50RxIsodose) {
+          metrics.gradientMeasure = Math.pow((3 * watchVol50RxIsodose) / (4 * Math.PI), 1/3) - 
+                                    Math.pow((3 * watchVol100RxIsodose) / (4 * Math.PI), 1/3);
+        }
+        
+        // Max Dose 2cm (%): needs Dmax 2cm and Rx Dose
+        if (watchMaxDose2cmRing && watchDose) {
+          metrics.maxDose2cmRingPercent = (watchMaxDose2cmRing / watchDose) * 100;
+        }
+        
+        // Heterogeneity Index: needs Dmax Target and Rx Dose
+        if (watchMaxDoseInTarget && watchDose) {
+          metrics.heterogeneityIndex = watchMaxDoseInTarget / watchDose;
+        }
+        
+        // Calculate deviations if we have PTV volume for tolerance lookup
+        if (watchPTVVolume) {
+          const toleranceRow = toleranceTable.find(row => watchPTVVolume <= row.ptvVol) || 
+                              toleranceTable[toleranceTable.length - 1];
+          metrics.toleranceRow = toleranceRow;
+          
+          const getDeviation = (value, noneLimit, minorLimit) => {
+            if (isSIB) return 'N/A (SIB)';
+            if (value <= noneLimit) return 'None';
+            if (value <= minorLimit) return 'Minor';
+            return 'Major';
+          };
+          
+          if (metrics.conformityIndex !== undefined) {
+            metrics.conformityDeviation = getDeviation(metrics.conformityIndex, toleranceRow.conformityNone, toleranceRow.conformityMinor);
+          }
+          
+          if (metrics.r50 !== undefined) {
+            metrics.r50Deviation = getDeviation(metrics.r50, toleranceRow.r50None, toleranceRow.r50Minor);
+          }
+          
+          if (metrics.maxDose2cmRingPercent !== undefined) {
+            metrics.maxDose2cmDeviation = getDeviation(metrics.maxDose2cmRingPercent, toleranceRow.maxDose2cmNone, toleranceRow.maxDose2cmMinor);
+          }
+        }
+        
+        // Only set calculatedMetrics if we have at least one metric
+        if (Object.keys(metrics).length > 0) {
+          setCalculatedMetrics(metrics);
+        } else {
+          setCalculatedMetrics(null);
+        }
       };
 
-      const conformityDeviation = getDeviation(conformityIndex, toleranceRow.conformityNone, toleranceRow.conformityMinor);
-      const r50Deviation = getDeviation(r50, toleranceRow.r50None, toleranceRow.r50Minor);
-      const maxDose2cmDeviation = getDeviation(maxDose2cmRingPercent, toleranceRow.maxDose2cmNone, toleranceRow.maxDose2cmMinor);
-
-      setCalculatedMetrics({
-        coverage: coverage,
-        conformityIndex: conformityIndex,
-        r50: r50,
-        gradientMeasure: gradientMeasure,
-        maxDose2cmRingPercent: maxDose2cmRingPercent,
-        homogeneityIndex: homogeneityIndex,
-        conformityDeviation,
-        r50Deviation,
-        maxDose2cmDeviation,
-        toleranceRow
-      });
-    };
-
-    calculateMetrics();
-  }, [watchPTVVolume, watchDose, watchVolPTVReceivingRx, watchVol100RxIsodose, 
-      watchVol50RxIsodose, watchMaxDose2cmRing, watchMaxDoseInTarget, isSIB]);
+      calculateMetrics();
+    }, [watchPTVVolume, watchDose, watchCoveragePercent, watchVol100RxIsodose, 
+        watchVol50RxIsodose, watchMaxDose2cmRing, watchMaxDoseInTarget, isSIB]);
   
   const onSubmit = async (data) => {
     // Validate site is selected
@@ -504,7 +525,10 @@ const SBRTForm = () => {
                                 size="xs"
                                 colorScheme={watchBreathingTechnique === technique.value ? 'blue' : 'gray'}
                                 variant={watchBreathingTechnique === technique.value ? 'solid' : 'outline'}
+                                color={watchBreathingTechnique === technique.value ? 'white' : 'gray.300'}
+                                borderColor="gray.600"
                                 onClick={() => setValue('sbrt_data.breathing_technique', technique.value)}
+                                _hover={{ bg: watchBreathingTechnique === technique.value ? 'blue.600' : 'gray.700' }}
                               >
                                 {technique.label}
                               </Button>
@@ -517,7 +541,10 @@ const SBRTForm = () => {
                               size="xs"
                               colorScheme={isSIB === false ? 'green' : 'gray'}
                               variant={isSIB === false ? 'solid' : 'outline'}
+                              color={isSIB === false ? 'white' : 'gray.300'}
+                              borderColor="gray.600"
                               onClick={() => setIsSIB(false)}
+                              _hover={{ bg: isSIB === false ? 'green.600' : 'gray.700' }}
                             >
                               Std
                             </Button>
@@ -525,7 +552,10 @@ const SBRTForm = () => {
                               size="xs"
                               colorScheme={isSIB === true ? 'orange' : 'gray'}
                               variant={isSIB === true ? 'solid' : 'outline'}
+                              color={isSIB === true ? 'white' : 'gray.300'}
+                              borderColor="gray.600"
                               onClick={() => setIsSIB(true)}
+                              _hover={{ bg: isSIB === true ? 'orange.600' : 'gray.700' }}
                             >
                               SIB
                             </Button>
@@ -548,7 +578,7 @@ const SBRTForm = () => {
                           {/* PTV Name */}
                           <Input
                             size="xs"
-                            placeholder="PTV Name (e.g., PTV_50)"
+                            placeholder="PTV Name"
                             {...register('sbrt_data.target_name', { required: 'PTV name is required' })}
                             bg="gray.700"
                             borderColor="gray.600"
@@ -650,7 +680,10 @@ const SBRTForm = () => {
                             size="xs"
                             colorScheme={watchBreathingTechnique === technique.value ? 'blue' : 'gray'}
                             variant={watchBreathingTechnique === technique.value ? 'solid' : 'outline'}
+                            color={watchBreathingTechnique === technique.value ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
                             onClick={() => setValue('sbrt_data.breathing_technique', technique.value)}
+                            _hover={{ bg: watchBreathingTechnique === technique.value ? 'blue.600' : 'gray.700' }}
                           >
                             {technique.label}
                           </Button>
@@ -663,7 +696,10 @@ const SBRTForm = () => {
                           size="xs"
                           colorScheme={isSIB === false ? 'green' : 'gray'}
                           variant={isSIB === false ? 'solid' : 'outline'}
+                          color={isSIB === false ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
                           onClick={() => setIsSIB(false)}
+                          _hover={{ bg: isSIB === false ? 'green.600' : 'gray.700' }}
                         >
                           Std
                         </Button>
@@ -671,7 +707,10 @@ const SBRTForm = () => {
                           size="xs"
                           colorScheme={isSIB === true ? 'orange' : 'gray'}
                           variant={isSIB === true ? 'solid' : 'outline'}
+                          color={isSIB === true ? 'white' : 'gray.300'}
+                          borderColor="gray.600"
                           onClick={() => setIsSIB(true)}
+                          _hover={{ bg: isSIB === true ? 'orange.600' : 'gray.700' }}
                         >
                           SIB
                         </Button>
@@ -694,7 +733,7 @@ const SBRTForm = () => {
                       {/* PTV Name */}
                       <Input
                         size="xs"
-                        placeholder="PTV Name (e.g., PTV_50)"
+                        placeholder="PTV Name"
                         {...register('sbrt_data.target_name', { required: 'PTV name is required' })}
                         bg="gray.700"
                         borderColor="gray.600"
@@ -749,7 +788,7 @@ const SBRTForm = () => {
               </GridItem>
             </Grid>
 
-            {/* Plan Metrics Section - Full Width Below */}
+            {/* Plan Metrics - Compact Table Format */}
             {selectedSite && (
               <Box 
                 p={4} 
@@ -762,188 +801,195 @@ const SBRTForm = () => {
               >
                 <Heading size="sm" mb={3} textAlign="center" color="white">Plan Metrics</Heading>
                 
-                <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(6, 1fr)" }} gap={3}>
-                    <FormControl isInvalid={errors.sbrt_data?.ptv_volume}>
-                    <FormLabel fontSize="xs" color="gray.400">PTV Vol (cc)</FormLabel>
+                <Box overflowX="auto">
+                  {/* Results Table - Header */}
+                  <Grid 
+                    templateColumns="1.5fr 0.8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr" 
+                    gap={1} 
+                    bg="gray.750" 
+                    p={2} 
+                    borderTopRadius="md"
+                    minW="900px"
+                  >
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Name</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Rx (Gy)</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">PTV Vol (cc)</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Coverage (%)</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Conformity</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">R50</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Gradient</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Dmax 2cm (%)</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Heterogeneity</Text>
+                  </Grid>
+                  
+                  {/* Input Row */}
+                  <Grid templateColumns="1.5fr 0.8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr" gap={2} p={2} bg="gray.750" minW="900px">
+                    <Box /> {/* Name - empty space */}
+                    <Box /> {/* Prescription - fixed from above */}
+                    <Box /> {/* PTV Vol - now in results table */}
+                    <Box /> {/* Coverage - now in results table */}
+                    <FormControl isInvalid={errors.sbrt_data?.vol_100_rx_isodose}>
                       <Input
-                        size="sm"
+                        size="xs"
                         type="number"
                         step="any"
-                      placeholder="25"
-                        {...register('sbrt_data.ptv_volume', { 
-                        required: 'Required',
-                        min: { value: 0.01, message: '> 0' }
+                        placeholder="100% Vol"
+                        {...register('sbrt_data.vol_100_rx_isodose', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' }
                         })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
+                        textAlign="center"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
                     </FormControl>
-
-                    <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
-                    <FormLabel fontSize="xs" color="gray.400">Vol at Rx (cc)</FormLabel>
-                      <Input
-                        size="sm"
-                        type="number"
-                        step="any"
-                        placeholder="24.5"
-                      {...register('sbrt_data.vol_ptv_receiving_rx', { 
-                        required: 'Required',
-                        min: { value: 0.01, message: '> 0' }
-                      })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </FormControl>
-
-                    <FormControl isInvalid={errors.sbrt_data?.vol_100_rx_isodose}>
-                    <FormLabel fontSize="xs" color="gray.400">100% Vol (cc)</FormLabel>
-                      <Input
-                        size="sm"
-                        type="number"
-                        step="any"
-                        placeholder="28"
-                      {...register('sbrt_data.vol_100_rx_isodose', { 
-                        required: 'Required',
-                        min: { value: 0.01, message: '> 0' }
-                      })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </FormControl>
-
                     <FormControl isInvalid={errors.sbrt_data?.vol_50_rx_isodose}>
-                    <FormLabel fontSize="xs" color="gray.400">50% Vol (cc)</FormLabel>
                       <Input
-                        size="sm"
+                        size="xs"
                         type="number"
                         step="any"
-                        placeholder="90"
-                      {...register('sbrt_data.vol_50_rx_isodose', { 
-                        required: 'Required',
-                        min: { value: 0.01, message: '> 0' }
-                      })}
+                        placeholder="50% Vol"
+                        {...register('sbrt_data.vol_50_rx_isodose', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' }
+                        })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
+                        textAlign="center"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
                     </FormControl>
-
+                    <Box /> {/* Gradient - calculated, no input */}
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_2cm_ring}>
-                    <FormLabel fontSize="xs" color="gray.400">Dmax 2cm (Gy)</FormLabel>
                       <Input
-                        size="sm"
+                        size="xs"
                         type="number"
                         step="any"
-                        placeholder="25"
-                      {...register('sbrt_data.max_dose_2cm_ring', { 
-                        required: 'Required',
-                        min: { value: 0.01, message: '> 0' }
-                      })}
+                        placeholder="Dmax 2cm"
+                        {...register('sbrt_data.max_dose_2cm_ring', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' }
+                        })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
+                        textAlign="center"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
                     </FormControl>
-
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_in_target}>
-                    <FormLabel fontSize="xs" color="gray.400">Dmax Target (Gy)</FormLabel>
                       <Input
-                        size="sm"
+                        size="xs"
                         type="number"
                         step="any"
-                        placeholder="60"
-                      {...register('sbrt_data.max_dose_in_target', { 
-                        required: 'Required',
-                        min: { value: 0.01, message: '> 0' }
-                      })}
+                        placeholder="Dmax Tgt"
+                        {...register('sbrt_data.max_dose_in_target', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' }
+                        })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
+                        textAlign="center"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
                     </FormControl>
                   </Grid>
-              </Box>
-            )}
+                  
+                  {/* Arrow indicators */}
+                  <Grid templateColumns="1.5fr 0.8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr" gap={2} mb={0} bg="gray.750" borderBottomRadius="md" pb={1} pt={0} minW="900px">
+                    <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
+                  </Grid>
+                  
+                  {/* Results Table - Data Row */}
+                  <Grid 
+                    templateColumns="1.5fr 0.8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr" 
+                    gap={1} 
+                    bg="gray.800" 
+                    p={2} 
+                    borderBottomRadius="md"
+                    borderTop="1px"
+                    borderColor="gray.600"
+                    minW="900px"
+                    alignItems="center"
+                  >
+                    <Text fontSize="xs" color={watchTargetName ? "white" : "gray.500"} textAlign="center">{watchTargetName || '---'}</Text>
+                    <Text fontSize="xs" color={watchDose ? "white" : "gray.500"} textAlign="center">{formatNumber(watchDose, 1)}</Text>
+                    <FormControl isInvalid={errors.sbrt_data?.ptv_volume}>
+                      <Input
+                        size="xs"
+                        type="number"
+                        step="any"
+                        placeholder="PTV Vol"
+                        {...register('sbrt_data.ptv_volume', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        textAlign="center"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                    </FormControl>
+                    <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
+                      <Input
+                        size="xs"
+                        type="number"
+                        step="any"
+                        placeholder="Coverage %"
+                        {...register('sbrt_data.vol_ptv_receiving_rx', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' },
+                          max: { value: 100, message: '≤ 100' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        textAlign="center"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                    </FormControl>
+                    <Text fontSize="xs" color={calculatedMetrics ? getDeviationColor(calculatedMetrics.conformityDeviation) : "gray.500"} textAlign="center">
+                      {calculatedMetrics ? `${formatNumber(calculatedMetrics.conformityIndex, 2)}` : '---'}
+                    </Text>
+                    <Text fontSize="xs" color={calculatedMetrics ? getDeviationColor(calculatedMetrics.r50Deviation) : "gray.500"} textAlign="center">
+                      {calculatedMetrics ? `${formatNumber(calculatedMetrics.r50, 2)}` : '---'}
+                    </Text>
+                    <Text fontSize="xs" color={calculatedMetrics?.gradientMeasure ? "green.300" : "gray.500"} textAlign="center">{formatNumber(calculatedMetrics?.gradientMeasure, 2)}</Text>
+                    <Text fontSize="xs" color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "gray.500"} textAlign="center">
+                      {calculatedMetrics ? `${formatNumber(calculatedMetrics.maxDose2cmRingPercent, 1)}` : '---'}
+                    </Text>
+                    <Text fontSize="xs" color={calculatedMetrics?.heterogeneityIndex ? "green.300" : "gray.500"} textAlign="center">{formatNumber(calculatedMetrics?.heterogeneityIndex, 2)}</Text>
+                  </Grid>
+                </Box>
 
-            {/* Calculated Results Table */}
-            {selectedSite && (
-            <Box 
-              p={4} 
-              borderWidth="1px" 
-              borderRadius="md" 
-              bg={formBg}
-              borderColor={borderColor}
-              boxShadow="sm"
-              mb={6}
-            >
-              <Heading size="sm" mb={3} textAlign="center" color="white">Calculated Plan Metrics</Heading>
-              
-              <Box overflowX="auto">
-                <Table size="sm" variant="simple" sx={{ 
-                  'th, td': { borderColor: 'gray.600', whiteSpace: 'nowrap', px: 2 }
-                }}>
-                  <Thead>
-                    <Tr>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Name</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">PTV Vol<br/>(cc)</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Prescription<br/>(Gy)</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Coverage<br/>(%)</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Conformity<br/>Index</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">R50</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Gradient<br/>Measure</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Dmax 2cm<br/>(%)</Th>
-                      <Th color="gray.300" fontSize="xs" textTransform="uppercase">Homogeneity<br/>Index</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    <Tr>
-                      <Td color={watchTargetName ? "white" : "gray.500"} fontSize="xs">{watchTargetName || '---'}</Td>
-                      <Td color={watchPTVVolume ? "white" : "gray.500"} fontSize="xs">{formatNumber(watchPTVVolume, 2)}</Td>
-                      <Td color={watchDose ? "white" : "gray.500"} fontSize="xs">{formatNumber(watchDose, 1)}</Td>
-                      <Td color={calculatedMetrics?.coverage ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.coverage, 1)}</Td>
-                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.conformityDeviation) : "gray.500"} fontSize="xs">
-                        {formatNumber(calculatedMetrics?.conformityIndex, 2)}
-                        {calculatedMetrics && <Text as="span" fontSize="xs" ml={1}>({calculatedMetrics.conformityDeviation})</Text>}
-                      </Td>
-                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.r50Deviation) : "gray.500"} fontSize="xs">
-                        {formatNumber(calculatedMetrics?.r50, 2)}
-                        {calculatedMetrics && <Text as="span" fontSize="xs" ml={1}>({calculatedMetrics.r50Deviation})</Text>}
-                      </Td>
-                      <Td color={calculatedMetrics?.gradientMeasure ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.gradientMeasure, 2)}</Td>
-                      <Td color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "gray.500"} fontSize="xs">
-                        {formatNumber(calculatedMetrics?.maxDose2cmRingPercent, 1)}
-                        {calculatedMetrics && <Text as="span" fontSize="xs" ml={1}>({calculatedMetrics.maxDose2cmDeviation})</Text>}
-                      </Td>
-                      <Td color={calculatedMetrics?.homogeneityIndex ? "white" : "gray.500"} fontSize="xs">{formatNumber(calculatedMetrics?.homogeneityIndex, 2)}</Td>
-                    </Tr>
-                  </Tbody>
-                </Table>
+                {isSIB && calculatedMetrics && (
+                  <Alert status="info" size="sm" mt={3}>
+                    <AlertIcon />
+                    <Text fontSize="sm">
+                      Deviations not recorded for SIB cases. {watch('sbrt_data.sib_comment') && `Comment: ${watch('sbrt_data.sib_comment')}`}
+                    </Text>
+                  </Alert>
+                )}
               </Box>
-
-              {isSIB && calculatedMetrics && (
-                <Alert status="info" size="sm" mt={3}>
-                  <AlertIcon />
-                  <Text fontSize="sm">
-                    Deviations not recorded for SIB cases. {watch('sbrt_data.sib_comment') && `Comment: ${watch('sbrt_data.sib_comment')}`}
-                  </Text>
-                </Alert>
-              )}
-            </Box>
             )}
             
             <Flex gap={4} mb={6}>

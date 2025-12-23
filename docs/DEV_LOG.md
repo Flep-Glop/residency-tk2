@@ -286,6 +286,72 @@ GUIDELINES:
 
 ---
 
-*Next entry: #107*
+## Entry #107
+**Focus:** Cross-module UI consistency polish - button visibility, column layouts, and grid-based selections
 
-*Next consolidation: Reached #100 milestone - consolidate entries #92-106 when convenient*
+**Smooth:** Eight interconnected improvements completed in single session. (1) Fixed Fusion column visibility - second and third columns had `borderWidth="0"` and `bg="transparent"` making them appear collapsed, changed to match first column with `borderWidth="1px"`, `bg={formBg}`, `borderColor={borderColor}`, and `boxShadow="sm"`. (2) Applied SBRT button styling pattern to all selection buttons - added `borderColor="gray.600"` and `_hover` states with `gray.700` background for unselected, color-specific background for selected. Updated pacemaker distance buttons (4 buttons), neurostimulator distance buttons (4 buttons), TBI HVL selection buttons (6 buttons total across 6fx and 8fx panels). (3) Neurostimulator color standardization - changed all `cyan` colors to match other modules: header from `cyan.900/cyan.700` to `green.900/green.700`, distance buttons from `cyan` to `blue` colorScheme, submit/reset/copy buttons from `cyan` to `green`. (4) DIBH treatment site redesign - converted dropdown to 2x2 button grid with Left Breast, Right Breast, Diaphragm, Chest Wall. Renamed section from "Treatment Info" to "Tx Sites" for consistency. Custom site input appears conditionally below grid when checkbox enabled.
+
+**Friction:** Initial fusion issue was subtle - columns existed in DOM but were invisible, making second column content appear detached. TBI HVL buttons appeared twice (6fx and 8fx panels) requiring replace_all to update both instances. Neurostimulator had cyan theme throughout that needed systematic replacement to match green/blue standard.
+
+**Insight:** **Invisible columns create layout confusion** - when columns have transparent backgrounds and no borders, they maintain grid structure but content appears to float unpredictably. Always use visible styling (borders, backgrounds) even for conditionally-hidden columns. **Button visibility is critical for selection UX** - unselected buttons with default gray styling are nearly unreadable on dark backgrounds. Explicit `color="gray.300"`, `borderColor="gray.600"`, and hover states make options visible before selection. This pattern should be applied universally to all button-based selections. **Grid-based site selection superior to dropdowns for small fixed lists** - DIBH's 4 sites work perfectly in 2x2 grid, matching SBRT pattern. One-click selection, visible options, clear selected state. **Color consistency signals module family** - neurostimulator's cyan theme made it feel separate from the toolkit. Standardizing to green headers and blue selection buttons creates cohesive experience across all 9 modules. **Header naming affects scannability** - "Tx Sites" more concise than "Treatment Info" or "Treatment Site Selection", saving vertical space while maintaining clarity.
+
+---
+
+## Entry #108
+**Focus:** UI polish refinements - TBI label cleanup, pacemaker button consistency, and SRS text field styling
+
+**Smooth:** Three targeted improvements completed in single session. (1) TBI HVL selection simplified - removed "Select Lung Block HVL:" label text from both 6fx and 8fx inline expansion panels, leaving only the three button options (1 HVL, 2 HVL, 3 HVL). Visual clarity improved by letting buttons speak for themselves without redundant instruction text. (2) Pacemaker pacing dependency buttons updated - applied distance-from-CIED button styling pattern (explicit `borderColor="gray.600"` and `_hover` states) to both Independent and Dependent buttons for visual consistency. (3) SRS/SRT lesion name inputs de-emphasized - changed text field styling from neon colors (`green.900`/`purple.900` backgrounds with matching borders) to standard gray theme (`gray.700` background, `gray.600` borders). Prescription badges retain bright green/purple colorScheme for visual hierarchy.
+
+**Friction:** None - straightforward styling updates applying established patterns.
+
+**Insight:** **Button groups don't need instructional labels** - when button text is self-explanatory ("1 HVL", "2 HVL", "3 HVL"), adding "Select X:" above them adds clutter without improving comprehension. Context from surrounding UI (appearing below fractionation selection) provides sufficient guidance. **Cross-button consistency matters within same form** - pacemaker had inconsistent button styling between distance selection (explicit borders/hover) and pacing dependency (implicit styling). Applying same pattern to both creates visual cohesion. **Neon colors work best for hierarchy markers, not interactive inputs** - SRS prescription badges in bright green/purple effectively highlight key information (dose selection). Using same intensity for text input fields created visual noise. Muting input fields to gray while keeping badges bright improves information hierarchy: badges = important readonly info, text fields = user entry.
+
+---
+
+## Entry #109
+**Focus:** Fusion module column cleanup - remove nested container and hide third column
+
+**Smooth:** Two structural fixes completed. (1) Second column (Anatomical Region) - removed nested Box container that was duplicating border/padding/background styling from parent GridItem. Content now renders directly inside GridItem using Fragment (`<>...</>`) wrapper, matching first column's structure. (2) Third column hidden for layout consistency - changed `borderWidth="1px"` to `borderWidth="0"`, removed `borderColor` and `boxShadow`, changed `bg={formBg}` to `bg="transparent"`. Column still exists in DOM to preserve 3-column responsive grid breakpoints but is invisible.
+
+**Friction:** None - removed redundant Box wrapper cleanly without affecting conditional rendering logic.
+
+**Insight:** **Nested containers create visual sub-boxing** - when GridItem has `p={4}` + `borderWidth="1px"` + `bg={formBg}` and child Box has identical styling, result is double-border effect or inset appearance. Content should render directly in GridItem (using Fragment for conditional rendering) unless nested container serves functional purpose. **Fragment wrappers maintain conditional logic without DOM nodes** - replacing Box with `<>...</>` preserves ternary conditional structure while eliminating unnecessary wrapper. **Invisible columns preserve responsive grid** - hiding third column with `borderWidth="0"` and `bg="transparent"` maintains lg breakpoint's `repeat(3, 1fr)` layout while keeping column visually absent. Deleting GridItem entirely would break 3-column structure.
+
+---
+
+## Entry #110
+**Focus:** SBRT Plan Metrics consolidation and cross-module UX improvements
+
+**Smooth:** Four interconnected improvements completed in single session. (1) SBRT auto-defaults - clicking any site button now auto-selects "Free Breathing" (FB) and "Standard" treatment type as defaults, reducing clicks for common cases while allowing override. (2) DIBH custom site pattern - checking "Custom Site?" checkbox now hides the 4 preset site buttons (Left Breast, Right Breast, Diaphragm, Chest Wall), matching the Fusion module's custom region pattern. (3) SBRT Plan Metrics consolidation - merged two separate sections (Plan Metrics inputs and Calculated Plan Metrics table) into single compact table-based layout with inputs row above, arrow indicators, and results table below. (4) Terminology fix - changed "Homogeneity Index" to "Heterogeneity Index" throughout frontend and backend to match clinical accuracy (higher values = more heterogeneous).
+
+**Friction:** Initial Plan Metrics redesign went through 3 iterations: first tried grouped cards (too much vertical space), then vertical flow within cards (still verbose), finally settled on compact table format matching original layout but with input row above. Grid column alignment for inputs-to-outputs mapping required careful template column sizing.
+
+**Insight:** **Compact table layouts maximize information density** - the original table format was efficient for displaying calculated results, adding an input row above maintains that density while showing the input→output relationship. **Auto-defaults reduce friction for common cases** - SBRT cases typically use free breathing and standard (non-SIB) treatment, so pre-selecting these eliminates 2 clicks for 80%+ of cases. **Checkbox-based hiding pattern is reusable** - DIBH now matches Fusion's pattern where checking custom option hides preset buttons, creating consistent UX across modules. **Medical terminology precision matters** - "Heterogeneity Index" is more accurate than "Homogeneity Index" since the metric (Dmax/Rx) increases with dose heterogeneity, not homogeneity.
+
+---
+
+## Entry #111
+**Focus:** SBRT Plan Metrics table redesign - inline inputs and column alignment optimization
+
+**Smooth:** Complete restructuring of Plan Metrics section for improved data entry workflow. (1) Removed Vol @ Rx input from top row - users now enter Coverage (%) directly as inline input in results table. (2) Moved PTV Vol (cc) input from top row into results table as inline editable field. (3) Reorganized column structure to group Name (1.5fr) + Rx (0.8fr) on left, then inline inputs (PTV Vol, Coverage), then calculated results. (4) Reduced top input row from 6 fields to 4: 100% Vol, 50% Vol, Dmax 2cm, Dmax Tgt. (5) Fixed column alignment inconsistency - all three grids (input row, arrow indicators, results table) now use identical 9-column template: `1.5fr 0.8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr`. (6) Updated calculation logic - Coverage now direct input (0-100%) instead of calculated from Vol @ Rx / PTV Vol. Field `vol_ptv_receiving_rx` repurposed to store coverage percentage.
+
+**Friction:** Initial column count mismatch between input row (8 columns) and results table (9 columns) caused misalignment. Fixed by adding Conformity empty column to input row, ensuring all grids have 9 columns with matching fr values.
+
+**Insight:** **Inline table inputs reduce visual separation between entry and display** - placing PTV Vol and Coverage inputs directly in results table (instead of separate input row above) creates tighter coupling between input and calculated output. Users see both the values they enter and the derived metrics in same row without scanning vertically. **Column count consistency critical for grid alignment** - when using Grid with arrows pointing down, all grids must have identical column counts and fr values, even if some columns are empty (Box placeholders). **Direct percentage input often clearer than volume ratio calculation** - for Coverage, entering "95%" is more intuitive than entering "47.5cc receiving Rx" when PTV is 50cc. Users think in percentages for coverage. **Wider left columns create visual breathing room** - using 1.5fr for Name and 0.8fr for Rx (narrower than 1fr) shifts input fields rightward, improving readability by reducing left-edge crowding. **Repurposing form fields requires careful documentation** - when `vol_ptv_receiving_rx` changed from volume to percentage, added comment in defaultValues explaining new meaning to prevent future confusion.
+
+---
+
+## Entry #112
+**Focus:** SBRT Plan Metrics table reorganization - improved visual hierarchy and incremental calculations
+
+**Smooth:** Five interconnected improvements completed in single session. (1) Reorganized table structure - column headers now appear first, followed by input row, arrow indicators, then results row. Creates clearer top-to-bottom information flow: see what metrics exist → input raw data → arrows showing calculation direction → final results. (2) Shifted 100% Vol and 50% Vol inputs one column left - now aligned under Conformity and R50 columns respectively, creating tighter visual coupling between input and calculated output. Dmax 2cm and Dmax Tgt remained in original positions under their respective output columns. (3) Implemented true incremental calculation - metrics now update in real-time as each field is filled rather than waiting for all fields. Each metric calculates independently as soon as its required inputs are available: Conformity (100% Vol + PTV Vol), R50 (50% Vol + PTV Vol), Gradient (both volumes), Dmax 2cm % (Dmax 2cm + Rx), Heterogeneity (Dmax Tgt + Rx). (4) Center-aligned all table content - headers, inputs, arrows, and results all use `textAlign="center"` for uniform appearance. (5) Reduced arrow row spacing - changed `mb={1}` to `mb={0}` and `pb={2}` to `pb={1}` for more compact visual flow between input and results.
+
+**Friction:** Initial reorganization had input row separate from headers creating visual disconnect. Fixed by grouping headers + inputs + arrows as single gray.750 block with shared background and border radius. Arrow spacing took iteration to find right balance between visible separation and compact layout.
+
+**Insight:** **Top-to-bottom information architecture improves comprehension** - when table shows labels → inputs → arrows → results in reading order, users understand the calculation flow without hunting across separated sections. **Incremental calculation provides immediate feedback** - calculating each metric as soon as its inputs are available (rather than requiring all fields) gives real-time validation and helps users catch data entry errors early. Users see Conformity appear when they enter 100% Vol, then R50 when they add 50% Vol, creating progressive completion satisfaction. **Spatial proximity reinforces data relationships** - shifting 100% and 50% Vol inputs left to align with their primary calculated outputs (Conformity, R50) creates visual connection between cause and effect. **Center alignment works for numeric data tables** - when all columns contain numbers or short text, center alignment creates cleaner visual rhythm than left-aligned ragged edges. **Vertical spacing affects perceived grouping** - reducing arrow row padding from pb={2} to pb={1} makes the input section feel more connected to the results section, reinforcing that arrows represent transformation, not separation.
+
+---
+
+*Next entry: #113*
+
+*Next consolidation: Reached #100 milestone - consolidate entries #92-111 when convenient*

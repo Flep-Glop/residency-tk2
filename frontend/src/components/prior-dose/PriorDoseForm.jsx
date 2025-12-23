@@ -335,6 +335,32 @@ const PriorDoseForm = () => {
       stat => stat.value && stat.value.trim() !== ''
     );
     
+    // Validate prior treatments - only site required when DICOMs unavailable
+    const invalidPriors = data.prior_dose_data.prior_treatments?.filter((t, idx) => {
+      // Site is always required
+      if (!t.site || t.site.trim() === '') {
+        return true;
+      }
+      // If DICOMs are available (not unavailable), require dose, fractions, month, year
+      if (!t.dicoms_unavailable) {
+        if (!t.dose || !t.fractions || !t.month || !t.year) {
+          return true;
+        }
+      }
+      return false;
+    });
+    
+    if (invalidPriors && invalidPriors.length > 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Each prior treatment must have at least a site name. If DICOMs are available, dose, fractions, month, and year are also required.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+    
     if (anyOverlap && filledStats.length === 0) {
       setShowConstraintError(true);
       toast({
@@ -350,6 +376,10 @@ const PriorDoseForm = () => {
     // Clear error if validation passes
     setShowConstraintError(false);
     
+    // Check if all priors with overlap have no DICOMs - if so, dose_calc_method not needed
+    const priorsWithOverlap = data.prior_dose_data.prior_treatments?.filter(t => t.has_overlap) || [];
+    const allPriorsNoDicoms = priorsWithOverlap.length > 0 && priorsWithOverlap.every(t => t.dicoms_unavailable);
+    
     setLoading(true);
     try {
       const criticalStructures = [...new Set(
@@ -361,7 +391,9 @@ const PriorDoseForm = () => {
         prior_dose_data: {
           ...data.prior_dose_data,
           critical_structures: criticalStructures,
-          dose_statistics: filledStats
+          dose_statistics: filledStats,
+          // If all priors have no DICOMs, dose_calc_method doesn't matter - set to empty
+          dose_calc_method: allPriorsNoDicoms ? '' : data.prior_dose_data.dose_calc_method
         }
       };
       

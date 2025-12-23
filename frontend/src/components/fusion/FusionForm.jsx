@@ -1329,22 +1329,17 @@ const FusionForm = () => {
               {/* Anatomical Region Section - hidden for complex and bladder filling modes */}
               <GridItem 
                 p={4} 
-                borderWidth="0"
+                borderWidth="1px"
                 borderRadius="md" 
-                bg="transparent"
+                bg={formBg}
+                borderColor={borderColor}
+                boxShadow="sm"
               >
                 {!isBladderFillingMode && (isSingleMriMode || isMultipleMriMode || isSinglePetMode || isSingleCtMode || 
                   isMultiplePetRigidMode || isMultiplePetDeformableMode || isMultiplePetRigidDeformableMode ||
                   isMultipleCtRigidMode || isMultipleCtDeformableMode || isMultipleCtRigidDeformableMode ||
                   isPetCtMode || isMriPetMode || isMriCtMode || isMriCtPetMode) ? (
-                  <Box
-                    p={4}
-                    borderWidth="1px"
-                    borderRadius="md"
-                    bg={formBg}
-                    borderColor={borderColor}
-                    boxShadow="sm"
-                  >
+                  <>
                     <Heading size="sm" mb={3} textAlign="center" color="white">Anatomical Region</Heading>
                     
                     {!isCustomRegion ? (
@@ -1416,14 +1411,14 @@ const FusionForm = () => {
                 >
                   <Text fontSize="sm" color="gray.300">Custom Region?</Text>
                 </Checkbox>
-                  </Box>
+                  </>
                 ) : (
                   // Empty for complex mode - column kept for layout
                   null
                 )}
               </GridItem>
               
-              {/* Third Column - Fusion Configuration Summary */}
+              {/* Third Column - Hidden (kept for layout consistency) */}
               <GridItem 
                   p={4} 
                   borderWidth="0"

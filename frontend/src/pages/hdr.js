@@ -12,11 +12,11 @@ const HDRPage = () => {
         <Button
           size="sm"
           variant="outline"
-          colorScheme="gray"
-          onClick={() => router.push('/')}
+          colorScheme="green"
           color="green.300"
           borderColor="green.600"
-          _hover={{ bg: "green.900", borderColor: "green.500" }}
+          _hover={{ bg: "green.800", borderColor: "green.400" }}
+          onClick={() => router.push('/')}
         >
           ← Home
         </Button>

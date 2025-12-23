@@ -132,7 +132,7 @@ class SBRTService:
             r50 = float(calculated_metrics.r50)
             gradient_measure = float(calculated_metrics.gradientMeasure)
             max_dose_2cm_ring = float(calculated_metrics.maxDose2cmRingPercent)
-            homogeneity_index = float(calculated_metrics.homogeneityIndex)
+            heterogeneity_index = float(calculated_metrics.heterogeneityIndex)
         else:
             # Fallback values if no calculated metrics
             coverage = vol_ptv_receiving_rx
@@ -140,7 +140,7 @@ class SBRTService:
             r50 = 4.0  # Default reasonable value
             gradient_measure = 1.0
             max_dose_2cm_ring = 50.0
-            homogeneity_index = 1.0
+            heterogeneity_index = 1.0
         
         # Handle anatomical clarification for spine/bone sites
         anatomical_clarification = data.anatomical_clarification if hasattr(data, 'anatomical_clarification') else ""
@@ -157,7 +157,7 @@ class SBRTService:
         # Generate metrics table
         metrics_table = self._generate_metrics_table_simple(
             target_name, ptv_volume, dose, coverage, conformity_index, 
-            r50, gradient_measure, max_dose_2cm_ring, homogeneity_index, calculated_metrics, is_sib, sib_comment
+            r50, gradient_measure, max_dose_2cm_ring, heterogeneity_index, calculated_metrics, is_sib, sib_comment
         )
         
         # Select template based on breathing technique (case insensitive)
@@ -280,7 +280,7 @@ class SBRTService:
             return f"{fractions} fractions"
     
     def _generate_metrics_table_simple(self, target_name, ptv_volume, dose, coverage, conformity_index, 
-                                      r50, gradient_measure, max_dose_2cm_ring, homogeneity_index, calculated_metrics, is_sib=False, sib_comment="") -> str:
+                                      r50, gradient_measure, max_dose_2cm_ring, heterogeneity_index, calculated_metrics, is_sib=False, sib_comment="") -> str:
         """Generate simplified metrics list using frontend calculated values."""
         
         # Get deviation status from frontend calculations if available
@@ -314,7 +314,7 @@ class SBRTService:
         r50_clean = format_number(r50, 2)
         gradient_clean = format_number(gradient_measure, 2)
         max_dose_clean = format_number(max_dose_2cm_ring, 1)
-        homogeneity_clean = format_number(homogeneity_index, 2)
+        heterogeneity_clean = format_number(heterogeneity_index, 2)
         
         # Generate plain text list of metrics with intro
         metrics_text = f"Below are the plan statistics:\n\n"
@@ -335,7 +335,7 @@ class SBRTService:
         if not is_sib:
             metrics_text += f" (Deviation: {max_dose_2cm_deviation})"
         metrics_text += f"\n"
-        metrics_text += f"• Homogeneity Index: {homogeneity_clean}\n"
+        metrics_text += f"• Heterogeneity Index: {heterogeneity_clean}\n"
         
         # Add summary based on deviations
         metrics_text += "\n"

@@ -616,13 +616,13 @@ const SRSForm = () => {
                               onChange={(e) => setValue(`srs_data.lesions.${index}.site`, e.target.value)}
                               onClick={(e) => e.stopPropagation()}
                               autoFocus={!watchLesions[index]?.site}
-                              bg="green.900"
-                              borderColor="green.600"
+                              bg="gray.700"
+                              borderColor="gray.600"
                               color="white"
                               textAlign="center"
-                              _placeholder={{ color: 'green.300' }}
-                              _hover={{ borderColor: 'green.400' }}
-                              _focus={{ borderColor: 'green.300', boxShadow: 'none' }}
+                              _placeholder={{ color: 'gray.400' }}
+                              _hover={{ borderColor: 'gray.500' }}
+                              _focus={{ borderColor: 'gray.500', boxShadow: 'none' }}
                             />
                           </Flex>
                         )
@@ -692,13 +692,13 @@ const SRSForm = () => {
                               onChange={(e) => setValue(`srs_data.lesions.${index}.site`, e.target.value)}
                               onClick={(e) => e.stopPropagation()}
                               autoFocus={!watchLesions[index]?.site}
-                              bg="purple.900"
-                              borderColor="purple.600"
+                              bg="gray.700"
+                              borderColor="gray.600"
                               color="white"
                               textAlign="center"
-                              _placeholder={{ color: 'purple.300' }}
-                              _hover={{ borderColor: 'purple.400' }}
-                              _focus={{ borderColor: 'purple.300', boxShadow: 'none' }}
+                              _placeholder={{ color: 'gray.400' }}
+                              _hover={{ borderColor: 'gray.500' }}
+                              _focus={{ borderColor: 'gray.500', boxShadow: 'none' }}
                             />
                           </Flex>
                         )

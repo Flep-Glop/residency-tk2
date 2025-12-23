@@ -438,68 +438,103 @@ const DIBHForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Info</Heading>
-                {!isCustomTreatmentSite ? (
-                  <FormControl isInvalid={errors.dibh_data?.treatment_site} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Treatment Site</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register("dibh_data.treatment_site", { 
-                        required: !isCustomTreatmentSite ? "Treatment site is required" : false
-                      })}
-                      aria-label="Select treatment site"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      isDisabled={isCustomTreatmentSite}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value=""></option>
-                      {treatmentSites.map(site => (
-                        <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>{site}</option>
-                      ))}
-                    </Select>
-                    <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.dibh_data?.treatment_site?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                ) : (
-                  <FormControl isInvalid={errors.dibh_data?.custom_treatment_site} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Custom Treatment Site Name</FormLabel>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Tx Sites</Heading>
+                <FormControl isInvalid={errors.dibh_data?.treatment_site || errors.dibh_data?.custom_treatment_site} mb={3}>
+                  <FormLabel fontSize="sm" color="gray.300" mb={2}>Site</FormLabel>
+                  
+                  {!isCustomTreatmentSite && (
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setValue('dibh_data.treatment_site', 'left breast');
+                          setIsCustomTreatmentSite(false);
+                          setValue('dibh_data.custom_treatment_site', '');
+                        }}
+                        colorScheme={watch('dibh_data.treatment_site') === 'left breast' && !isCustomTreatmentSite ? 'green' : 'gray'}
+                        variant={watch('dibh_data.treatment_site') === 'left breast' && !isCustomTreatmentSite ? 'solid' : 'outline'}
+                        color={watch('dibh_data.treatment_site') === 'left breast' && !isCustomTreatmentSite ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: watch('dibh_data.treatment_site') === 'left breast' && !isCustomTreatmentSite ? 'green.600' : 'gray.700' }}
+                      >
+                        Left Breast
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setValue('dibh_data.treatment_site', 'right breast');
+                          setIsCustomTreatmentSite(false);
+                          setValue('dibh_data.custom_treatment_site', '');
+                        }}
+                        colorScheme={watch('dibh_data.treatment_site') === 'right breast' && !isCustomTreatmentSite ? 'green' : 'gray'}
+                        variant={watch('dibh_data.treatment_site') === 'right breast' && !isCustomTreatmentSite ? 'solid' : 'outline'}
+                        color={watch('dibh_data.treatment_site') === 'right breast' && !isCustomTreatmentSite ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: watch('dibh_data.treatment_site') === 'right breast' && !isCustomTreatmentSite ? 'green.600' : 'gray.700' }}
+                      >
+                        Right Breast
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setValue('dibh_data.treatment_site', 'diaphragm');
+                          setIsCustomTreatmentSite(false);
+                          setValue('dibh_data.custom_treatment_site', '');
+                        }}
+                        colorScheme={watch('dibh_data.treatment_site') === 'diaphragm' && !isCustomTreatmentSite ? 'green' : 'gray'}
+                        variant={watch('dibh_data.treatment_site') === 'diaphragm' && !isCustomTreatmentSite ? 'solid' : 'outline'}
+                        color={watch('dibh_data.treatment_site') === 'diaphragm' && !isCustomTreatmentSite ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: watch('dibh_data.treatment_site') === 'diaphragm' && !isCustomTreatmentSite ? 'green.600' : 'gray.700' }}
+                      >
+                        Diaphragm
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setValue('dibh_data.treatment_site', 'chest wall');
+                          setIsCustomTreatmentSite(false);
+                          setValue('dibh_data.custom_treatment_site', '');
+                        }}
+                        colorScheme={watch('dibh_data.treatment_site') === 'chest wall' && !isCustomTreatmentSite ? 'green' : 'gray'}
+                        variant={watch('dibh_data.treatment_site') === 'chest wall' && !isCustomTreatmentSite ? 'solid' : 'outline'}
+                        color={watch('dibh_data.treatment_site') === 'chest wall' && !isCustomTreatmentSite ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: watch('dibh_data.treatment_site') === 'chest wall' && !isCustomTreatmentSite ? 'green.600' : 'gray.700' }}
+                      >
+                        Chest Wall
+                      </Button>
+                    </Grid>
+                  )}
+                  
+                  {isCustomTreatmentSite && (
                     <Input
                       size="sm"
                       {...register("dibh_data.custom_treatment_site", {
                         required: isCustomTreatmentSite ? "Custom treatment site name is required" : false
                       })}
-                      aria-label="Custom treatment site name"
-                      placeholder="e.g., Chest Wall"
+                      placeholder="e.g., Custom Site"
                       bg="gray.700"
                       borderColor="gray.600"
                       color="white"
                       _hover={{ borderColor: "gray.500" }}
                       _placeholder={{ color: "gray.400" }}
+                      mb={2}
                     />
-                    <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.dibh_data?.custom_treatment_site?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                )}
-                
-                <Checkbox
-                  isChecked={isCustomTreatmentSite}
-                  onChange={handleCustomTreatmentSiteChange}
-                  mb={3}
-                  colorScheme="blue"
-                >
-                  <Text fontSize="sm" color="gray.300">Custom Treatment Site?</Text>
-                </Checkbox>
+                  )}
+                  
+                  <Checkbox
+                    isChecked={isCustomTreatmentSite}
+                    onChange={handleCustomTreatmentSiteChange}
+                    colorScheme="blue"
+                  >
+                    <Text fontSize="sm" color="gray.300">Custom Site?</Text>
+                  </Checkbox>
+                  
+                  <FormErrorMessage sx={{ color: 'red.300' }}>
+                    {errors.dibh_data?.treatment_site?.message || errors.dibh_data?.custom_treatment_site?.message}
+                  </FormErrorMessage>
+                </FormControl>
               </GridItem>
               
               {/* Dose Information & Preview */}

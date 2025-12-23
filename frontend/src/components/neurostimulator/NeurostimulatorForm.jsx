@@ -241,7 +241,7 @@ const NeurostimulatorForm = () => {
   return (
     <Box bg="gray.900" minH="100vh">
       {/* Header */}
-      <Box bg="cyan.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="cyan.700">
+      <Box bg="green.900" color="white" p={6} mb={6} borderRadius="lg" border="1px" borderColor="green.700">
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
             <Heading size="md">Neurostimulator Documentation</Heading>
@@ -732,7 +732,7 @@ const NeurostimulatorForm = () => {
                     size="sm" 
                     isChecked={isCustomDevice} 
                     onChange={handleCustomDeviceChange}
-                    colorScheme="cyan"
+                    colorScheme="green"
                     color="gray.300"
                   >
                     <Text fontSize="sm" color="gray.300">Custom Device?</Text>

@@ -177,6 +177,7 @@ const TBIForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
+                <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.common_info?.physicist?.name}>
                     <FormLabel fontSize="sm" color="gray.300" mb={2}>Physicist</FormLabel>
@@ -364,7 +365,7 @@ const TBIForm = () => {
 
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.tbi_data?.regimen}>
-                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Fractionation Regimen</FormLabel>
+                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Rx</FormLabel>
                     <Grid templateColumns="repeat(2, 1fr)" gap={2}>
                       {/* Single Fraction Column */}
                       <VStack spacing={2}>
@@ -423,7 +424,6 @@ const TBIForm = () => {
                               borderColor="blue.500"
                               p={2}
                             >
-                              <Text fontSize="xs" color="gray.300" mb={1} textAlign="center">Select Lung Block HVL:</Text>
                               <HStack spacing={1}>
                                 {['1 HVL', '2 HVL', '3 HVL'].map((hvl) => (
                                   <Button
@@ -434,6 +434,8 @@ const TBIForm = () => {
                                     colorScheme={watch('tbi_data.lung_blocks') === hvl ? 'green' : 'gray'}
                                     variant={watch('tbi_data.lung_blocks') === hvl ? 'solid' : 'outline'}
                                     color={watch('tbi_data.lung_blocks') === hvl ? 'white' : 'gray.300'}
+                                    borderColor="gray.600"
+                                    _hover={{ bg: watch('tbi_data.lung_blocks') === hvl ? 'green.600' : 'gray.700' }}
                                   >
                                     {hvl}
                                   </Button>
@@ -470,7 +472,6 @@ const TBIForm = () => {
                               borderColor="blue.500"
                               p={2}
                             >
-                              <Text fontSize="xs" color="gray.300" mb={1} textAlign="center">Select Lung Block HVL:</Text>
                               <HStack spacing={1}>
                                 {['1 HVL', '2 HVL', '3 HVL'].map((hvl) => (
                                   <Button
@@ -481,6 +482,8 @@ const TBIForm = () => {
                                     colorScheme={watch('tbi_data.lung_blocks') === hvl ? 'green' : 'gray'}
                                     variant={watch('tbi_data.lung_blocks') === hvl ? 'solid' : 'outline'}
                                     color={watch('tbi_data.lung_blocks') === hvl ? 'white' : 'gray.300'}
+                                    borderColor="gray.600"
+                                    _hover={{ bg: watch('tbi_data.lung_blocks') === hvl ? 'green.600' : 'gray.700' }}
                                   >
                                     {hvl}
                                   </Button>
