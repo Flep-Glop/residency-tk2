@@ -512,6 +512,22 @@ const HomePage = () => {
                   Pacemaker
                 </Button>
 
+                {/* Neurostimulator */}
+                <Button
+                  size="md"
+                  variant={mpcChecklist.neurostimulator ? "solid" : "outline"}
+                  colorScheme={mpcChecklist.neurostimulator ? "cyan" : "gray"}
+                  onClick={() => toggleMpcItem('neurostimulator')}
+                  borderColor="gray.600"
+                  color={mpcChecklist.neurostimulator ? "white" : "gray.300"}
+                  _hover={{ 
+                    bg: mpcChecklist.neurostimulator ? "cyan.600" : "gray.700",
+                    borderColor: mpcChecklist.neurostimulator ? "cyan.300" : "gray.500"
+                  }}
+                >
+                  Neurostim
+                </Button>
+
                 {/* SBRT - TEMPORARY: Mutually exclusive with DIBH */}
                 <Button
                   size="md"
@@ -526,6 +542,22 @@ const HomePage = () => {
                   }}
                 >
                   SBRT
+                </Button>
+
+                {/* SRS/SRT */}
+                <Button
+                  size="md"
+                  variant={mpcChecklist.specialTreatmentTypes.srs ? "solid" : "outline"}
+                  colorScheme={mpcChecklist.specialTreatmentTypes.srs ? "orange" : "gray"}
+                  onClick={() => toggleMpcItem('specialTreatmentTypes', 'srs')}
+                  borderColor="gray.600"
+                  color={mpcChecklist.specialTreatmentTypes.srs ? "white" : "gray.300"}
+                  _hover={{ 
+                    bg: mpcChecklist.specialTreatmentTypes.srs ? "orange.600" : "gray.700",
+                    borderColor: mpcChecklist.specialTreatmentTypes.srs ? "orange.300" : "gray.500"
+                  }}
+                >
+                  SRS/SRT
                 </Button>
 
                 {/* TBI */}

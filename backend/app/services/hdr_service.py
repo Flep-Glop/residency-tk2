@@ -15,24 +15,19 @@ class HDRService:
                 "channels": 3,
                 "description": "tandem and ovoid applicator"
             },
-            "Utrecht": {
+            "Hybrid T&O": {
                 "position": "lithotomy",
-                "channels": 15,
-                "description": "Utrecht applicator"
-            },
-            "GENEVA": {
-                "position": "lithotomy",
-                "channels": 3,
-                "description": "GENEVA applicator"
+                "channels": 13,
+                "description": "hybrid T&O applicator"
             },
             "SYED-Gyn": {
                 "position": "lithotomy",
-                "channels": 18,
+                "channels": 55,
                 "description": "SYED applicator"
             },
             "SYED-Prostate": {
                 "position": "lithotomy",
-                "channels": 18,
+                "channels": 19,
                 "description": "SYED applicator"
             }
         }

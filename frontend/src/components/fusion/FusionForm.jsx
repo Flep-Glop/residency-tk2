@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -192,7 +192,7 @@ const FusionForm = () => {
             }
           } else if (mriCount > 0 && (ctRigidCount > 0 || ctDeformableCount > 0) && (petRigidCount > 0 || petDeformableCount > 0) && 
                      totalFusions === (mriCount + ctRigidCount + ctDeformableCount + petRigidCount + petDeformableCount)) {
-            // Ultimate MRI + CT + PET combinations (3 modality types)
+            // MRI + CT + PET combinations (3 modality types)
             const totalCtCount = ctRigidCount + ctDeformableCount;
             const totalPetCount = petRigidCount + petDeformableCount;
             
@@ -330,7 +330,7 @@ const FusionForm = () => {
     isMriCtSingleMriMultipleRigidMode || isMriCtSingleMriMultipleDeformableMode ||
     isMriCtSingleMriMultipleMixedMode || isMriCtMultipleBothMode;
   
-  // Ultimate MRI+CT+PET mode helpers
+  // MRI+CT+PET mode helpers
   const isMriCtPetSingleRigidRigidMode = fusionMode === 'mri-ct-pet-single-rigid-rigid';
   const isMriCtPetSingleRigidDeformableMode = fusionMode === 'mri-ct-pet-single-rigid-deformable';
   const isMriCtPetSingleDeformableRigidMode = fusionMode === 'mri-ct-pet-single-deformable-rigid';
@@ -353,7 +353,7 @@ const FusionForm = () => {
   const isMriCtPetMultipleMriSingleCtDeformableSinglePetDeformableMode = fusionMode === 'mri-ct-pet-multiple-mri-single-ct-deformable-single-pet-deformable';
   const isMriCtPetUltimateComplexMode = fusionMode === 'mri-ct-pet-ultimate-complex';
   
-  // Combined ultimate MRI+CT+PET helper for conditional checks
+  // Combined MRI+CT+PET helper for conditional checks
   const isMriCtPetMode = isMriCtPetSingleRigidRigidMode || isMriCtPetSingleRigidDeformableMode || 
     isMriCtPetSingleDeformableRigidMode || isMriCtPetSingleDeformableDeformableMode ||
     isMriCtPetSingleMriSingleCtRigidMultiplePetMixedMode || isMriCtPetSingleMriSingleCtRigidMultiplePetRigidMode ||
@@ -711,7 +711,7 @@ const FusionForm = () => {
           setValue('fusion_data.registrations', registrations);
         }
       } else if (isMriCtPetMode) {
-        // Auto-populate ultimate MRI + CT + PET combinations based on config and mode
+        // Auto-populate MRI + CT + PET combinations based on config and mode
         if (parsedConfig) {
           const registrations = [];
           const mriCount = parsedConfig.mri?.rigid || 0;
@@ -1118,11 +1118,11 @@ const FusionForm = () => {
                : isMriCtSingleRigidMode ? 'MRI/CT + CT/CT Rigid Fusion Write-up'
                : isMriCtSingleDeformableMode ? 'MRI/CT + CT/CT Deformable Fusion Write-up'
                : isMriCtMode ? 'Mixed MRI/CT + CT/CT Fusion Write-up'
-               : isMriCtPetSingleRigidRigidMode ? 'Ultimate MRI + CT (Rigid) + PET (Rigid) Fusion Write-up'
-               : isMriCtPetSingleRigidDeformableMode ? 'Ultimate MRI + CT (Rigid) + PET (Deformable) Fusion Write-up'
-               : isMriCtPetSingleDeformableRigidMode ? 'Ultimate MRI + CT (Deformable) + PET (Rigid) Fusion Write-up'
-               : isMriCtPetSingleDeformableDeformableMode ? 'Ultimate MRI + CT (Deformable) + PET (Deformable) Fusion Write-up'
-               : isMriCtPetMode ? 'Ultimate MRI + CT + PET Fusion Write-up'
+               : isMriCtPetSingleRigidRigidMode ? 'MRI + CT (Rigid) + PET (Rigid) Fusion Write-up'
+               : isMriCtPetSingleRigidDeformableMode ? 'MRI + CT (Rigid) + PET (Deformable) Fusion Write-up'
+               : isMriCtPetSingleDeformableRigidMode ? 'MRI + CT (Deformable) + PET (Rigid) Fusion Write-up'
+               : isMriCtPetSingleDeformableDeformableMode ? 'MRI + CT (Deformable) + PET (Deformable) Fusion Write-up'
+               : isMriCtPetMode ? 'MRI + CT + PET Fusion Write-up'
                : 'Fusion Write-up Generator'}
             </Heading>
           </Box>
@@ -1154,63 +1154,173 @@ const FusionForm = () => {
                 <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <Box>
                   
-                  <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register("common_info.physician.name", { 
-                        required: "Physician name is required" 
-                      })}
-                      aria-label="Select physician"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}></option>
-                      {physicians.map(physician => (
-                        <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
-                      ))}
-                    </Select>
+                  <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Physicist</FormLabel>
+                    <Controller
+                      name="common_info.physicist.name"
+                      control={control}
+                      rules={{ required: 'Physicist is required' }}
+                      render={({ field }) => (
+                        <Grid templateColumns="1fr 1fr" gap={2}>
+                          <GridItem colSpan={2}>
+                            <Button
+                              size="sm"
+                              width="100%"
+                              variant={field.value === 'Papanikolaou' ? 'solid' : 'outline'}
+                              colorScheme={field.value === 'Papanikolaou' ? 'blue' : 'gray'}
+                              color={field.value === 'Papanikolaou' ? 'white' : 'gray.300'}
+                              borderColor="gray.600"
+                              onClick={() => field.onChange('Papanikolaou')}
+                              _hover={{ bg: field.value === 'Papanikolaou' ? 'blue.600' : 'gray.700' }}
+                            >
+                              Papanikolaou
+                            </Button>
+                          </GridItem>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Bassiri' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Bassiri' ? 'blue' : 'gray'}
+                            color={field.value === 'Bassiri' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Bassiri')}
+                            _hover={{ bg: field.value === 'Bassiri' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Bassiri
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Kirby' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Kirby' ? 'blue' : 'gray'}
+                            color={field.value === 'Kirby' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Kirby')}
+                            _hover={{ bg: field.value === 'Kirby' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Kirby
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Paschal' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Paschal' ? 'blue' : 'gray'}
+                            color={field.value === 'Paschal' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Paschal')}
+                            _hover={{ bg: field.value === 'Paschal' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Paschal
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Rasmussen' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Rasmussen' ? 'blue' : 'gray'}
+                            color={field.value === 'Rasmussen' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Rasmussen')}
+                            _hover={{ bg: field.value === 'Rasmussen' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Rasmussen
+                          </Button>
+                        </Grid>
+                      )}
+                    />
                     <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.common_info?.physician?.name?.message}
+                      {errors.common_info?.physicist?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
                   
-                  <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
-                    <FormLabel fontSize="sm" color="gray.300">Physicist Name</FormLabel>
-                    <Select 
-                      size="sm"
-                      {...register("common_info.physicist.name", { 
-                        required: "Physicist name is required" 
-                      })}
-                      aria-label="Select physicist"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      data-theme="dark"
-                      sx={{
-                        '& option': {
-                          backgroundColor: 'gray.700',
-                          color: 'white',
-                        }
-                      }}
-                    >
-                      <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}></option>
-                      {physicists.map(physicist => (
-                        <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
-                      ))}
-                    </Select>
+                  <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
+                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Physician</FormLabel>
+                    <Controller
+                      name="common_info.physician.name"
+                      control={control}
+                      rules={{ required: 'Physician is required' }}
+                      render={({ field }) => (
+                        <Grid templateColumns="1fr 1fr" gap={2}>
+                          <GridItem colSpan={2}>
+                            <Button
+                              size="sm"
+                              width="100%"
+                              variant={field.value === 'Tuli' ? 'solid' : 'outline'}
+                              colorScheme={field.value === 'Tuli' ? 'blue' : 'gray'}
+                              color={field.value === 'Tuli' ? 'white' : 'gray.300'}
+                              borderColor="gray.600"
+                              onClick={() => field.onChange('Tuli')}
+                              _hover={{ bg: field.value === 'Tuli' ? 'blue.600' : 'gray.700' }}
+                            >
+                              Tuli
+                            </Button>
+                          </GridItem>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Dalwadi' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Dalwadi' ? 'blue' : 'gray'}
+                            color={field.value === 'Dalwadi' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Dalwadi')}
+                            _hover={{ bg: field.value === 'Dalwadi' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Dalwadi
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Galvan' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Galvan' ? 'blue' : 'gray'}
+                            color={field.value === 'Galvan' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Galvan')}
+                            _hover={{ bg: field.value === 'Galvan' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Galvan
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Ha' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Ha' ? 'blue' : 'gray'}
+                            color={field.value === 'Ha' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Ha')}
+                            _hover={{ bg: field.value === 'Ha' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Ha
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Kluwe' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Kluwe' ? 'blue' : 'gray'}
+                            color={field.value === 'Kluwe' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Kluwe')}
+                            _hover={{ bg: field.value === 'Kluwe' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Kluwe
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Le' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Le' ? 'blue' : 'gray'}
+                            color={field.value === 'Le' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Le')}
+                            _hover={{ bg: field.value === 'Le' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Le
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={field.value === 'Lewis' ? 'solid' : 'outline'}
+                            colorScheme={field.value === 'Lewis' ? 'blue' : 'gray'}
+                            color={field.value === 'Lewis' ? 'white' : 'gray.300'}
+                            borderColor="gray.600"
+                            onClick={() => field.onChange('Lewis')}
+                            _hover={{ bg: field.value === 'Lewis' ? 'blue.600' : 'gray.700' }}
+                          >
+                            Lewis
+                          </Button>
+                        </Grid>
+                      )}
+                    />
                     <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.common_info?.physicist?.name?.message}
+                      {errors.common_info?.physician?.name?.message}
                     </FormErrorMessage>
                   </FormControl>
                 </Box>

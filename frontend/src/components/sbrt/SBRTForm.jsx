@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  Select,
   FormErrorMessage,
   Heading,
   Grid,
@@ -16,18 +15,9 @@ import {
   useToast,
   Alert,
   AlertIcon,
-  Badge,
   Flex,
-  RadioGroup,
-  Radio,
-  Stack,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   VStack,
   HStack,
-  Container,
   Spinner,
   Center,
   Table,
@@ -36,33 +26,35 @@ import {
   Tr,
   Th,
   Td,
-  Switch,
-  Checkbox,
-  Card,
-  CardBody
+  Badge,
 } from '@chakra-ui/react';
-import { getTreatmentSites, getDoseConstraints, getFractionationSchemes, generateSBRTWriteup, validateDoseFractionation } from '../../services/sbrtService';
+import { generateSBRTWriteup } from '../../services/sbrtService';
 
 const SBRTForm = () => {
   // State variables
-  const [treatmentSites, setTreatmentSites] = useState([]);
-  const [doseConstraints, setDoseConstraints] = useState({});
-  const [fractionationSchemes, setFractionationSchemes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [writeup, setWriteup] = useState('');
-  const [validationMessage, setValidationMessage] = useState(null);
-  const [isSIB, setIsSIB] = useState(false);
+  const [isSIB, setIsSIB] = useState(null); // null = not selected, false = Standard, true = SIB
   const [calculatedMetrics, setCalculatedMetrics] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null); // null, 'liver', 'prostate', etc.
+  const [editingTechnique, setEditingTechnique] = useState(false); // Whether technique picker is open
+  const [editingTreatmentType, setEditingTreatmentType] = useState(false); // Whether treatment type picker is open
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
-  const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
-  const [isCustomTreatmentSite, setIsCustomTreatmentSite] = useState(false);
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';
   const writeupBg = 'gray.800';
   const borderColor = 'gray.600';
+
+  // Treatment site options
+  const treatmentSites = [
+    { id: 'liver', label: 'Liver' },
+    { id: 'prostate', label: 'Prostate' },
+    { id: 'breast', label: 'Breast' },
+    { id: 'kidney', label: 'Kidney' },
+    { id: 'pancreas', label: 'Pancreas' },
+    { id: 'bone_spine', label: 'Bone/Spine' },
+  ];
 
   // Tolerance table data based on your clinical standards
   const toleranceTable = [
@@ -80,7 +72,7 @@ const SBRTForm = () => {
   ];
 
   // Form setup with react-hook-form
-  const { register, handleSubmit, watch, formState: { errors }, setValue, reset } = useForm({
+  const { register, handleSubmit, watch, formState: { errors }, setValue, reset, control } = useForm({
     defaultValues: {
       common_info: {
         physician: { name: '', role: 'physician' },
@@ -93,7 +85,6 @@ const SBRTForm = () => {
         dose: '',
         fractions: '',
         breathing_technique: '',
-        oligomet_location: '',
         target_name: '',
         ptv_volume: '',
         vol_ptv_receiving_rx: '',
@@ -120,8 +111,6 @@ const SBRTForm = () => {
   // Watch key form fields for reactive updates
   const watchDose = watch('sbrt_data.dose');
   const watchFractions = watch('sbrt_data.fractions');
-  const watchTreatmentSite = watch('sbrt_data.treatment_site');
-  const watchCustomTreatmentSite = watch('sbrt_data.custom_treatment_site');
   const watchBreathingTechnique = watch('sbrt_data.breathing_technique');
   const watchTargetName = watch('sbrt_data.target_name');
   const watchPTVVolume = watch('sbrt_data.ptv_volume');
@@ -131,8 +120,27 @@ const SBRTForm = () => {
   const watchMaxDose2cmRing = watch('sbrt_data.max_dose_2cm_ring');
   const watchMaxDoseInTarget = watch('sbrt_data.max_dose_in_target');
   
-  // Get actual treatment site (custom or dropdown)
-  const actualTreatmentSite = isCustomTreatmentSite ? watchCustomTreatmentSite : watchTreatmentSite;
+  // Handle site selection
+  const handleSiteSelect = (siteId) => {
+    if (selectedSite === siteId) {
+      // Clicking same site deselects it
+      setSelectedSite(null);
+      setValue('sbrt_data.treatment_site', '');
+      setValue('sbrt_data.custom_treatment_site', '');
+      setValue('sbrt_data.anatomical_clarification', '');
+    } else {
+      setSelectedSite(siteId);
+      if (siteId === 'other') {
+        setValue('sbrt_data.treatment_site', '');
+      } else if (siteId === 'bone_spine') {
+        setValue('sbrt_data.treatment_site', 'spine');
+      } else {
+        setValue('sbrt_data.treatment_site', siteId);
+      }
+      setValue('sbrt_data.custom_treatment_site', '');
+      setValue('sbrt_data.anatomical_clarification', '');
+    }
+  };
   
   // Calculate derived values and tolerance check
   useEffect(() => {
@@ -169,12 +177,12 @@ const SBRTForm = () => {
       const maxDose2cmDeviation = getDeviation(maxDose2cmRingPercent, toleranceRow.maxDose2cmNone, toleranceRow.maxDose2cmMinor);
 
       setCalculatedMetrics({
-        coverage: coverage.toFixed(1),
-        conformityIndex: conformityIndex.toFixed(2),
-        r50: r50.toFixed(2),
-        gradientMeasure: gradientMeasure.toFixed(2),
-        maxDose2cmRingPercent: maxDose2cmRingPercent.toFixed(1),
-        homogeneityIndex: homogeneityIndex.toFixed(2),
+        coverage: coverage,
+        conformityIndex: conformityIndex,
+        r50: r50,
+        gradientMeasure: gradientMeasure,
+        maxDose2cmRingPercent: maxDose2cmRingPercent,
+        homogeneityIndex: homogeneityIndex,
         conformityDeviation,
         r50Deviation,
         maxDose2cmDeviation,
@@ -186,89 +194,65 @@ const SBRTForm = () => {
   }, [watchPTVVolume, watchDose, watchVolPTVReceivingRx, watchVol100RxIsodose, 
       watchVol50RxIsodose, watchMaxDose2cmRing, watchMaxDoseInTarget, isSIB]);
   
-  // Load initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setInitialLoading(true);
-      try {
-        const sitesData = await getTreatmentSites();
-        setTreatmentSites(sitesData);
-      } catch (error) {
-        toast({
-          title: 'Error loading data',
-          description: error.message,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        
-        // Fallback data if API fails
-        setTreatmentSites([
-          "bone", "kidney", "liver", "lung", "prostate", "spine"
-        ]);
-      } finally {
-        setInitialLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, [toast]);
-
-  // Handler for custom treatment site checkbox
-  const handleCustomTreatmentSiteChange = (e) => {
-    setIsCustomTreatmentSite(e.target.checked);
-    if (e.target.checked) {
-      setValue('sbrt_data.treatment_site', '');
-    } else {
-      setValue('sbrt_data.custom_treatment_site', '');
-    }
-  };
-
-  // Update constraints and schemes when treatment site changes
-  useEffect(() => {
-    const fetchSiteSpecificData = async () => {
-      if (!watchTreatmentSite) return;
-      
-      try {
-        const [constraintsData, schemesData] = await Promise.all([
-          getDoseConstraints(watchTreatmentSite),
-          getFractionationSchemes(watchTreatmentSite)
-        ]);
-        
-        setDoseConstraints(constraintsData);
-        setFractionationSchemes(schemesData);
-      } catch (error) {
-        console.error('Error fetching site-specific data:', error);
-      }
-    };
-
-    fetchSiteSpecificData();
-  }, [watchTreatmentSite]);
-
-  // Validate dose/fractionation when values change
-  useEffect(() => {
-    const validateData = async () => {
-      if (!watchTreatmentSite || !watchDose || !watchFractions) {
-        setValidationMessage(null);
-        return;
-      }
-      
-      try {
-        const validation = await validateDoseFractionation(watchTreatmentSite, watchDose, watchFractions);
-        setValidationMessage(validation);
-      } catch (error) {
-        console.error('Validation error:', error);
-      }
-    };
-
-    const timeoutId = setTimeout(validateData, 500); // Debounce validation
-    return () => clearTimeout(timeoutId);
-  }, [watchTreatmentSite, watchDose, watchFractions]);
-
   const onSubmit = async (data) => {
+    // Validate site is selected
+    if (!selectedSite) {
+        toast({
+        title: 'Please select a treatment site',
+          status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+    
+    // Validate breathing technique
+    if (!data.sbrt_data.breathing_technique) {
+      toast({
+        title: 'Please select a technique',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+    
+    // Validate treatment type
+    if (isSIB === null) {
+      toast({
+        title: 'Please select a treatment type (Standard or SIB)',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+    
+    // Validate volume relationships (clinical physics constraints)
+    const vol50 = parseFloat(data.sbrt_data.vol_50_rx_isodose);
+    const vol100 = parseFloat(data.sbrt_data.vol_100_rx_isodose);
+    const ptvVol = parseFloat(data.sbrt_data.ptv_volume);
+    
+    if (vol50 <= vol100) {
+      toast({
+        title: 'Invalid isodose volumes',
+        description: '50% isodose volume must be greater than 100% isodose volume',
+        status: 'error',
+        duration: 5000,
+      });
+      return;
+    }
+    
+    if (vol100 < ptvVol) {
+      toast({
+        title: 'Invalid prescription isodose volume',
+        description: '100% isodose volume should be ≥ PTV volume for adequate coverage',
+        status: 'warning',
+        duration: 5000,
+      });
+      // Don't return - this is a warning, not a hard error
+    }
+      
     setLoading(true);
     try {
-      // Add calculated metrics to the form data (like fusion system - simple and clean)
+      // Add calculated metrics to the form data
       const dataWithMetrics = {
         ...data,
         sbrt_data: {
@@ -277,12 +261,8 @@ const SBRTForm = () => {
           is_sib: isSIB
         }
       };
-
-      console.log('Sending data to backend:', dataWithMetrics);
       
       const response = await generateSBRTWriteup(dataWithMetrics);
-      console.log('Backend response received:', response);
-      console.log('Response writeup first 200 chars:', response.writeup.substring(0, 200));
       setWriteup(response.writeup);
       toast({
         title: 'Write-up generated successfully',
@@ -306,12 +286,11 @@ const SBRTForm = () => {
   const handleResetForm = () => {
     reset();
     setWriteup('');
-    setValidationMessage(null);
-    setDoseConstraints({});
-    setFractionationSchemes([]);
     setCalculatedMetrics(null);
-    setIsSIB(false);
-    setIsCustomTreatmentSite(false);
+    setIsSIB(null);
+    setSelectedSite(null);
+    setEditingTechnique(false);
+    setEditingTreatmentType(false);
   };
 
   const getDeviationColor = (deviation) => {
@@ -322,16 +301,10 @@ const SBRTForm = () => {
     return 'white';
   };
 
-  if (initialLoading) {
-    return (
-      <Center h="200px">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="green.500" />
-          <Text color="white">Loading SBRT form data...</Text>
-        </VStack>
-      </Center>
-    );
-  }
+  // Get the color scheme for the selected site (all use green)
+  const getSelectedSiteColor = () => {
+    return 'green';
+  };
 
   return (
     <Box bg="gray.900" minH="100vh">
@@ -348,7 +321,7 @@ const SBRTForm = () => {
       <Box px={6}>
         <Box maxW="1200px" mx="auto">
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* First Row: Three Columns */}
+            {/* Three Column Layout */}
             <Grid 
               templateColumns={{
                 base: "1fr",
@@ -370,73 +343,99 @@ const SBRTForm = () => {
               >
                 <Heading size="sm" mb={3} textAlign="center" color="white">Staff Info</Heading>
                 <VStack spacing={3} align="stretch">
-                  <Box>
-                    
-                    <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Physician Name</FormLabel>
-                      <Select 
-                        size="sm"
-                        {...register("common_info.physician.name", { 
-                          required: "Physician name is required" 
-                        })}
-                        aria-label="Select physician"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
-                        {physicians.map(physician => (
-                          <option key={physician} value={physician} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physician}</option>
-                        ))}
-                      </Select>
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.common_info?.physician?.name?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                    
                     <FormControl isInvalid={errors.common_info?.physicist?.name} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Physicist Name</FormLabel>
-                      <Select 
-                        size="sm"
-                        {...register("common_info.physicist.name", { 
-                          required: "Physicist name is required" 
-                        })}
-                        aria-label="Select physicist"
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ borderColor: "gray.500" }}
-                        data-theme="dark"
-                        sx={{
-                          '& option': {
-                            backgroundColor: 'gray.700',
-                            color: 'white',
-                          }
-                        }}
-                      >
-                        <option value="" style={{ backgroundColor: '#2D3748', color: 'white' }}></option>
-                        {physicists.map(physicist => (
-                          <option key={physicist} value={physicist} style={{ backgroundColor: '#2D3748', color: 'white' }}>{physicist}</option>
-                        ))}
-                      </Select>
+                      <FormLabel fontSize="sm" color="gray.300" mb={2}>Physicist</FormLabel>
+                      <Controller
+                        name="common_info.physicist.name"
+                        control={control}
+                        rules={{ required: 'Physicist is required' }}
+                        render={({ field }) => (
+                          <Grid templateColumns="1fr 1fr" gap={2}>
+                            <GridItem colSpan={2}>
+                              <Button
+                                size="sm"
+                                width="100%"
+                                variant={field.value === 'Papanikolaou' ? 'solid' : 'outline'}
+                                colorScheme={field.value === 'Papanikolaou' ? 'blue' : 'gray'}
+                                color={field.value === 'Papanikolaou' ? 'white' : 'gray.300'}
+                                borderColor="gray.600"
+                                onClick={() => field.onChange('Papanikolaou')}
+                                _hover={{ bg: field.value === 'Papanikolaou' ? 'blue.600' : 'gray.700' }}
+                              >
+                                Papanikolaou
+                              </Button>
+                            </GridItem>
+                          {['Bassiri', 'Kirby', 'Paschal', 'Rasmussen'].map(name => (
+                            <Button
+                              key={name}
+                              size="sm"
+                              variant={field.value === name ? 'solid' : 'outline'}
+                              colorScheme={field.value === name ? 'blue' : 'gray'}
+                              color={field.value === name ? 'white' : 'gray.300'}
+                              borderColor="gray.600"
+                              onClick={() => field.onChange(name)}
+                              _hover={{ bg: field.value === name ? 'blue.600' : 'gray.700' }}
+                            >
+                              {name}
+                            </Button>
+                          ))}
+                          </Grid>
+                        )}
+                      />
                       <FormErrorMessage sx={{ color: 'red.300' }}>
                         {errors.common_info?.physicist?.name?.message}
                       </FormErrorMessage>
                     </FormControl>
-                  </Box>
+                    
+                    <FormControl isInvalid={errors.common_info?.physician?.name} mb={3}>
+                      <FormLabel fontSize="sm" color="gray.300" mb={2}>Physician</FormLabel>
+                      <Controller
+                        name="common_info.physician.name"
+                        control={control}
+                        rules={{ required: 'Physician is required' }}
+                        render={({ field }) => (
+                          <Grid templateColumns="1fr 1fr" gap={2}>
+                            <GridItem colSpan={2}>
+                              <Button
+                                size="sm"
+                                width="100%"
+                                variant={field.value === 'Tuli' ? 'solid' : 'outline'}
+                                colorScheme={field.value === 'Tuli' ? 'blue' : 'gray'}
+                                color={field.value === 'Tuli' ? 'white' : 'gray.300'}
+                                borderColor="gray.600"
+                                onClick={() => field.onChange('Tuli')}
+                                _hover={{ bg: field.value === 'Tuli' ? 'blue.600' : 'gray.700' }}
+                              >
+                                Tuli
+                              </Button>
+                            </GridItem>
+                          {['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis'].map(name => (
+                            <Button
+                              key={name}
+                              size="sm"
+                              variant={field.value === name ? 'solid' : 'outline'}
+                              colorScheme={field.value === name ? 'blue' : 'gray'}
+                              color={field.value === name ? 'white' : 'gray.300'}
+                              borderColor="gray.600"
+                              onClick={() => field.onChange(name)}
+                              _hover={{ bg: field.value === name ? 'blue.600' : 'gray.700' }}
+                            >
+                              {name}
+                            </Button>
+                          ))}
+                          </Grid>
+                        )}
+                      />
+                      <FormErrorMessage sx={{ color: 'red.300' }}>
+                        {errors.common_info?.physician?.name?.message}
+                      </FormErrorMessage>
+                    </FormControl>
                 </VStack>
               </GridItem>
 
-              {/* Treatment Details Section */}
+              {/* Treatment Selection - Spans 2 columns on large screens */}
               <GridItem 
+                colSpan={{ base: 1, lg: 2 }}
                 as={Box} 
                 p={4} 
                 borderWidth="1px" 
@@ -445,288 +444,335 @@ const SBRTForm = () => {
                 borderColor={borderColor}
                 boxShadow="sm"
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Details</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Treatment Selection</Heading>
                 
-                <VStack spacing={3} align="stretch">
-                  <Box>
-                    {!isCustomTreatmentSite ? (
-                      <FormControl isInvalid={errors.sbrt_data?.treatment_site} mb={3}>
-                        <FormLabel fontSize="sm" color="gray.300" fontWeight="bold">Treatment Site</FormLabel>
-                        <Select
-                          size="sm"
-                          placeholder=""
-                          {...register('sbrt_data.treatment_site', { 
-                            required: !isCustomTreatmentSite ? 'Treatment site is required' : false 
-                          })}
-                          aria-label="Select treatment site"
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          isDisabled={isCustomTreatmentSite}
-                          data-theme="dark"
-                          sx={{
-                            '& option': {
-                              backgroundColor: 'gray.700',
-                              color: 'white',
-                            }
-                          }}
-                        >
-                          {treatmentSites.map((site) => (
-                            <option key={site} value={site} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                              {site.charAt(0).toUpperCase() + site.slice(1)}
-                            </option>
-                          ))}
-                        </Select>
-                        <FormErrorMessage sx={{ color: 'red.300' }}>
-                          {errors.sbrt_data?.treatment_site?.message}
-                        </FormErrorMessage>
-                      </FormControl>
-                    ) : (
-                      <FormControl isInvalid={errors.sbrt_data?.custom_treatment_site} mb={3}>
-                        <FormLabel fontSize="sm" color="gray.300">Custom Treatment Site Name</FormLabel>
-                        <Input
-                          size="sm"
-                          {...register('sbrt_data.custom_treatment_site', {
-                            required: isCustomTreatmentSite ? 'Custom treatment site name is required' : false
-                          })}
-                          aria-label="Custom treatment site name"
-                          placeholder="Enter custom treatment site"
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          _placeholder={{ color: "gray.400" }}
-                        />
-                        <FormErrorMessage sx={{ color: 'red.300' }}>
-                          {errors.sbrt_data?.custom_treatment_site?.message}
-                        </FormErrorMessage>
-                      </FormControl>
-                    )}
-                    
-                    <Checkbox
-                      isChecked={isCustomTreatmentSite}
-                      onChange={handleCustomTreatmentSiteChange}
-                      mb={3}
-                      colorScheme="blue"
-                    >
-                      <Text fontSize="sm" color="gray.300">Custom Treatment Site?</Text>
-                    </Checkbox>
-
-                    {/* Anatomical clarification for spine/bone */}
-                    {(watchTreatmentSite === 'spine' || watchTreatmentSite === 'bone') && (
-                      <FormControl mb={3}>
-                        <FormLabel fontSize="sm" color="gray.300">
-                          Anatomical Clarification {watchTreatmentSite === 'spine' ? '(e.g., T11-L1, C5-C7)' : '(e.g., Humerus, Femur, Rib)'}
-                        </FormLabel>
-                        <Input
-                          size="sm"
-                          placeholder={watchTreatmentSite === 'spine' ? 'e.g., T11-L1, L4-L5, C5-C7' : 'e.g., Humerus, Femur, Rib'}
-                          {...register('sbrt_data.anatomical_clarification')}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          _placeholder={{ color: 'gray.400' }}
-                        />
-                      </FormControl>
-                    )}
-                  </Box>
-
-                  <Box>
-                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
-                      <FormControl isInvalid={errors.sbrt_data?.dose}>
-                        <FormLabel fontSize="sm" color="gray.300">Rx Dose (Gy)</FormLabel>
-                        <Input
-                          size="sm"
-                          type="number"
-                          step="0.1"
-                          {...register('sbrt_data.dose', { 
-                            required: 'Dose is required',
-                            min: { value: 0.1, message: 'Dose must be greater than 0' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          _placeholder={{ color: "gray.400" }}
-                        />
-                        <FormErrorMessage sx={{ color: 'red.300' }}>
-                          {errors.sbrt_data?.dose?.message}
-                        </FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={errors.sbrt_data?.fractions}>
-                        <FormLabel fontSize="sm" color="gray.300">Fractions</FormLabel>
-                        <Input
-                          size="sm"
-                          type="number"
-                          step="1"
-                          {...register('sbrt_data.fractions', { 
-                            required: 'Fractions is required',
-                            min: { value: 1, message: 'Must be at least 1 fraction' },
-                            max: { value: 10, message: 'SBRT typically uses ≤10 fractions' }
-                          })}
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          _placeholder={{ color: "gray.400" }}
-                        />
-                        <FormErrorMessage sx={{ color: 'red.300' }}>
-                          {errors.sbrt_data?.fractions?.message}
-                        </FormErrorMessage>
-                      </FormControl>
-                    </Grid>
-
-                    <FormControl isInvalid={errors.sbrt_data?.breathing_technique} mb={3}>
-                      <FormLabel fontSize="sm" color="gray.300">Technique</FormLabel>
-                      <RadioGroup
-                        value={watchBreathingTechnique}
-                        onChange={(value) => setValue('sbrt_data.breathing_technique', value)}
+                {/* Site Grid - Each site with attached expansion */}
+                <Grid templateColumns="repeat(3, 1fr)" gap={2} mb={3}>
+                  {treatmentSites.map((site) => (
+                    <VStack key={site.id} spacing={0} align="stretch">
+                      <Button
+                        size="sm"
+                        width="100%"
+                        variant={selectedSite === site.id ? 'solid' : 'outline'}
+                        colorScheme={selectedSite === site.id ? 'green' : 'gray'}
+                        color={selectedSite === site.id ? 'white' : 'gray.300'}
+                        borderColor={selectedSite === site.id ? 'green.500' : 'gray.600'}
+                        onClick={() => handleSiteSelect(site.id)}
+                        _hover={{ 
+                          bg: selectedSite === site.id ? 'green.600' : 'gray.700',
+                          borderColor: 'green.400'
+                        }}
+                        borderBottomRadius={selectedSite === site.id ? 0 : 'md'}
                       >
-                        <HStack spacing={2}>
-                          <Box
-                            as="label"
-                            flex="1"
-                            cursor="pointer"
-                          >
-                            <Radio value="freebreathe" display="none" {...register('sbrt_data.breathing_technique', { required: 'Breathing technique is required' })} />
+                        {site.label}
+                      </Button>
+                      
+                      {/* Inline expansion attached to THIS button - contains ALL fields */}
+                      {selectedSite === site.id && (
+                        <Box
+                          bg="green.900"
+                          borderBottomRadius="md"
+                          borderLeft="2px"
+                          borderRight="2px"
+                          borderBottom="2px"
+                          borderColor="green.500"
+                          p={2}
+                        >
+                          {/* Bone/Spine location input */}
+                          {site.id === 'bone_spine' && (
+                            <Input
+                              size="xs"
+                              placeholder="e.g., T11-L1"
+                              {...register('sbrt_data.anatomical_clarification')}
+                              bg="gray.700"
+                              borderColor="gray.600"
+                              color="white"
+                              mb={2}
+                              _placeholder={{ color: 'gray.400' }}
+                            />
+                          )}
+                          
+                          {/* Technique selection - inline buttons */}
+                          <HStack spacing={1} mb={2} justify="center">
+                            {[
+                              { value: 'freebreathe', label: 'FB' },
+                              { value: '4DCT', label: '4DCT' },
+                              { value: 'DIBH', label: 'DIBH' }
+                            ].map(technique => (
+                              <Button
+                                key={technique.value}
+                                size="xs"
+                                colorScheme={watchBreathingTechnique === technique.value ? 'blue' : 'gray'}
+                                variant={watchBreathingTechnique === technique.value ? 'solid' : 'outline'}
+                                onClick={() => setValue('sbrt_data.breathing_technique', technique.value)}
+                              >
+                                {technique.label}
+                              </Button>
+                            ))}
+                          </HStack>
+                          
+                          {/* Treatment Type - inline buttons */}
+                          <HStack spacing={1} mb={2} justify="center">
                             <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchBreathingTechnique === 'freebreathe' ? 'blue' : 'gray'}
-                              variant={watchBreathingTechnique === 'freebreathe' ? 'solid' : 'outline'}
-                              onClick={() => setValue('sbrt_data.breathing_technique', 'freebreathe')}
-                              color={watchBreathingTechnique === 'freebreathe' ? 'white' : 'gray.300'}
-                              borderColor={watchBreathingTechnique === 'freebreathe' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchBreathingTechnique === 'freebreathe' ? 'blue.400' : 'gray.500' }}
+                              size="xs"
+                              colorScheme={isSIB === false ? 'green' : 'gray'}
+                              variant={isSIB === false ? 'solid' : 'outline'}
+                              onClick={() => setIsSIB(false)}
                             >
-                              Free Breathing
+                              Std
                             </Button>
-                          </Box>
-                          <Box
-                            as="label"
-                            flex="1"
-                            cursor="pointer"
-                          >
-                            <Radio value="4DCT" display="none" />
                             <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchBreathingTechnique === '4DCT' ? 'blue' : 'gray'}
-                              variant={watchBreathingTechnique === '4DCT' ? 'solid' : 'outline'}
-                              onClick={() => setValue('sbrt_data.breathing_technique', '4DCT')}
-                              color={watchBreathingTechnique === '4DCT' ? 'white' : 'gray.300'}
-                              borderColor={watchBreathingTechnique === '4DCT' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchBreathingTechnique === '4DCT' ? 'blue.400' : 'gray.500' }}
+                              size="xs"
+                              colorScheme={isSIB === true ? 'orange' : 'gray'}
+                              variant={isSIB === true ? 'solid' : 'outline'}
+                              onClick={() => setIsSIB(true)}
                             >
-                              4DCT
+                              SIB
                             </Button>
-                          </Box>
-                          <Box
-                            as="label"
-                            flex="1"
-                            cursor="pointer"
-                          >
-                            <Radio value="DIBH" display="none" />
-                            <Button
-                              size="sm"
-                              width="100%"
-                              colorScheme={watchBreathingTechnique === 'DIBH' ? 'blue' : 'gray'}
-                              variant={watchBreathingTechnique === 'DIBH' ? 'solid' : 'outline'}
-                              onClick={() => setValue('sbrt_data.breathing_technique', 'DIBH')}
-                              color={watchBreathingTechnique === 'DIBH' ? 'white' : 'gray.300'}
-                              borderColor={watchBreathingTechnique === 'DIBH' ? 'blue.500' : 'gray.600'}
-                              _hover={{ borderColor: watchBreathingTechnique === 'DIBH' ? 'blue.400' : 'gray.500' }}
-                            >
-                              DIBH
-                            </Button>
-                          </Box>
-                        </HStack>
-                      </RadioGroup>
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.breathing_technique?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                  </Box>
-
-
-
-                  {/* SIB Toggle */}
-                  <Box>
-                    <FormControl display="flex" alignItems="center" mb={2}>
-                      <FormLabel fontSize="sm" color="gray.300" mb="0">
-                        SIB Case?
-                      </FormLabel>
-                      <Switch
-                        colorScheme="green"
-                        isChecked={isSIB}
-                        onChange={(e) => setIsSIB(e.target.checked)}
+                          </HStack>
+                          
+                          {/* SIB Comment (conditional) */}
+                          {isSIB && (
+                            <Input
+                              size="xs"
+                              placeholder="SIB comment (e.g., 40/45)"
+                              {...register('sbrt_data.sib_comment')}
+                              bg="gray.700"
+                              borderColor="gray.600"
+                              color="white"
+                              mb={2}
+                              _placeholder={{ color: 'gray.400' }}
+                            />
+                          )}
+                          
+                          {/* PTV Name */}
+                          <Input
+                            size="xs"
+                            placeholder="PTV Name (e.g., PTV_50)"
+                            {...register('sbrt_data.target_name', { required: 'PTV name is required' })}
+                            bg="gray.700"
+                            borderColor="gray.600"
+                            color="white"
+                            mb={2}
+                            _placeholder={{ color: 'gray.400' }}
+                          />
+                          
+                          {/* Dose / Fractions */}
+                          <HStack spacing={2}>
+                            <Input
+                              size="xs"
+                              type="number"
+                              step="any"
+                              placeholder="Dose (Gy)"
+                              {...register('sbrt_data.dose', { 
+                                required: 'Dose is required',
+                                min: { value: 0.1, message: 'Dose must be > 0' }
+                              })}
+                              bg="gray.700"
+                              borderColor="gray.600"
+                              color="white"
+                              _placeholder={{ color: 'gray.400' }}
+                            />
+                            <Input
+                              size="xs"
+                              type="number"
+                              step="1"
+                              placeholder="Fx"
+                              {...register('sbrt_data.fractions', { 
+                                required: 'Fractions required',
+                                min: { value: 1, message: 'At least 1' },
+                                max: { value: 10, message: 'Max 10' }
+                              })}
+                              bg="gray.700"
+                              borderColor="gray.600"
+                              color="white"
+                              _placeholder={{ color: 'gray.400' }}
+                              w="80px"
+                            />
+                          </HStack>
+                        </Box>
+                      )}
+                    </VStack>
+                  ))}
+                </Grid>
+                
+                {/* + Other button with attached expansion */}
+                <VStack spacing={0} align="stretch" mb={3}>
+                  <Button
+                    size="sm"
+                    width="100%"
+                    variant={selectedSite === 'other' ? 'solid' : 'outline'}
+                    colorScheme={selectedSite === 'other' ? 'gray' : 'gray'}
+                    color={selectedSite === 'other' ? 'white' : 'gray.400'}
+                    borderColor={selectedSite === 'other' ? 'gray.500' : 'gray.600'}
+                    borderStyle={selectedSite === 'other' ? 'solid' : 'dashed'}
+                    onClick={() => handleSiteSelect('other')}
+                    _hover={{ bg: 'gray.700', borderColor: 'gray.500' }}
+                    borderBottomRadius={selectedSite === 'other' ? 0 : 'md'}
+                  >
+                    + Other...
+                  </Button>
+                  
+                  {/* Inline expansion for Other - contains ALL fields */}
+                  {selectedSite === 'other' && (
+                    <Box
+                      bg="gray.800"
+                      borderBottomRadius="md"
+                      borderLeft="2px"
+                      borderRight="2px"
+                      borderBottom="2px"
+                      borderColor="gray.500"
+                      p={2}
+                    >
+                      {/* Custom site name */}
+                      <Input
+                        size="xs"
+                        placeholder="Site name (e.g., Adrenal)"
+                        {...register('sbrt_data.custom_treatment_site', {
+                          required: selectedSite === 'other' ? 'Site name is required' : false
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        mb={2}
+                        _placeholder={{ color: 'gray.400' }}
                       />
-                    </FormControl>
-
-                    {isSIB && (
-                      <FormControl>
-                        <FormLabel fontSize="sm" color="gray.300">SIB Comment</FormLabel>
+                      
+                      {/* Technique selection - inline buttons */}
+                      <HStack spacing={1} mb={2} justify="center">
+                        {[
+                          { value: 'freebreathe', label: 'FB' },
+                          { value: '4DCT', label: '4DCT' },
+                          { value: 'DIBH', label: 'DIBH' }
+                        ].map(technique => (
+                          <Button
+                            key={technique.value}
+                            size="xs"
+                            colorScheme={watchBreathingTechnique === technique.value ? 'blue' : 'gray'}
+                            variant={watchBreathingTechnique === technique.value ? 'solid' : 'outline'}
+                            onClick={() => setValue('sbrt_data.breathing_technique', technique.value)}
+                          >
+                            {technique.label}
+                          </Button>
+                        ))}
+                      </HStack>
+                      
+                      {/* Treatment Type - inline buttons */}
+                      <HStack spacing={1} mb={2} justify="center">
+                        <Button
+                          size="xs"
+                          colorScheme={isSIB === false ? 'green' : 'gray'}
+                          variant={isSIB === false ? 'solid' : 'outline'}
+                          onClick={() => setIsSIB(false)}
+                        >
+                          Std
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme={isSIB === true ? 'orange' : 'gray'}
+                          variant={isSIB === true ? 'solid' : 'outline'}
+                          onClick={() => setIsSIB(true)}
+                        >
+                          SIB
+                        </Button>
+                      </HStack>
+                      
+                      {/* SIB Comment (conditional) */}
+                      {isSIB && (
                         <Input
-                          size="sm"
-                          placeholder="e.g., SIB 40/45"
+                          size="xs"
+                          placeholder="SIB comment (e.g., 40/45)"
                           {...register('sbrt_data.sib_comment')}
                           bg="gray.700"
                           borderColor="gray.600"
                           color="white"
-                          _hover={{ borderColor: "gray.500" }}
+                          mb={2}
                           _placeholder={{ color: 'gray.400' }}
                         />
-                      </FormControl>
-                    )}
-                  </Box>
+                      )}
+                      
+                      {/* PTV Name */}
+                      <Input
+                        size="xs"
+                        placeholder="PTV Name (e.g., PTV_50)"
+                        {...register('sbrt_data.target_name', { required: 'PTV name is required' })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        mb={2}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                      
+                      {/* Dose / Fractions */}
+                      <HStack spacing={2}>
+                        <Input
+                          size="xs"
+                          type="number"
+                          step="any"
+                          placeholder="Dose (Gy)"
+                          {...register('sbrt_data.dose', { 
+                            required: 'Dose is required',
+                            min: { value: 0.1, message: 'Dose must be > 0' }
+                          })}
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                        />
+                        <Input
+                          size="xs"
+                          type="number"
+                          step="1"
+                          placeholder="Fx"
+                          {...register('sbrt_data.fractions', { 
+                            required: 'Fractions required',
+                            min: { value: 1, message: 'At least 1' },
+                            max: { value: 10, message: 'Max 10' }
+                          })}
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          w="80px"
+                        />
+                      </HStack>
+                    </Box>
+                  )}
                 </VStack>
-              </GridItem>
 
-              {/* Plan Metrics Input Section */}
-              <GridItem 
-                as={Box} 
+                {/* Hint when no site selected */}
+                {!selectedSite && (
+                  <Text fontSize="xs" color="gray.500" textAlign="center" mt={2}>
+                    Click a site above to configure treatment
+                  </Text>
+                )}
+              </GridItem>
+            </Grid>
+
+            {/* Plan Metrics Section - Full Width Below */}
+            {selectedSite && (
+              <Box 
                 p={4} 
                 borderWidth="1px" 
                 borderRadius="md" 
                 bg={formBg}
                 borderColor={borderColor}
                 boxShadow="sm"
+                mb={6}
               >
-                <Heading size="sm" mb={3} textAlign="center" color="white">Plan Metrics Input</Heading>
+                <Heading size="sm" mb={3} textAlign="center" color="white">Plan Metrics</Heading>
                 
-                <VStack spacing={3} align="stretch">
-                  {/* Target Name - Full Width */}
-                  <FormControl isInvalid={errors.sbrt_data?.target_name}>
-                    <FormLabel fontSize="sm" color="gray.300">Target/Lesion Name</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="e.g., PTV_50"
-                      {...register('sbrt_data.target_name', { required: 'Target name is required' })}
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _placeholder={{ color: 'gray.400' }}
-                    />
-                    <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.sbrt_data?.target_name?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  {/* Row 1: PTV Volume and Vol PTV receiving Rx */}
-                  <Grid templateColumns="1fr 1fr" gap={3}>
+                <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(6, 1fr)" }} gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.ptv_volume}>
-                      <FormLabel fontSize="sm" color="gray.300">PTV Volume (cc)</FormLabel>
+                    <FormLabel fontSize="xs" color="gray.400">PTV Vol (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
-                        step="0.1"
+                        step="any"
+                      placeholder="25"
                         {...register('sbrt_data.ptv_volume', { 
-                          required: 'PTV volume is required',
-                          min: { value: 0.01, message: 'PTV volume must be greater than 0' }
+                        required: 'Required',
+                        min: { value: 0.01, message: '> 0' }
                         })}
                         bg="gray.700"
                         borderColor="gray.600"
@@ -734,128 +780,108 @@ const SBRTForm = () => {
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.ptv_volume?.message}
-                      </FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
-                      <FormLabel fontSize="sm" color="gray.300">Vol at Rx (cc)</FormLabel>
+                    <FormLabel fontSize="xs" color="gray.400">Vol at Rx (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
-                        step="0.1"
-                        {...register('sbrt_data.vol_ptv_receiving_rx', { 
-                          required: 'Volume of PTV receiving Rx is required',
-                          min: { value: 0, message: 'Volume must be ≥ 0' }
-                        })}
+                        step="any"
+                        placeholder="24.5"
+                      {...register('sbrt_data.vol_ptv_receiving_rx', { 
+                        required: 'Required',
+                        min: { value: 0.01, message: '> 0' }
+                      })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.vol_ptv_receiving_rx?.message}
-                      </FormErrorMessage>
                     </FormControl>
-                  </Grid>
 
-                  {/* Row 2: 100% Rx Isodose Vol and 50% Rx Isodose Vol */}
-                  <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.vol_100_rx_isodose}>
-                      <FormLabel fontSize="sm" color="gray.300">100% Vol (cc)</FormLabel>
+                    <FormLabel fontSize="xs" color="gray.400">100% Vol (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
-                        step="0.1"
-                        {...register('sbrt_data.vol_100_rx_isodose', { 
-                          required: '100% Rx isodose volume is required',
-                          min: { value: 0, message: 'Volume must be ≥ 0' }
-                        })}
+                        step="any"
+                        placeholder="28"
+                      {...register('sbrt_data.vol_100_rx_isodose', { 
+                        required: 'Required',
+                        min: { value: 0.01, message: '> 0' }
+                      })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.vol_100_rx_isodose?.message}
-                      </FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.vol_50_rx_isodose}>
-                      <FormLabel fontSize="sm" color="gray.300">50% Vol (cc)</FormLabel>
+                    <FormLabel fontSize="xs" color="gray.400">50% Vol (cc)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
-                        step="0.1"
-                        {...register('sbrt_data.vol_50_rx_isodose', { 
-                          required: '50% Rx isodose volume is required',
-                          min: { value: 0, message: 'Volume must be ≥ 0' }
-                        })}
+                        step="any"
+                        placeholder="90"
+                      {...register('sbrt_data.vol_50_rx_isodose', { 
+                        required: 'Required',
+                        min: { value: 0.01, message: '> 0' }
+                      })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.vol_50_rx_isodose?.message}
-                      </FormErrorMessage>
                     </FormControl>
-                  </Grid>
 
-                  {/* Row 3: Max Dose 2cm ring and Max Dose in target */}
-                  <Grid templateColumns="1fr 1fr" gap={3}>
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_2cm_ring}>
-                      <FormLabel fontSize="sm" color="gray.300">Dmax 2cm (Gy)</FormLabel>
+                    <FormLabel fontSize="xs" color="gray.400">Dmax 2cm (Gy)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
-                        step="0.1"
-                        {...register('sbrt_data.max_dose_2cm_ring', { 
-                          required: 'Max dose in 2cm ring is required',
-                          min: { value: 0, message: 'Dose must be ≥ 0' }
-                        })}
+                        step="any"
+                        placeholder="25"
+                      {...register('sbrt_data.max_dose_2cm_ring', { 
+                        required: 'Required',
+                        min: { value: 0.01, message: '> 0' }
+                      })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.max_dose_2cm_ring?.message}
-                      </FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={errors.sbrt_data?.max_dose_in_target}>
-                      <FormLabel fontSize="sm" color="gray.300">Dmax Target (Gy)</FormLabel>
+                    <FormLabel fontSize="xs" color="gray.400">Dmax Target (Gy)</FormLabel>
                       <Input
                         size="sm"
                         type="number"
-                        step="0.1"
-                        {...register('sbrt_data.max_dose_in_target', { 
-                          required: 'Max dose in target is required',
-                          min: { value: 0, message: 'Dose must be ≥ 0' }
-                        })}
+                        step="any"
+                        placeholder="60"
+                      {...register('sbrt_data.max_dose_in_target', { 
+                        required: 'Required',
+                        min: { value: 0.01, message: '> 0' }
+                      })}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
                         _hover={{ borderColor: "gray.500" }}
                         _placeholder={{ color: 'gray.400' }}
                       />
-                      <FormErrorMessage sx={{ color: 'red.300' }}>
-                        {errors.sbrt_data?.max_dose_in_target?.message}
-                      </FormErrorMessage>
                     </FormControl>
                   </Grid>
+              </Box>
+            )}
 
-                </VStack>
-              </GridItem>
-            </Grid>
-
-            {/* Second Row: Calculated Results Table */}
+            {/* Calculated Results Table */}
+            {selectedSite && (
             <Box 
               p={4} 
               borderWidth="1px" 
@@ -918,6 +944,7 @@ const SBRTForm = () => {
                 </Alert>
               )}
             </Box>
+            )}
             
             <Flex gap={4} mb={6}>
               <Button
@@ -949,7 +976,6 @@ const SBRTForm = () => {
           {/* Generated Write-up Section - Below Form */}
           {writeup && (
             <Box mt={6}>
-              <Heading size="md" mb={3} color="white">Generated Write-up</Heading>
               <Box
                 p={4}
                 borderWidth={1}

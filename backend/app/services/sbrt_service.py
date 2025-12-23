@@ -4,18 +4,10 @@ from typing import List, Dict, Any
 class SBRTService:
     def __init__(self):
         self.treatment_sites = [
-            "bone", "kidney", "liver", "lung", "prostate", "spine"
+            "bone", "breast", "kidney", "liver", "pancreas", "prostate", "spine"
         ]
         
         self.dose_constraints = {
-            "lung": {
-                "Spinal Cord": "Dmax < 18 Gy",
-                "Esophagus": "Dmax < 27 Gy",
-                "Brachial Plexus": "Dmax < 24 Gy",
-                "Heart": "Dmax < 30 Gy",
-                "Trachea": "Dmax < 30 Gy",
-                "Great vessels": "Dmax < 39 Gy"
-            },
             "liver": {
                 "Liver (normal)": "V15 < 700 cc",
                 "Spinal Cord": "Dmax < 18 Gy",
@@ -24,18 +16,17 @@ class SBRTService:
                 "Kidney": "V12 < 25%",
                 "Small Bowel": "Dmax < 27 Gy"
             },
-            "spine": {
-                "Spinal Cord": "Dmax < 14 Gy",
-                "Cauda Equina": "Dmax < 16 Gy",
-                "Esophagus": "Dmax < 15 Gy",
-                "Kidney": "V12 < 25%"
-            },
-
             "prostate": {
                 "Rectum": "V36 < 1 cc",
                 "Bladder": "V37 < 10 cc",
                 "Urethra": "V37 < 0.5 cc",
                 "Femoral Head": "V24 < 3 cc"
+            },
+            "breast": {
+                "Heart": "V5 < 10%",
+                "Lung (ipsilateral)": "V20 < 30%",
+                "Skin": "Dmax < 100%",
+                "Chest Wall": "V30 < 30 cc"
             },
             "kidney": {
                 "Spinal Cord": "Dmax < 18 Gy",
@@ -43,43 +34,55 @@ class SBRTService:
                 "Contralateral Kidney": "V12 < 25%",
                 "Liver": "V15 < 700 cc"
             },
-
+            "pancreas": {
+                "Duodenum": "Dmax < 33 Gy",
+                "Stomach": "Dmax < 33 Gy",
+                "Small Bowel": "Dmax < 25 Gy",
+                "Spinal Cord": "Dmax < 18 Gy",
+                "Kidney": "V12 < 25%"
+            },
             "bone": {
                 "Spinal Cord": "Dmax < 18 Gy",
                 "Small Bowel": "Dmax < 27 Gy",
+                "Kidney": "V12 < 25%"
+            },
+            "spine": {
+                "Spinal Cord": "Dmax < 14 Gy",
+                "Cauda Equina": "Dmax < 16 Gy",
+                "Esophagus": "Dmax < 15 Gy",
                 "Kidney": "V12 < 25%"
             }
         }
         
         self.fractionation_schemes = {
-            "spine": [
-                {"dose": 24, "fractions": 3, "description": "Standard dose"},
-                {"dose": 27, "fractions": 3, "description": "High dose"},
-                {"dose": 30, "fractions": 5, "description": "Moderate dose/5fx"}
-            ],
-            "lung": [
-                {"dose": 50, "fractions": 5, "description": "Standard dose"},
-                {"dose": 54, "fractions": 3, "description": "High dose/3fx"},
-                {"dose": 60, "fractions": 8, "description": "Moderate dose/8fx"}
-            ],
             "liver": [
                 {"dose": 45, "fractions": 3, "description": "Standard dose"},
                 {"dose": 50, "fractions": 5, "description": "Alternative (5fx)"}
             ],
-
             "prostate": [
                 {"dose": 36.25, "fractions": 5, "description": "Standard dose"}
             ],
-
+            "breast": [
+                {"dose": 30, "fractions": 5, "description": "Standard APBI"},
+                {"dose": 28.5, "fractions": 5, "description": "Alternative APBI"}
+            ],
             "kidney": [
                 {"dose": 40, "fractions": 5, "description": "Standard dose"},
                 {"dose": 42, "fractions": 6, "description": "Alternative (6fx)"}
+            ],
+            "pancreas": [
+                {"dose": 33, "fractions": 5, "description": "Standard dose"},
+                {"dose": 40, "fractions": 5, "description": "High dose"}
             ],
             "bone": [
                 {"dose": 30, "fractions": 5, "description": "Standard dose"},
                 {"dose": 24, "fractions": 3, "description": "High dose/3fx"}
             ],
-
+            "spine": [
+                {"dose": 24, "fractions": 3, "description": "Standard dose"},
+                {"dose": 27, "fractions": 3, "description": "High dose"},
+                {"dose": 30, "fractions": 5, "description": "Moderate dose/5fx"}
+            ]
         }
 
     def get_treatment_sites(self) -> List[str]:
@@ -115,7 +118,6 @@ class SBRTService:
         fractions = data.fractions
         breathing_technique = data.breathing_technique
         target_name = data.target_name
-        oligomet_location = data.oligomet_location or ""
         
         # Convert string form values to numbers for calculations
         ptv_volume = float(data.ptv_volume) if data.ptv_volume else 0
@@ -426,7 +428,7 @@ class SBRTService:
 
 The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. A 4D kVCT simulation scan was performed with the patient immobilized and their breathing limited to reduce tumor motion. Using the 4D dataset, an AIP CT image set and 10 phase CT image sets were reconstructed by the radiation oncology physicist and fused together to regenerate an ITV in order to assess the motion envelope. Dr. {physician} segmented and approved both the PTVs and OARs.
 
-In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
+In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume closely matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
 
 {metrics_table}
 
@@ -440,7 +442,7 @@ A quality assurance plan was developed that was subsequently delivered to a phan
 
 The patient was scanned in our CT simulator in the treatment position (head first supine orientation) with a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning. Both the prescribing radiation oncologist and radiation oncology physicist evaluated and approved the patient setup. Dr. {physician} segmented and approved both the PTVs and OARs.
 
-In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
+In the treatment planning system, a VMAT treatment plan was developed to conformally deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the planning target volume. The treatment plan was inversely optimized such that the prescription isodose volume closely matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
 
 {metrics_table}
 
@@ -454,7 +456,7 @@ A quality assurance plan was developed that was subsequently delivered to a phan
 
 Days before the initial radiation delivery, the patient was simulated in the treatment position using a wing board to aid in immobilization and localization. Instructions were provided and the patient was coached to reproducibly hold their breath. Using the C-RAD surface scanning system, a free breathing and breath hold signal trace was established. After reproducing the breath hold pattern and establishing a consistent breathing pattern, a gating baseline and gating window was created. Subsequently, a DIBH CT simulation scan was acquired and approved by the radiation oncologist, Dr. {physician}.
 
-A radiation treatment plan was developed on the DIBH CT simulation to deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the {target_name}. The delivery of the DIBH gating technique on the linear accelerator will be performed using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, monitor intra-fraction motion, and gate the beam delivery. Verification of the patient position will be validated with a DIBH kV-CBCT. The treatment plan was inversely optimized such that the prescription isodose volume exactly matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
+A radiation treatment plan was developed on the DIBH CT simulation to deliver a prescribed dose of {dose} Gy in {fractions_text} ({dose/fractions:.1f} Gy per fraction) to the {target_name}. The delivery of the DIBH gating technique on the linear accelerator will be performed using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, monitor intra-fraction motion, and gate the beam delivery. Verification of the patient position will be validated with a DIBH kV-CBCT. The treatment plan was inversely optimized such that the prescription isodose volume closely matched the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.
 
 {metrics_table}
 

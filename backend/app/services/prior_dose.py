@@ -491,14 +491,18 @@ class PriorDoseService:
         current_dose: float = None,
         current_fractions: int = None
     ) -> List[dict]:
-        """Get all relevant dose constraints for a list of treatment sites.
+        """Get all relevant dose constraints for treatment sites.
+        
+        NOTE: Constraints should be based on the CURRENT treatment site only, not prior sites.
+        We're evaluating OARs in the current treatment region - prior treatment locations
+        are used for dose summation, but don't affect which constraints apply.
         
         Selects appropriate constraint set based on:
         1. If dose_calc_method == "EQD2" → Always use QUANTEC (values are EQD2₂)
         2. If dose_calc_method == "Raw Dose" → Detect regime from fractionation
         
         Args:
-            sites: List of treatment site names (current + prior sites)
+            sites: List of treatment site names (typically just the current site)
             dose_calc_method: "Raw Dose" or "EQD2"
             current_dose: Current treatment dose in Gy
             current_fractions: Current treatment number of fractions

@@ -98,8 +98,7 @@ class DIBHService:
             write_up += f"A radiation treatment plan was developed on the DIBH CT simulation to deliver a "
             write_up += f"prescribed dose of {format_number(dose)} Gy in {fractions} fractions ({format_number(dose_per_fraction)} Gy per fraction) "
             write_up += f"to the {treatment_site}, followed by a boost of {format_number(boost_dose)} Gy in {boost_fractions} fractions "
-            write_up += f"({format_number(boost_dose_per_fraction)} Gy per fraction) for a total dose of {format_number(dose + boost_dose)} Gy "
-            write_up += f"in {fractions + boost_fractions} fractions. "
+            write_up += f"({format_number(boost_dose_per_fraction)} Gy per fraction). "
         else:
             write_up += f"A radiation treatment plan was developed on the DIBH CT simulation to deliver a "
             write_up += f"prescribed dose of {format_number(dose)} Gy in {fractions} fractions ({format_number(dose_per_fraction)} Gy per fraction) "

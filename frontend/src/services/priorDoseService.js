@@ -31,9 +31,9 @@ export const generatePriorDoseWriteup = async (formData) => {
   }
 };
 
-// Get suggested constraints based on treatment sites and fractionation
-// Takes an array of site names and optional fractionation parameters
-// Returns deduplicated constraints appropriate for the fractionation regime
+// Get suggested constraints based on CURRENT treatment site and fractionation
+// Constraints are determined by where we're treating NOW - prior sites are used
+// for dose summation but don't affect constraint selection
 //
 // Constraint selection logic:
 // - If doseCalcMethod contains "EQD2" → Use QUANTEC constraints (values are EQD2₂)

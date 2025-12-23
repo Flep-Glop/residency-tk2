@@ -521,13 +521,13 @@ const VerificationPage = () => {
               const isMultipleMriSingleCt = mriCount > 1 && totalCtCount === 1;
               const isSingleMriMultipleCt = mriCount === 1 && totalCtCount > 1;
               
-              // Ultimate MRI + CT + PET combinations (3 modality types)
+              // MRI + CT + PET combinations (3 modality types)
               const isMriCtPetSingle = mriCount === 1 && totalCtCount === 1 && totalPetCount === 1 && analysis.totalFusions === 3;
               const isMriCtPetMultiple = mriCount > 0 && totalCtCount > 0 && totalPetCount > 0 && 
                 (mriCount > 1 || totalCtCount > 1 || totalPetCount > 1) && 
                 analysis.totalFusions === (mriCount + totalCtCount + totalPetCount);
               
-              // Ultimate combination takes precedence over dual combinations
+              // Three-modality combination takes precedence over dual combinations
               if (isMriCtPetSingle) {
                 // Simple case: 1 MRI + 1 CT + 1 PET
                 const ctMethod = ctRigidCount > 0 ? 'Rigid' : 'Deformable';
@@ -535,7 +535,7 @@ const VerificationPage = () => {
                 return (
                   <>
                     <Text color="gray.300" mb={4}>
-                      Ultimate fusion combination detected (1 MRI + 1 CT {ctMethod} + 1 PET {petMethod})! This is the most comprehensive fusion workflow available.
+                      Three-modality fusion combination detected (1 MRI + 1 CT {ctMethod} + 1 PET {petMethod})! This is a comprehensive fusion workflow.
                     </Text>
                     <HStack spacing={3}>
                       <Button 
@@ -543,7 +543,7 @@ const VerificationPage = () => {
                         onClick={() => router.push(`/fusion?config=${encodeURIComponent(JSON.stringify(parsedConfig))}`)}
                         size="lg"
                       >
-                        Proceed to Ultimate Fusion Form
+                        Proceed to Fusion Form
                       </Button>
                       <Button colorScheme="blue" variant="outline" onClick={goBack}>
                         Make Changes
@@ -609,7 +609,7 @@ const VerificationPage = () => {
                 return (
                   <>
                     <Text color="gray.300" mb={4}>
-                      Ultimate fusion combination detected ({description})! This represents the most comprehensive multi-modality fusion workflow.
+                      Three-modality fusion combination detected ({description})! This represents a comprehensive multi-modality fusion workflow.
                     </Text>
                     <Text color="yellow.300" mb={4} fontSize="sm">
                       This complex combination involves {analysis.totalFusions} total fusions across 3 different imaging modalities.
@@ -620,7 +620,7 @@ const VerificationPage = () => {
                         onClick={() => router.push(`/fusion?config=${encodeURIComponent(JSON.stringify(parsedConfig))}`)}
                         size="lg"
                       >
-                        Proceed to Ultimate Fusion Form
+                        Proceed to Fusion Form
                       </Button>
                       <Button colorScheme="blue" variant="outline" onClick={goBack}>
                         Make Changes

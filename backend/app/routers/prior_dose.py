@@ -54,7 +54,11 @@ async def get_suggested_constraints(
     current_fractions: int = None,
     prior_dose_service: PriorDoseService = Depends(get_prior_dose_service)
 ):
-    """Get suggested dose constraints based on treatment sites and fractionation.
+    """Get suggested dose constraints based on CURRENT treatment site and fractionation.
+    
+    NOTE: Constraints are determined by the current treatment site only - we evaluate
+    OARs in the region being treated now. Prior treatment sites are used for dose
+    summation but don't affect constraint selection.
     
     The constraint set is selected based on:
     1. If dose_calc_method contains "EQD2" → Use QUANTEC constraints (EQD2₂ values)
@@ -65,15 +69,14 @@ async def get_suggested_constraints(
        - CONVENTIONAL: ~2 Gy/fx → Use QUANTEC
     
     Args:
-        sites: Comma-separated list of treatment sites (e.g., "lung,thorax,spine")
+        sites: Current treatment site (typically a single site, e.g., "lung")
         dose_calc_method: "Raw Dose" or "EQD2" - determines constraint set selection
         current_dose: Current treatment total dose in Gy (for regime detection)
         current_fractions: Current treatment number of fractions (for regime detection)
     
     Returns:
-        Deduplicated list of constraint dictionaries with structure, constraint, 
-        source, unit, limit, and endpoint. If multiple sites share the same 
-        constraint, it only appears once.
+        List of constraint dictionaries with structure, constraint, 
+        source, unit, limit, and endpoint.
     """
     # Split comma-separated sites into list
     site_list = [s.strip() for s in sites.split(",") if s.strip()]
