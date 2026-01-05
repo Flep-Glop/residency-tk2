@@ -43,11 +43,11 @@ const SBRTForm = () => {
   // Treatment site options
   const treatmentSites = [
     { id: 'liver', label: 'Liver' },
+    { id: 'lung', label: 'Lung' },
     { id: 'prostate', label: 'Prostate' },
     { id: 'breast', label: 'Breast' },
     { id: 'kidney', label: 'Kidney' },
     { id: 'pancreas', label: 'Pancreas' },
-    { id: 'bone_spine', label: 'Bone/Spine' },
   ];
 
   // Tolerance table data based on your clinical standards
@@ -81,7 +81,7 @@ const SBRTForm = () => {
         breathing_technique: '',
         target_name: '',
         ptv_volume: '',
-        vol_ptv_receiving_rx: '', // Now stores coverage % (0-100)
+        vol_ptv_receiving_rx: '', // Volume of PTV receiving Rx (cc) - used to calculate coverage %
         vol_100_rx_isodose: '',
         vol_50_rx_isodose: '',
         max_dose_2cm_ring: '',
@@ -108,12 +108,55 @@ const SBRTForm = () => {
   const watchBreathingTechnique = watch('sbrt_data.breathing_technique');
   const watchTargetName = watch('sbrt_data.target_name');
   const watchPTVVolume = watch('sbrt_data.ptv_volume');
-  const watchCoveragePercent = watch('sbrt_data.vol_ptv_receiving_rx'); // Now stores coverage % directly
+  const watchVolAtRx = watch('sbrt_data.vol_ptv_receiving_rx'); // Volume of PTV receiving Rx (cc)
   const watchVol100RxIsodose = watch('sbrt_data.vol_100_rx_isodose');
   const watchVol50RxIsodose = watch('sbrt_data.vol_50_rx_isodose');
   const watchMaxDose2cmRing = watch('sbrt_data.max_dose_2cm_ring');
   const watchMaxDoseInTarget = watch('sbrt_data.max_dose_in_target');
   
+  // Auto-convert cGy to Gy if value > 100
+  const handleDoseBlur = (e) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value > 100) {
+      // Assume user entered cGy, convert to Gy
+      setValue('sbrt_data.dose', value / 100, { shouldValidate: true });
+      toast({
+        title: 'Auto-converted to Gy',
+        description: `${value} cGy → ${(value / 100).toFixed(2)} Gy`,
+        status: 'info',
+        duration: 2000,
+      });
+    }
+  };
+
+  // Auto-convert cGy to Gy for Dmax 2cm ring
+  const handleDmax2cmBlur = (e) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value > 100) {
+      setValue('sbrt_data.max_dose_2cm_ring', value / 100, { shouldValidate: true });
+      toast({
+        title: 'Auto-converted to Gy',
+        description: `${value} cGy → ${(value / 100).toFixed(2)} Gy`,
+        status: 'info',
+        duration: 2000,
+      });
+    }
+  };
+
+  // Auto-convert cGy to Gy for Dmax target
+  const handleDmaxTargetBlur = (e) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value > 100) {
+      setValue('sbrt_data.max_dose_in_target', value / 100, { shouldValidate: true });
+      toast({
+        title: 'Auto-converted to Gy',
+        description: `${value} cGy → ${(value / 100).toFixed(2)} Gy`,
+        status: 'info',
+        duration: 2000,
+      });
+    }
+  };
+
   // Handle site selection
   const handleSiteSelect = (siteId) => {
     if (selectedSite === siteId) {
@@ -126,8 +169,6 @@ const SBRTForm = () => {
       setSelectedSite(siteId);
       if (siteId === 'other') {
         setValue('sbrt_data.treatment_site', '');
-      } else if (siteId === 'bone_spine') {
-        setValue('sbrt_data.treatment_site', 'spine');
       } else {
         setValue('sbrt_data.treatment_site', siteId);
       }
@@ -146,9 +187,9 @@ const SBRTForm = () => {
         // Calculate individual metrics as their required inputs become available
         const metrics = {};
         
-        // Coverage (direct input, no calculation needed)
-        if (watchCoveragePercent) {
-          metrics.coverage = parseFloat(watchCoveragePercent);
+        // Coverage: needs Vol @ Rx and PTV Vol
+        if (watchVolAtRx && watchPTVVolume) {
+          metrics.coverage = (watchVolAtRx / watchPTVVolume) * 100;
         }
         
         // Conformity Index: needs 100% Vol and PTV Vol
@@ -212,7 +253,7 @@ const SBRTForm = () => {
       };
 
       calculateMetrics();
-    }, [watchPTVVolume, watchDose, watchCoveragePercent, watchVol100RxIsodose, 
+    }, [watchPTVVolume, watchDose, watchVolAtRx, watchVol100RxIsodose, 
         watchVol50RxIsodose, watchMaxDose2cmRing, watchMaxDoseInTarget, isSIB]);
   
   const onSubmit = async (data) => {
@@ -513,21 +554,7 @@ const SBRTForm = () => {
                           borderColor="green.500"
                           p={2}
                         >
-                          {/* Bone/Spine location input */}
-                          {site.id === 'bone_spine' && (
-                            <Input
-                              size="xs"
-                              placeholder="e.g., T11-L1"
-                              {...register('sbrt_data.anatomical_clarification')}
-                              bg="gray.700"
-                              borderColor="gray.600"
-                              color="white"
-                              mb={2}
-                              _placeholder={{ color: 'gray.400' }}
-                            />
-                          )}
-                          
-                          {/* Technique selection - inline buttons */}
+                            {/* Technique selection - inline buttons */}
                           <HStack spacing={1} mb={2} justify="center">
                             {[
                               { value: 'freebreathe', label: 'FB' },
@@ -612,6 +639,7 @@ const SBRTForm = () => {
                                 required: 'Dose is required',
                                 min: { value: 0.1, message: 'Dose must be > 0' }
                               })}
+                              onBlur={handleDoseBlur}
                               bg="gray.700"
                               borderColor="gray.600"
                               color="white"
@@ -767,6 +795,7 @@ const SBRTForm = () => {
                             required: 'Dose is required',
                             min: { value: 0.1, message: 'Dose must be > 0' }
                           })}
+                          onBlur={handleDoseBlur}
                           bg="gray.700"
                           borderColor="gray.600"
                           color="white"
@@ -826,13 +855,13 @@ const SBRTForm = () => {
                     minW="900px"
                   >
                     <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Name</Text>
-                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Rx (Gy)</Text>
-                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">PTV Vol (cc)</Text>
-                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Coverage (%)</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Rx</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">PTV Vol</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Coverage</Text>
                     <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Conformity</Text>
                     <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">R50</Text>
                     <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Gradient</Text>
-                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Dmax 2cm (%)</Text>
+                    <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Dmax 2cm</Text>
                     <Text fontSize="xs" color="gray.300" fontWeight="bold" textTransform="uppercase" textAlign="center">Heterogeneity</Text>
                   </Grid>
                   
@@ -841,7 +870,24 @@ const SBRTForm = () => {
                     <Box /> {/* Name - empty space */}
                     <Box /> {/* Prescription - fixed from above */}
                     <Box /> {/* PTV Vol - now in results table */}
-                    <Box /> {/* Coverage - now in results table */}
+                    <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
+                      <Input
+                        size="xs"
+                        type="number"
+                        step="any"
+                        placeholder="Vol @ Rx (cc)"
+                        {...register('sbrt_data.vol_ptv_receiving_rx', { 
+                          required: 'Required',
+                          min: { value: 0.01, message: '> 0' }
+                        })}
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        textAlign="center"
+                        _hover={{ borderColor: "gray.500" }}
+                        _placeholder={{ color: 'gray.400' }}
+                      />
+                    </FormControl>
                     <FormControl isInvalid={errors.sbrt_data?.vol_100_rx_isodose}>
                       <Input
                         size="xs"
@@ -887,9 +933,9 @@ const SBRTForm = () => {
                         placeholder="Dmax 2cm (Gy)"
                         {...register('sbrt_data.max_dose_2cm_ring', { 
                           required: 'Required',
-                          min: { value: 0.01, message: '> 0' },
-                          max: { value: 200, message: 'Must be in Gy, not cGy' }
+                          min: { value: 0.01, message: '> 0' }
                         })}
+                        onBlur={handleDmax2cmBlur}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
@@ -906,9 +952,9 @@ const SBRTForm = () => {
                         placeholder="Dmax Tgt (Gy)"
                         {...register('sbrt_data.max_dose_in_target', { 
                           required: 'Required',
-                          min: { value: 0.01, message: '> 0' },
-                          max: { value: 200, message: 'Must be in Gy, not cGy' }
+                          min: { value: 0.01, message: '> 0' }
                         })}
+                        onBlur={handleDmaxTargetBlur}
                         bg="gray.700"
                         borderColor="gray.600"
                         color="white"
@@ -924,7 +970,7 @@ const SBRTForm = () => {
                     <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
                     <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
                     <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
-                    <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
                     <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
                     <Text fontSize="xs" color="gray.500" textAlign="center">↓</Text>
                     <Text fontSize="xs" color="gray.500" textAlign="center"></Text>
@@ -945,13 +991,13 @@ const SBRTForm = () => {
                     alignItems="center"
                   >
                     <Text fontSize="xs" color={watchTargetName ? "white" : "gray.500"} textAlign="center">{watchTargetName || '---'}</Text>
-                    <Text fontSize="xs" color={watchDose ? "white" : "gray.500"} textAlign="center">{formatNumber(watchDose, 1)}</Text>
+                    <Text fontSize="xs" color={watchDose ? "white" : "gray.500"} textAlign="center">{watchDose ? `${formatNumber(watchDose, 1)} Gy` : '---'}</Text>
                     <FormControl isInvalid={errors.sbrt_data?.ptv_volume}>
                       <Input
                         size="xs"
                         type="number"
                         step="any"
-                        placeholder="PTV Vol"
+                        placeholder="PTV Vol (cc)"
                         {...register('sbrt_data.ptv_volume', { 
                           required: 'Required',
                           min: { value: 0.01, message: '> 0' }
@@ -964,25 +1010,9 @@ const SBRTForm = () => {
                         _placeholder={{ color: 'gray.400' }}
                       />
                     </FormControl>
-                    <FormControl isInvalid={errors.sbrt_data?.vol_ptv_receiving_rx}>
-                      <Input
-                        size="xs"
-                        type="number"
-                        step="any"
-                        placeholder="Coverage %"
-                        {...register('sbrt_data.vol_ptv_receiving_rx', { 
-                          required: 'Required',
-                          min: { value: 0.01, message: '> 0' },
-                          max: { value: 100, message: '≤ 100' }
-                        })}
-                        bg="gray.700"
-                        borderColor="gray.600"
-                        color="white"
-                        textAlign="center"
-                        _hover={{ borderColor: "gray.500" }}
-                        _placeholder={{ color: 'gray.400' }}
-                      />
-                    </FormControl>
+                    <Text fontSize="xs" color={calculatedMetrics?.coverage ? "green.300" : "gray.500"} textAlign="center">
+                      {calculatedMetrics?.coverage ? `${formatNumber(calculatedMetrics.coverage, 1)}%` : '---'}
+                    </Text>
                     <Text fontSize="xs" color={calculatedMetrics ? getDeviationColor(calculatedMetrics.conformityDeviation) : "gray.500"} textAlign="center">
                       {calculatedMetrics ? `${formatNumber(calculatedMetrics.conformityIndex, 2)}` : '---'}
                     </Text>
@@ -991,7 +1021,7 @@ const SBRTForm = () => {
                     </Text>
                     <Text fontSize="xs" color={calculatedMetrics?.gradientMeasure ? "green.300" : "gray.500"} textAlign="center">{formatNumber(calculatedMetrics?.gradientMeasure, 2)}</Text>
                     <Text fontSize="xs" color={calculatedMetrics ? getDeviationColor(calculatedMetrics.maxDose2cmDeviation) : "gray.500"} textAlign="center">
-                      {calculatedMetrics ? `${formatNumber(calculatedMetrics.maxDose2cmRingPercent, 1)}` : '---'}
+                      {calculatedMetrics?.maxDose2cmRingPercent ? `${formatNumber(calculatedMetrics.maxDose2cmRingPercent, 1)}%` : '---'}
                     </Text>
                     <Text fontSize="xs" color={calculatedMetrics?.homogeneityIndex ? "green.300" : "gray.500"} textAlign="center">{formatNumber(calculatedMetrics?.homogeneityIndex, 2)}</Text>
                   </Grid>

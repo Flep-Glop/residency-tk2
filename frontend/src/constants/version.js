@@ -1,18 +1,18 @@
 // Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
-  current: "2.4.1",
-  releaseDate: "2025-12-11",
+  current: "2.5.0",
+  releaseDate: "2026-01-05",
   
   // Update history - add new updates to the top of this array
   updates: [
     {
-      version: "2.4.1",
-      date: "2025-12-11", 
+      version: "2.5.0",
+      date: "2026-01-05", 
       changes: [
-        "Prior Dose: Fixed multiple prior treatments bug that cleared dose statistics",
-        "Prior Dose: Added decimal precision support for constraint values",
-        "Prior Dose: Added 5 verified constraints (Brainstem, Lungs V20, Heart, Esophagus, Rectum)",
-        "Prior Dose: Improved exceeded constraint language to reflect planning approval"
+        "DIBH/TBI: Preset prescription buttons with custom Rx fallback option",
+        "SBRT: Coverage input with auto-conversion for cGy values",
+        "Cross-module: Compact button format (50/25 instead of 50 Gy / 25 fx)",
+        "UI Polish: Enlarged Home buttons, standardized checkbox sizing"
       ]
     }
   ]

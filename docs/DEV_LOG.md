@@ -352,6 +352,61 @@ GUIDELINES:
 
 ---
 
-*Next entry: #113*
+## Entry #113
+**Focus:** Cross-module text cleanup and SBRT site replacement
 
-*Next consolidation: Reached #100 milestone - consolidate entries #92-111 when convenient*
+**Smooth:** Four improvements completed. (1) All-caps deviation text normalized to lowercase across SBRT and SRS modules - "MAJOR DEVIATION" → "major deviation", "Minor Deviation" → "minor deviation". (2) SBRT writeup spacing refined - added blank line between bullet list and deviation summary, removed extra blank line between deviation summary and QA paragraph. Template spacing now creates clean visual separation: bullet list → blank line → summary → blank line → QA paragraph. (3) Removed "Rx Isodose: X%" bullet point from SRS/SRT writeups as it wasn't providing useful information. (4) Replaced Bone/Spine with Lung in SBRT module - updated frontend treatment site options, removed bone/spine-specific anatomical clarification input, updated backend treatment_sites list, dose_constraints (Spinal Cord, Esophagus, Heart, Brachial Plexus, Chest Wall), and fractionation_schemes (50Gy/4fx standard, 54Gy/3fx high dose, 48Gy/4fx peripheral).
+
+**Friction:** Initial spacing fix only addressed half the issue - adding blank line before deviation summary was straightforward, but the extra blank line after required understanding that metrics_text trailing `\n` combined with template's `\n\n` created three newlines. Fixed by removing trailing `\n` from deviation summary text, letting template provide consistent spacing.
+
+**Insight:** **Trailing newlines compound with template newlines** - when a function returns text that ends with `\n`, and the template has blank lines after the insertion point, you get more spacing than intended. Cleaner pattern: let the template control all inter-section spacing by not ending returned text with newlines. **Deviation text case affects clinical tone** - all-caps "MAJOR DEVIATION" reads as alarming/urgent; lowercase "major deviation" reads as factual/clinical. Match the professional tone of the rest of the writeup. **Site-specific UI elements should be removed when site is removed** - the bone/spine anatomical clarification input was specific to those sites; removing the sites means removing the conditional input as well.
+
+---
+
+## Entry #114
+**Focus:** Prior Dose UX refinements and Fusion bladder-filling column cleanup
+
+**Smooth:** Four targeted improvements based on user feedback. (1) **Dose Calc hidden until overlap** - Raw/EQD2 button group in Current Treatment row now conditionally renders only when `hasAnyOverlap` is true. Validation rule also updated to only require selection when overlap exists. No point choosing dose calculation method if there's nothing to calculate against. (2) **DICOM question removed from No Overlap entries** - since treatments without overlap don't need reconstruction in Velocity, DICOM availability is irrelevant. Removed DICOM selection from "+ New without Overlap" add button (now single-click add) and from existing No Overlap cells (removed badge and editing UI, kept only delete button and Rx badge). (3) **"the TPS" → "Velocity"** - updated backend methodology text in both single and multiple prior treatment scenarios to say "could not be directly reconstructed in Velocity" instead of generic "treatment planning system". More specific and accurate. (4) **Fusion bladder-filling column hidden** - second column (Anatomical Region) now uses transparent styling (`borderWidth="0"`, `bg="transparent"`, `boxShadow="none"`) when `isBladderFillingMode` is true, matching third column's hidden pattern.
+
+**Friction:** None - all changes followed established patterns. Conditional rendering for Dose Calc used existing `hasAnyOverlap` variable. DICOM removal was straightforward deletion of UI elements. Backend text change was simple string replacement. Fusion column hiding matched existing third-column pattern exactly.
+
+**Insight:** **Hide irrelevant options, don't disable them** - when a form section has no meaning in current context (Dose Calc without overlap, DICOM status without reconstruction), hiding it entirely is cleaner than showing disabled controls. Users don't need to wonder why something is grayed out. **Specificity in clinical text improves clarity** - "Velocity" is more informative than "the TPS" because it tells the reader exactly which system was attempted. Generic language adds no value when the specific tool is known. **Column hiding pattern is reusable** - Fusion's transparent-styling approach for hiding columns (preserving layout while removing visual presence) applied cleanly to second column just as it had for third column.
+
+---
+
+## Entry #115
+**Focus:** DIBH and TBI prescription UX redesign - preset buttons with custom Rx fallback
+
+**Smooth:** Applied TBI's dose preset button pattern to DIBH module and added custom Rx option to both modules. (1) **DIBH primary Rx presets** - 50 Gy / 25 fx and 40 Gy / 15 fx buttons replace manual dose/fraction inputs by default. Clicking preset auto-populates dose and fractions. (2) **DIBH boost presets** - section now always visible (removed "Has Boost" checkbox). Full-width "None" button at top (like Tuli/Papanikolaou pattern), then 10 Gy / 5 fx and 16 Gy / 8 fx preset buttons. Selecting preset auto-sets `has_boost: true`. (3) **Custom Rx checkboxes** - both DIBH and TBI now have "Custom Rx?" checkbox that hides preset buttons and reveals manual input fields with placeholder text ("Rx (Gy)" and "Fx") instead of labels. (4) **DIBH Custom Boost** - same pattern for boost section when "Custom Boost?" is checked. (5) **TBI Custom Rx** - added to enable non-standard TBI prescriptions; auto-sets lung_blocks to "none" when custom mode enabled.
+
+**Friction:** None - patterns well-established from Tx Sites checkbox toggle (DIBH) and preset buttons (TBI). State management followed existing `isCustomTreatmentSite` pattern.
+
+**Insight:** **Preset buttons reduce clicks for common cases** - 80%+ of DIBH cases use standard 50/25 or 40/15 prescriptions, so one-click selection beats manual entry. **Full-width "None" button creates clear default state** - boost section starting with "None" selected provides explicit "no boost" choice rather than implicit empty state. **Placeholder text as labels** - when custom mode shows input fields, using "Rx (Gy)" and "Fx" as placeholder text instead of separate labels matches the Custom Site pattern and reduces visual clutter. **Checkbox-based mode switching** - consistent pattern across modules: Custom Site?, Custom Rx?, Custom Boost? all follow same toggle behavior of hiding presets and showing inputs.
+
+---
+
+## Entry #116
+**Focus:** UI feedback polish - Home button sizing, Prior Dose constraint simplification, and main page cleanup
+
+**Smooth:** Four improvements completed based on user feedback. (1) **Home buttons enlarged** - changed from `size="sm"` to `size="lg"` across all 11 module pages (fusion, pacemaker, hdr, neurostimulator, sbrt, dibh, srs, prior-dose, tbi, guides, qa-tool). Position adjusted to `top={8} right={6}` for vertical alignment with header titles. (2) **Prior Dose constraint entry simplified** - replaced criteria dropdown (Dmax, Dmean, D0.03cc, etc.) with plain text input. Users now type any constraint name directly (e.g., "V45", "D1.5cc", "Dmean"). Also replaced auto-assigned "Gy" unit display with editable text input - users type their own units. (3) **ADD button visibility improved** - changed from `variant="ghost"` to `variant="outline"` with explicit styling (`color="blue.300"`, `borderColor="blue.500"`, hover state) so button no longer blends into dark background. (4) **Neurostimulator hidden from main page** - commented out Neurostim button in General MPCs grid pending further development.
+
+**Friction:** Initial Home button centering attempt used `top={0} bottom={0}` with flex centering, which centered buttons on entire page height rather than header section. User clarified intent was header-aligned positioning - fixed with `top={8}` matching header content area.
+
+**Insight:** **Text inputs beat dropdowns for flexible data entry** - when users might need any value (custom constraint types like V45, D2%, etc.), text input is simpler than maintaining exhaustive dropdown lists or "Custom" options that spawn additional inputs. **Unit flexibility matters** - auto-assigning "Gy" assumed dose constraints, but users may need "%" for volume metrics or "cc" for absolute volumes. Letting users type units eliminates assumptions. **Button visibility requires explicit styling on dark backgrounds** - ghost buttons nearly invisible; outline variant with explicit border and text colors ensures clickability. **Home button positioning is UX detail that matters** - users noticed misalignment immediately; `top={8}` creates visual harmony with header titles.
+
+---
+
+## Entry #117
+**Focus:** Cross-module UI polish - prescription button format, checkbox standardization, SBRT metrics improvements
+
+**Smooth:** Six interconnected improvements completed in single session. (1) **DIBH/TBI prescription button format** - changed button text from "50 Gy / 25 fx" format to compact "50/25" format. Labels updated to "Rx (Gy/fx)" and "Boost (Gy/fx)" to show units once in label rather than repeating in each button. Applied to DIBH (50/25, 40/15, 10/5, 16/8) and TBI (2/1, 4/1, 12/6, 13.2/8). (2) **Checkbox size standardization** - added `size="sm"` to all form checkboxes (Custom Site?, Custom Rx?, Custom Boost?) across DIBH and TBI modules for consistency with Fusion, Pacemaker, Neurostimulator patterns. (3) **SBRT coverage changed from % to cc** - Coverage input moved from results row to input row as "Vol @ Rx (cc)". Now follows same input→arrow→output pattern as Conformity and R50. Coverage % calculated automatically: (Vol @ Rx / PTV Vol) × 100. (4) **SBRT auto-conversion for Gy fields** - added onBlur handlers to Dose, Dmax 2cm, and Dmax Target inputs. If value > 100, assumes cGy entry and auto-converts to Gy with toast notification ("Auto-converted to Gy: 5000 cGy → 50.00 Gy"). Removes friction from common TPS copy-paste scenarios. (5) **SBRT table header cleanup** - removed units from headers (Rx, PTV Vol, Dmax 2cm) and placed units with calculated values instead (Rx shows "50 Gy", Dmax 2cm shows "48.5%"). Creates cleaner header row. (6) Removed max:200 validation from Dmax fields since auto-conversion now handles cGy values gracefully.
+
+**Friction:** None - all patterns well-established from previous entries. Auto-conversion required three separate handlers (one per field) since each targets different form field path.
+
+**Insight:** **Label units reduce button clutter** - showing "Rx (Gy/fx)" once in the label means buttons can be compact "50/25" instead of verbose "50 Gy / 25 fx". Users understand from context. **Auto-conversion with toast feedback is superior to validation errors** - when users paste values from TPS in cGy, auto-converting and showing friendly notification creates positive experience vs. blocking form submission with error. **Units belong with values, not headers** - for calculated results, showing "48.5%" in the cell is more scannable than "48.5" under a "Dmax 2cm (%)" header. Headers stay clean, values are self-documenting.
+
+---
+
+*Next entry: #118*
+
+*Next consolidation: Reached #100 milestone - consolidate entries #92-114 when convenient*

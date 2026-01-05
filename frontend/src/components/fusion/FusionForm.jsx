@@ -1329,11 +1329,11 @@ const FusionForm = () => {
               {/* Anatomical Region Section - hidden for complex and bladder filling modes */}
               <GridItem 
                 p={4} 
-                borderWidth="1px"
+                borderWidth={isBladderFillingMode ? "0" : "1px"}
                 borderRadius="md" 
-                bg={formBg}
-                borderColor={borderColor}
-                boxShadow="sm"
+                bg={isBladderFillingMode ? "transparent" : formBg}
+                borderColor={isBladderFillingMode ? "transparent" : borderColor}
+                boxShadow={isBladderFillingMode ? "none" : "sm"}
               >
                 {!isBladderFillingMode && (isSingleMriMode || isMultipleMriMode || isSinglePetMode || isSingleCtMode || 
                   isMultiplePetRigidMode || isMultiplePetDeformableMode || isMultiplePetRigidDeformableMode ||

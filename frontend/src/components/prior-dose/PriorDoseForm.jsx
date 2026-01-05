@@ -436,37 +436,6 @@ const PriorDoseForm = () => {
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 
     'July', 'August', 'September', 'October', 'November', 'December'];
 
-  // Criteria options for custom constraints
-  const criteriaOptions = [
-    { value: 'Dmax', unit: 'Gy' },
-    { value: 'Dmean', unit: 'Gy' },
-    { value: 'D0.03cc', unit: 'Gy' },
-    { value: 'D0.5cc', unit: 'Gy' },
-    { value: 'D1cc', unit: 'Gy' },
-    { value: 'D2cc', unit: 'Gy' },
-    { value: 'V5', unit: '%' },
-    { value: 'V10', unit: '%' },
-    { value: 'V12', unit: 'cc' },
-    { value: 'V15', unit: '%' },
-    { value: 'V20', unit: '%' },
-    { value: 'V25', unit: '%' },
-    { value: 'V30', unit: '%' },
-    { value: 'V40', unit: '%' },
-    { value: 'V50', unit: '%' },
-    { value: 'V60', unit: '%' },
-    { value: 'V70', unit: '%' },
-  ];
-
-  const getUnitFromCriteria = (criteria) => {
-    if (!criteria) return 'Gy';
-    const found = criteriaOptions.find(c => c.value === criteria);
-    if (found) return found.unit;
-    if (criteria.startsWith('D') && criteria.includes('cc')) return 'Gy';
-    if (criteria.startsWith('D')) return 'Gy';
-    if (criteria.startsWith('V') && criteria.includes('cc')) return 'cc';
-    if (criteria.startsWith('V')) return '%';
-    return 'Gy';
-  };
 
   return (
     <Box bg="gray.900" minH="100vh">
@@ -790,43 +759,45 @@ const PriorDoseForm = () => {
                       />
                     </FormControl>
 
-                    {/* Dose Calc Method */}
-                    <FormControl isInvalid={errors.prior_dose_data?.dose_calc_method}>
-                      <FormLabel fontSize="xs" color="gray.300" mb={1}>Dose Calc</FormLabel>
-                      <Controller
-                        name="prior_dose_data.dose_calc_method"
-                        control={control}
-                        rules={{ required: 'Required' }}
-                        render={({ field }) => (
-                          <HStack spacing={1}>
-                            <Button
-                              size="sm"
-                              flex="1"
-                              variant={field.value === 'Raw Dose' ? 'solid' : 'outline'}
-                              colorScheme={field.value === 'Raw Dose' ? 'blue' : 'gray'}
-                              color={field.value === 'Raw Dose' ? 'white' : 'gray.300'}
-                              borderColor="gray.600"
-                              onClick={() => field.onChange('Raw Dose')}
-                              _hover={{ bg: field.value === 'Raw Dose' ? 'blue.600' : 'gray.700' }}
-                            >
-                              Raw
-                            </Button>
-                            <Button
-                              size="sm"
-                              flex="1"
-                              variant={field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'solid' : 'outline'}
-                              colorScheme={field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'blue' : 'gray'}
-                              color={field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'white' : 'gray.300'}
-                              borderColor="gray.600"
-                              onClick={() => field.onChange('EQD2 (Equivalent Dose in 2 Gy fractions)')}
-                              _hover={{ bg: field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'blue.600' : 'gray.700' }}
-                            >
-                              EQD2
-                            </Button>
-                          </HStack>
-                        )}
-                      />
-                    </FormControl>
+                    {/* Dose Calc Method - Only visible when overlap exists */}
+                    {hasAnyOverlap && (
+                      <FormControl isInvalid={errors.prior_dose_data?.dose_calc_method}>
+                        <FormLabel fontSize="xs" color="gray.300" mb={1}>Dose Calc</FormLabel>
+                        <Controller
+                          name="prior_dose_data.dose_calc_method"
+                          control={control}
+                          rules={{ required: hasAnyOverlap ? 'Required' : false }}
+                          render={({ field }) => (
+                            <HStack spacing={1}>
+                              <Button
+                                size="sm"
+                                flex="1"
+                                variant={field.value === 'Raw Dose' ? 'solid' : 'outline'}
+                                colorScheme={field.value === 'Raw Dose' ? 'blue' : 'gray'}
+                                color={field.value === 'Raw Dose' ? 'white' : 'gray.300'}
+                                borderColor="gray.600"
+                                onClick={() => field.onChange('Raw Dose')}
+                                _hover={{ bg: field.value === 'Raw Dose' ? 'blue.600' : 'gray.700' }}
+                              >
+                                Raw
+                              </Button>
+                              <Button
+                                size="sm"
+                                flex="1"
+                                variant={field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'solid' : 'outline'}
+                                colorScheme={field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'blue' : 'gray'}
+                                color={field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'white' : 'gray.300'}
+                                borderColor="gray.600"
+                                onClick={() => field.onChange('EQD2 (Equivalent Dose in 2 Gy fractions)')}
+                                _hover={{ bg: field.value === 'EQD2 (Equivalent Dose in 2 Gy fractions)' ? 'blue.600' : 'gray.700' }}
+                              >
+                                EQD2
+                              </Button>
+                            </HStack>
+                          )}
+                        />
+                      </FormControl>
+                    )}
                   </Grid>
 
                   {/* Fractionation Warning */}
@@ -1053,7 +1024,7 @@ const PriorDoseForm = () => {
                       )}
                     </Box>
                     
-                    {/* NO OVERLAP Cell */}
+                    {/* NO OVERLAP Cell - No DICOM selection since no reconstruction needed */}
                     <Box
                       bg={!watchPriorTreatments[index]?.has_overlap ? 'gray.750' : 'gray.800'}
                       p={2}
@@ -1072,60 +1043,23 @@ const PriorDoseForm = () => {
                     >
                       {!watchPriorTreatments[index]?.has_overlap ? (
                         <Flex direction="column" gap={1}>
-                          {/* Header Row */}
-                          {editingDicomIndex === index ? (
-                            <Flex wrap="wrap" gap={1} justify="center">
-                              <Button
-                                size="xs"
-                                colorScheme="green"
-                                variant={!watchPriorTreatments[index]?.dicoms_unavailable ? 'solid' : 'outline'}
-                                onClick={(e) => { e.stopPropagation(); updatePriorDicom(index, false); }}
-                              >
-                                DICOMs ✓
-                              </Button>
-                              <Button
-                                size="xs"
-                                colorScheme="red"
-                                variant={watchPriorTreatments[index]?.dicoms_unavailable ? 'solid' : 'outline'}
-                                onClick={(e) => { e.stopPropagation(); updatePriorDicom(index, true); }}
-                              >
-                                No DICOMs
-                              </Button>
-                              <Button
-                                size="xs"
-                                variant="ghost"
-                                color="gray.400"
-                                onClick={(e) => { e.stopPropagation(); setEditingDicomIndex(null); }}
-                              >
-                                ✕
-                              </Button>
-                            </Flex>
-                          ) : (
-                            <Flex justify="space-between" align="center">
-                              <Badge 
-                                colorScheme={getDicomBadge(watchPriorTreatments[index]).color}
-                                cursor="pointer"
-                                onClick={(e) => { e.stopPropagation(); setEditingDicomIndex(index); }}
-                                _hover={{ opacity: 0.8 }}
-                                fontSize="2xs"
-                              >
-                                {getDicomBadge(watchPriorTreatments[index]).label}
+                          {/* Header Row - Just Rx badge and delete */}
+                          <Flex justify="space-between" align="center">
+                            <Box /> {/* Spacer */}
+                            {formatPriorDisplay(watchPriorTreatments[index]) && (
+                              <Badge colorScheme="gray" fontSize="2xs">
+                                {formatPriorDisplay(watchPriorTreatments[index])}
                               </Badge>
-                              {formatPriorDisplay(watchPriorTreatments[index]) && (
-                                <Badge colorScheme="gray" fontSize="2xs">
-                                  {formatPriorDisplay(watchPriorTreatments[index])}
-                                </Badge>
-                              )}
-                              <IconButton
-                                icon={<DeleteIcon />}
-                                size="xs"
-                                colorScheme="red"
-                                variant="ghost"
-                                onClick={(e) => { e.stopPropagation(); remove(index); }}
-                                aria-label="Delete"
-                              />
-                            </Flex>
-                          )}
+                            )}
+                            <IconButton
+                              icon={<DeleteIcon />}
+                              size="xs"
+                              colorScheme="red"
+                              variant="ghost"
+                              onClick={(e) => { e.stopPropagation(); remove(index); }}
+                              aria-label="Delete"
+                            />
+                          </Flex>
                           
                           {/* Site + Dose/Fx Row */}
                           <Grid templateColumns="1fr 1fr" gap={1}>
@@ -1283,49 +1217,20 @@ const PriorDoseForm = () => {
                     )}
                   </Box>
                   
-                  {/* Add without OVERLAP */}
+                  {/* Add without OVERLAP - No DICOM question needed since no reconstruction */}
                   <Box 
-                    bg={pendingPriorOverlap === false ? 'gray.750' : 'gray.800'} 
+                    bg="gray.800" 
                     p={2} 
                     borderRadius="md" 
                     borderWidth="2px"
-                    borderColor={pendingPriorOverlap === false ? 'gray.500' : 'gray.600'}
-                    borderStyle={pendingPriorOverlap === false ? 'solid' : 'dashed'}
-                    cursor={pendingPriorOverlap !== null ? 'default' : 'pointer'}
-                    _hover={pendingPriorOverlap === null ? { borderColor: 'gray.500', bg: 'gray.700' } : {}}
+                    borderColor="gray.600"
+                    borderStyle="dashed"
+                    cursor="pointer"
+                    _hover={{ borderColor: 'gray.500', bg: 'gray.700' }}
                     transition="all 0.2s"
-                    onClick={() => pendingPriorOverlap === null && setPendingPriorOverlap(false)}
+                    onClick={() => addPriorWithOverlap(false, false)}
                   >
-                    {pendingPriorOverlap === false ? (
-                      <Flex wrap="wrap" gap={1} justify="center">
-                        <Button
-                          size="xs"
-                          colorScheme="green"
-                          variant="solid"
-                          onClick={(e) => { e.stopPropagation(); addPriorWithOverlap(false, false); }}
-                        >
-                          DICOMs ✓
-                        </Button>
-                        <Button
-                          size="xs"
-                          colorScheme="red"
-                          variant="solid"
-                          onClick={(e) => { e.stopPropagation(); addPriorWithOverlap(false, true); }}
-                        >
-                          No DICOMs
-                        </Button>
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          color="gray.400"
-                          onClick={(e) => { e.stopPropagation(); setPendingPriorOverlap(null); }}
-                        >
-                          ✕
-                        </Button>
-                      </Flex>
-                    ) : (
-                      <Text fontSize="xs" color="gray.400" textAlign="center">+ New without Overlap</Text>
-                    )}
+                    <Text fontSize="xs" color="gray.400" textAlign="center">+ New without Overlap</Text>
                   </Box>
                 </Grid>
 
@@ -1355,13 +1260,16 @@ const PriorDoseForm = () => {
                     aria-label="Add custom constraint"
                     size="sm"
                     colorScheme="blue"
-                    variant="ghost"
+                    variant="outline"
+                    color="blue.300"
+                    borderColor="blue.500"
+                    _hover={{ bg: "blue.800", borderColor: "blue.400" }}
                     onClick={() => appendDoseStat({ 
                       structure: '', 
                       constraint_type: '', 
                       value: '', 
                       source: 'Custom', 
-                      unit: 'Gy', 
+                      unit: '', 
                       limit: '', 
                       region: 'Custom' 
                     })}
@@ -1461,25 +1369,16 @@ const PriorDoseForm = () => {
                                             _hover={{ borderColor: 'gray.400' }}
                                             _placeholder={{ color: 'gray.400' }}
                                           />
-                                          <Select
+                                          <Input
                                             size="xs"
                                             {...register(`prior_dose_data.dose_statistics.${index}.constraint_type`)}
+                                            placeholder="e.g., Dmax, V20"
                                             bg="gray.600"
                                             borderColor="gray.500"
                                             color="white"
                                             _hover={{ borderColor: 'gray.400' }}
-                                            onChange={(e) => {
-                                              const newUnit = getUnitFromCriteria(e.target.value);
-                                              setValue(`prior_dose_data.dose_statistics.${index}.unit`, newUnit);
-                                            }}
-                                          >
-                                            <option value="" style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}>Criteria</option>
-                                            {criteriaOptions.map(opt => (
-                                              <option key={opt.value} value={opt.value} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                                                {opt.value}
-                                              </option>
-                                            ))}
-                                          </Select>
+                                            _placeholder={{ color: 'gray.400' }}
+                                          />
                                         </Grid>
                                         <HStack spacing={1}>
                                           <Input
@@ -1495,9 +1394,18 @@ const PriorDoseForm = () => {
                                             _placeholder={{ color: 'gray.400' }}
                                             flex="1"
                                           />
-                                          <Text color="gray.400" fontSize="xs" w="24px" textAlign="center">
-                                            {watchedStat?.unit || 'Gy'}
-                                          </Text>
+                                          <Input
+                                            size="xs"
+                                            {...register(`prior_dose_data.dose_statistics.${index}.unit`)}
+                                            placeholder="Unit"
+                                            bg="gray.600"
+                                            borderColor="gray.500"
+                                            color="white"
+                                            _hover={{ borderColor: 'gray.400' }}
+                                            _placeholder={{ color: 'gray.400' }}
+                                            w="50px"
+                                            textAlign="center"
+                                          />
                                         </HStack>
                                       </>
                                     ) : (

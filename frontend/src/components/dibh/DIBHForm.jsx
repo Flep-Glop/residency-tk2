@@ -44,6 +44,10 @@ const DIBHForm = () => {
   const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
   const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
   const [isCustomTreatmentSite, setIsCustomTreatmentSite] = useState(false);
+  const [isCustomRx, setIsCustomRx] = useState(false);
+  const [isCustomBoostRx, setIsCustomBoostRx] = useState(false);
+  const [selectedRxPreset, setSelectedRxPreset] = useState('');
+  const [selectedBoostPreset, setSelectedBoostPreset] = useState('none');
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';
@@ -104,6 +108,62 @@ const DIBHForm = () => {
     } else {
       // Clear the custom treatment site
       setValue('dibh_data.custom_treatment_site', '');
+    }
+  };
+
+  // Handler for selecting Rx preset (like TBI's selectRegimen)
+  const selectRxPreset = (presetKey) => {
+    setSelectedRxPreset(presetKey);
+    
+    const presets = {
+      '50gy25fx': { dose: 50, fractions: 25 },
+      '40gy15fx': { dose: 40, fractions: 15 }
+    };
+    
+    if (presets[presetKey]) {
+      setValue('dibh_data.dose', presets[presetKey].dose, { shouldValidate: true });
+      setValue('dibh_data.fractions', presets[presetKey].fractions, { shouldValidate: true });
+    }
+  };
+
+  // Handler for custom Rx checkbox
+  const handleCustomRxChange = (e) => {
+    setIsCustomRx(e.target.checked);
+    if (e.target.checked) {
+      // Clear preset selection
+      setSelectedRxPreset('');
+    } else {
+      // Clear custom dose/fractions
+      setValue('dibh_data.dose', '');
+      setValue('dibh_data.fractions', '');
+    }
+  };
+
+  // Handler for selecting boost preset
+  const selectBoostPreset = (presetKey) => {
+    setSelectedBoostPreset(presetKey);
+    
+    const presets = {
+      '10gy5fx': { dose: 10, fractions: 5 },
+      '16gy8fx': { dose: 16, fractions: 8 }
+    };
+    
+    if (presets[presetKey]) {
+      setValue('dibh_data.boost_dose', presets[presetKey].dose, { shouldValidate: true });
+      setValue('dibh_data.boost_fractions', presets[presetKey].fractions, { shouldValidate: true });
+    }
+  };
+
+  // Handler for custom boost Rx checkbox
+  const handleCustomBoostRxChange = (e) => {
+    setIsCustomBoostRx(e.target.checked);
+    if (e.target.checked) {
+      // Clear preset selection
+      setSelectedBoostPreset('');
+    } else {
+      // Clear custom boost dose/fractions
+      setValue('dibh_data.boost_dose', '');
+      setValue('dibh_data.boost_fractions', '');
     }
   };
 
@@ -203,6 +263,10 @@ const DIBHForm = () => {
     });
     setWriteup('');
     setIsCustomTreatmentSite(false);
+    setIsCustomRx(false);
+    setIsCustomBoostRx(false);
+    setSelectedRxPreset('');
+    setSelectedBoostPreset('none');
     
     toast({
       title: 'Form reset',
@@ -524,6 +588,7 @@ const DIBHForm = () => {
                   )}
                   
                   <Checkbox
+                    size="sm"
                     isChecked={isCustomTreatmentSite}
                     onChange={handleCustomTreatmentSiteChange}
                     colorScheme="blue"
@@ -548,114 +613,203 @@ const DIBHForm = () => {
               >
                 <Heading size="sm" mb={3} textAlign="center" color="white">Dose Information</Heading>
                 
-                <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
-                  <FormControl isInvalid={errors.dibh_data?.dose}>
-                    <FormLabel fontSize="sm" color="gray.300">Rx (Gy)</FormLabel>
-                    <Input
-                      size="sm"
-                      type="number"
-                      step="any"
-                      {...register("dibh_data.dose", { 
-                        required: "Dose is required",
-                        min: { value: 0.1, message: "Dose must be greater than 0" }
-                      })}
-                      placeholder="50"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _focus={{ borderColor: "green.500" }}
-                    />
-                    <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.dibh_data?.dose?.message}
-                    </FormErrorMessage>
-                  </FormControl>
+                {/* Primary Rx Section */}
+                <FormControl isInvalid={errors.dibh_data?.dose || errors.dibh_data?.fractions} mb={3}>
+                  <FormLabel fontSize="sm" color="gray.300" mb={2}>Rx (Gy/fx)</FormLabel>
                   
-                  <FormControl isInvalid={errors.dibh_data?.fractions}>
-                    <FormLabel fontSize="sm" color="gray.300">Fx</FormLabel>
-                    <Input
-                      size="sm"
-                      type="number"
-                      step="1"
-                      {...register("dibh_data.fractions", { 
-                        required: "Fractions is required",
-                        min: { value: 1, message: "Minimum 1 fraction" }
-                      })}
-                      placeholder="25"
-                      bg="gray.700"
-                      borderColor="gray.600"
-                      color="white"
-                      _hover={{ borderColor: "gray.500" }}
-                      _focus={{ borderColor: "green.500" }}
-                    />
-                    <FormErrorMessage sx={{ color: 'red.300' }}>
-                      {errors.dibh_data?.fractions?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                </Grid>
-                
-                <FormControl mb={3}>
-                  <Checkbox 
-                    size="sm" 
-                    isChecked={watchHasBoost} 
-                    {...register("dibh_data.has_boost")}
-                    onChange={(e) => setValue('dibh_data.has_boost', e.target.checked)}
-                    colorScheme="green"
-                    color="gray.300"
+                  {!isCustomRx && (
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                      <Button
+                        size="sm"
+                        onClick={() => selectRxPreset('50gy25fx')}
+                        colorScheme={selectedRxPreset === '50gy25fx' ? 'green' : 'gray'}
+                        variant={selectedRxPreset === '50gy25fx' ? 'solid' : 'outline'}
+                        color={selectedRxPreset === '50gy25fx' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: selectedRxPreset === '50gy25fx' ? 'green.600' : 'gray.700' }}
+                      >
+                        50/25
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => selectRxPreset('40gy15fx')}
+                        colorScheme={selectedRxPreset === '40gy15fx' ? 'green' : 'gray'}
+                        variant={selectedRxPreset === '40gy15fx' ? 'solid' : 'outline'}
+                        color={selectedRxPreset === '40gy15fx' ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: selectedRxPreset === '40gy15fx' ? 'green.600' : 'gray.700' }}
+                      >
+                        40/15
+                      </Button>
+                    </Grid>
+                  )}
+                  
+                  {isCustomRx && (
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="any"
+                        {...register("dibh_data.dose", { 
+                          required: "Dose is required",
+                          min: { value: 0.1, message: "Dose must be greater than 0" }
+                        })}
+                        placeholder="Rx (Gy)"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "green.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                      />
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="1"
+                        {...register("dibh_data.fractions", { 
+                          required: "Fractions is required",
+                          min: { value: 1, message: "Minimum 1 fraction" }
+                        })}
+                        placeholder="Fx"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "green.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                      />
+                    </Grid>
+                  )}
+                  
+                  <Checkbox
+                    size="sm"
+                    isChecked={isCustomRx}
+                    onChange={handleCustomRxChange}
+                    colorScheme="blue"
                   >
-                    Has Boost
+                    <Text fontSize="sm" color="gray.300">Custom Rx?</Text>
                   </Checkbox>
                 </FormControl>
                 
-                {watchHasBoost && (
-                  <>
+                {/* Boost Rx Section - Always visible */}
+                <FormControl isInvalid={errors.dibh_data?.boost_dose || errors.dibh_data?.boost_fractions}>
+                  <FormLabel fontSize="sm" color="gray.300" mb={2}>Boost (Gy/fx)</FormLabel>
+                  
+                  {!isCustomBoostRx && (
                     <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
-                      <FormControl isInvalid={errors.dibh_data?.boost_dose}>
-                        <FormLabel fontSize="sm" color="gray.300">Boost (Gy)</FormLabel>
-                        <Input
+                      <GridItem colSpan={2}>
+                        <Button
                           size="sm"
-                          type="number"
-                          step="any"
-                          {...register("dibh_data.boost_dose", { 
-                            required: watchHasBoost ? "Boost dose is required" : false,
-                            min: { value: 0.1, message: "Boost dose must be greater than 0" }
-                          })}
-                          placeholder="16"
-                          bg="gray.700"
+                          width="100%"
+                          onClick={() => {
+                            setSelectedBoostPreset('none');
+                            setValue('dibh_data.has_boost', false);
+                            setValue('dibh_data.boost_dose', '');
+                            setValue('dibh_data.boost_fractions', '');
+                          }}
+                          colorScheme={selectedBoostPreset === 'none' || !watchHasBoost ? 'green' : 'gray'}
+                          variant={selectedBoostPreset === 'none' || !watchHasBoost ? 'solid' : 'outline'}
+                          color={selectedBoostPreset === 'none' || !watchHasBoost ? 'white' : 'gray.300'}
                           borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          _focus={{ borderColor: "green.500" }}
-                        />
-                        <FormErrorMessage sx={{ color: 'red.300' }}>
-                          {errors.dibh_data?.boost_dose?.message}
-                        </FormErrorMessage>
-                      </FormControl>
-                      
-                      <FormControl isInvalid={errors.dibh_data?.boost_fractions}>
-                        <FormLabel fontSize="sm" color="gray.300">Boost Fx</FormLabel>
-                        <Input
-                          size="sm"
-                          type="number"
-                          step="1"
-                          {...register("dibh_data.boost_fractions", { 
-                            required: watchHasBoost ? "Boost fractions is required" : false,
-                            min: { value: 1, message: "Minimum 1 boost fraction" }
-                          })}
-                          placeholder="8"
-                          bg="gray.700"
-                          borderColor="gray.600"
-                          color="white"
-                          _hover={{ borderColor: "gray.500" }}
-                          _focus={{ borderColor: "green.500" }}
-                        />
-                        <FormErrorMessage sx={{ color: 'red.300' }}>
-                          {errors.dibh_data?.boost_fractions?.message}
-                        </FormErrorMessage>
-                      </FormControl>
+                          _hover={{ bg: selectedBoostPreset === 'none' || !watchHasBoost ? 'green.600' : 'gray.700' }}
+                        >
+                          None
+                        </Button>
+                      </GridItem>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          selectBoostPreset('10gy5fx');
+                          setValue('dibh_data.has_boost', true);
+                        }}
+                        colorScheme={selectedBoostPreset === '10gy5fx' && watchHasBoost ? 'green' : 'gray'}
+                        variant={selectedBoostPreset === '10gy5fx' && watchHasBoost ? 'solid' : 'outline'}
+                        color={selectedBoostPreset === '10gy5fx' && watchHasBoost ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: selectedBoostPreset === '10gy5fx' && watchHasBoost ? 'green.600' : 'gray.700' }}
+                      >
+                        10/5
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          selectBoostPreset('16gy8fx');
+                          setValue('dibh_data.has_boost', true);
+                        }}
+                        colorScheme={selectedBoostPreset === '16gy8fx' && watchHasBoost ? 'green' : 'gray'}
+                        variant={selectedBoostPreset === '16gy8fx' && watchHasBoost ? 'solid' : 'outline'}
+                        color={selectedBoostPreset === '16gy8fx' && watchHasBoost ? 'white' : 'gray.300'}
+                        borderColor="gray.600"
+                        _hover={{ bg: selectedBoostPreset === '16gy8fx' && watchHasBoost ? 'green.600' : 'gray.700' }}
+                      >
+                        16/8
+                      </Button>
                     </Grid>
-                  </>
-                )}
+                  )}
+                  
+                  {isCustomBoostRx && (
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="any"
+                        {...register("dibh_data.boost_dose", { 
+                          required: isCustomBoostRx ? "Boost dose is required" : false,
+                          min: { value: 0.1, message: "Boost dose must be greater than 0" }
+                        })}
+                        placeholder="Boost (Gy)"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "green.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                        onChange={(e) => {
+                          setValue('dibh_data.boost_dose', e.target.value);
+                          if (e.target.value) {
+                            setValue('dibh_data.has_boost', true);
+                          }
+                        }}
+                      />
+                      <Input
+                        size="sm"
+                        type="number"
+                        step="1"
+                        {...register("dibh_data.boost_fractions", { 
+                          required: isCustomBoostRx ? "Boost fractions is required" : false,
+                          min: { value: 1, message: "Minimum 1 boost fraction" }
+                        })}
+                        placeholder="Boost Fx"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "green.500" }}
+                        _placeholder={{ color: "gray.400" }}
+                        onChange={(e) => {
+                          setValue('dibh_data.boost_fractions', e.target.value);
+                          if (e.target.value) {
+                            setValue('dibh_data.has_boost', true);
+                          }
+                        }}
+                      />
+                    </Grid>
+                  )}
+                  
+                  <Checkbox
+                    size="sm"
+                    isChecked={isCustomBoostRx}
+                    onChange={(e) => {
+                      handleCustomBoostRxChange(e);
+                      if (e.target.checked) {
+                        setValue('dibh_data.has_boost', true);
+                      }
+                    }}
+                    colorScheme="blue"
+                  >
+                    <Text fontSize="sm" color="gray.300">Custom Boost?</Text>
+                  </Checkbox>
+                </FormControl>
               </GridItem>
             </Grid>
             

@@ -15,7 +15,9 @@ import {
   useToast,
   Flex,
   VStack,
-  HStack
+  HStack,
+  Checkbox,
+  Input
 } from '@chakra-ui/react';
 import tbiService from '../../services/tbiService';
 
@@ -60,6 +62,9 @@ const TBIForm = () => {
   // State for showing HVL selection for multi-fraction regimens
   const [showHVLSelection, setShowHVLSelection] = useState(false);
   
+  // State for custom Rx mode
+  const [isCustomRx, setIsCustomRx] = useState(false);
+  
   // Handle form submission
   const onSubmit = async (data) => {
     setLoading(true);
@@ -93,6 +98,8 @@ const TBIForm = () => {
   const handleReset = () => {
     reset();
     setWriteup('');
+    setIsCustomRx(false);
+    setShowHVLSelection(false);
     toast({
       title: 'Form reset',
       status: 'info',
@@ -141,6 +148,25 @@ const TBIForm = () => {
   // Handle HVL selection for multi-fraction regimens
   const selectHVL = (hvlValue) => {
     setValue('tbi_data.lung_blocks', hvlValue, { shouldValidate: true });
+  };
+
+  // Handler for custom Rx checkbox
+  const handleCustomRxChange = (e) => {
+    setIsCustomRx(e.target.checked);
+    if (e.target.checked) {
+      // Clear preset selection
+      setValue('tbi_data.regimen', 'custom', { shouldValidate: true });
+      setValue('tbi_data.prescription_dose', '');
+      setValue('tbi_data.fractions', '');
+      setValue('tbi_data.lung_blocks', 'none');
+      setShowHVLSelection(false);
+    } else {
+      // Clear custom values
+      setValue('tbi_data.regimen', '');
+      setValue('tbi_data.prescription_dose', '');
+      setValue('tbi_data.fractions', '');
+      setValue('tbi_data.lung_blocks', '');
+    }
   };
 
   return (
@@ -365,135 +391,185 @@ const TBIForm = () => {
 
                 <VStack spacing={3} align="stretch">
                   <FormControl isInvalid={errors.tbi_data?.regimen}>
-                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Rx</FormLabel>
-                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
-                      {/* Single Fraction Column */}
-                      <VStack spacing={2}>
-                        <Button
-                          size="sm"
-                          width="100%"
-                          colorScheme={watchRegimen === '2gy1fx' ? 'blue' : 'gray'}
-                          variant={watchRegimen === '2gy1fx' ? 'solid' : 'outline'}
-                          onClick={() => selectRegimen('2gy1fx')}
-                          color={watchRegimen === '2gy1fx' ? 'white' : 'gray.300'}
-                          borderColor={watchRegimen === '2gy1fx' ? 'blue.500' : 'gray.600'}
-                          _hover={{ borderColor: watchRegimen === '2gy1fx' ? 'blue.400' : 'gray.500' }}
-                        >
-                          2 Gy / 1 fx
-                        </Button>
-                        <Button
-                          size="sm"
-                          width="100%"
-                          colorScheme={watchRegimen === '4gy1fx' ? 'blue' : 'gray'}
-                          variant={watchRegimen === '4gy1fx' ? 'solid' : 'outline'}
-                          onClick={() => selectRegimen('4gy1fx')}
-                          color={watchRegimen === '4gy1fx' ? 'white' : 'gray.300'}
-                          borderColor={watchRegimen === '4gy1fx' ? 'blue.500' : 'gray.600'}
-                          _hover={{ borderColor: watchRegimen === '4gy1fx' ? 'blue.400' : 'gray.500' }}
-                        >
-                          4 Gy / 1 fx
-                        </Button>
-                      </VStack>
-                      
-                      {/* Fractionated Column */}
-                      <VStack spacing={2}>
-                        <VStack spacing={0} width="100%">
+                    <FormLabel fontSize="sm" color="gray.300" mb={2}>Rx (Gy/fx)</FormLabel>
+                    
+                    {!isCustomRx && (
+                      <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                        {/* Single Fraction Column */}
+                        <VStack spacing={2}>
                           <Button
                             size="sm"
                             width="100%"
-                            colorScheme={watchRegimen === '12gy6fx' ? 'blue' : 'gray'}
-                            variant={watchRegimen === '12gy6fx' ? 'solid' : 'outline'}
-                            onClick={() => selectRegimen('12gy6fx')}
-                            color={watchRegimen === '12gy6fx' ? 'white' : 'gray.300'}
-                            borderColor={watchRegimen === '12gy6fx' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchRegimen === '12gy6fx' ? 'blue.400' : 'gray.500' }}
-                            borderBottomRadius={watchRegimen === '12gy6fx' && showHVLSelection ? 0 : 'md'}
+                            colorScheme={watchRegimen === '2gy1fx' ? 'blue' : 'gray'}
+                            variant={watchRegimen === '2gy1fx' ? 'solid' : 'outline'}
+                            onClick={() => selectRegimen('2gy1fx')}
+                            color={watchRegimen === '2gy1fx' ? 'white' : 'gray.300'}
+                            borderColor={watchRegimen === '2gy1fx' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchRegimen === '2gy1fx' ? 'blue.400' : 'gray.500' }}
                           >
-                            12 Gy / 6 fx
+                            2/1
                           </Button>
-                          
-                          {/* HVL Selection for 6fx */}
-                          {watchRegimen === '12gy6fx' && showHVLSelection && (
-                            <Box
-                              width="100%"
-                              bg="blue.900"
-                              borderBottomRadius="md"
-                              borderLeft="1px"
-                              borderRight="1px"
-                              borderBottom="1px"
-                              borderColor="blue.500"
-                              p={2}
-                            >
-                              <HStack spacing={1}>
-                                {['1 HVL', '2 HVL', '3 HVL'].map((hvl) => (
-                                  <Button
-                                    key={hvl}
-                                    size="xs"
-                                    flex={1}
-                                    onClick={() => selectHVL(hvl)}
-                                    colorScheme={watch('tbi_data.lung_blocks') === hvl ? 'green' : 'gray'}
-                                    variant={watch('tbi_data.lung_blocks') === hvl ? 'solid' : 'outline'}
-                                    color={watch('tbi_data.lung_blocks') === hvl ? 'white' : 'gray.300'}
-                                    borderColor="gray.600"
-                                    _hover={{ bg: watch('tbi_data.lung_blocks') === hvl ? 'green.600' : 'gray.700' }}
-                                  >
-                                    {hvl}
-                                  </Button>
-                                ))}
-                              </HStack>
-                            </Box>
-                          )}
+                          <Button
+                            size="sm"
+                            width="100%"
+                            colorScheme={watchRegimen === '4gy1fx' ? 'blue' : 'gray'}
+                            variant={watchRegimen === '4gy1fx' ? 'solid' : 'outline'}
+                            onClick={() => selectRegimen('4gy1fx')}
+                            color={watchRegimen === '4gy1fx' ? 'white' : 'gray.300'}
+                            borderColor={watchRegimen === '4gy1fx' ? 'blue.500' : 'gray.600'}
+                            _hover={{ borderColor: watchRegimen === '4gy1fx' ? 'blue.400' : 'gray.500' }}
+                          >
+                            4/1
+                          </Button>
                         </VStack>
                         
-                        <VStack spacing={0} width="100%">
-                          <Button
-                            size="sm"
-                            width="100%"
-                            colorScheme={watchRegimen === '13.2gy8fx' ? 'blue' : 'gray'}
-                            variant={watchRegimen === '13.2gy8fx' ? 'solid' : 'outline'}
-                            onClick={() => selectRegimen('13.2gy8fx')}
-                            color={watchRegimen === '13.2gy8fx' ? 'white' : 'gray.300'}
-                            borderColor={watchRegimen === '13.2gy8fx' ? 'blue.500' : 'gray.600'}
-                            _hover={{ borderColor: watchRegimen === '13.2gy8fx' ? 'blue.400' : 'gray.500' }}
-                            borderBottomRadius={watchRegimen === '13.2gy8fx' && showHVLSelection ? 0 : 'md'}
-                          >
-                            13.2 Gy / 8 fx
-                          </Button>
-                          
-                          {/* HVL Selection for 8fx */}
-                          {watchRegimen === '13.2gy8fx' && showHVLSelection && (
-                            <Box
+                        {/* Fractionated Column */}
+                        <VStack spacing={2}>
+                          <VStack spacing={0} width="100%">
+                            <Button
+                              size="sm"
                               width="100%"
-                              bg="blue.900"
-                              borderBottomRadius="md"
-                              borderLeft="1px"
-                              borderRight="1px"
-                              borderBottom="1px"
-                              borderColor="blue.500"
-                              p={2}
+                              colorScheme={watchRegimen === '12gy6fx' ? 'blue' : 'gray'}
+                              variant={watchRegimen === '12gy6fx' ? 'solid' : 'outline'}
+                              onClick={() => selectRegimen('12gy6fx')}
+                              color={watchRegimen === '12gy6fx' ? 'white' : 'gray.300'}
+                              borderColor={watchRegimen === '12gy6fx' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchRegimen === '12gy6fx' ? 'blue.400' : 'gray.500' }}
+                              borderBottomRadius={watchRegimen === '12gy6fx' && showHVLSelection ? 0 : 'md'}
                             >
-                              <HStack spacing={1}>
-                                {['1 HVL', '2 HVL', '3 HVL'].map((hvl) => (
-                                  <Button
-                                    key={hvl}
-                                    size="xs"
-                                    flex={1}
-                                    onClick={() => selectHVL(hvl)}
-                                    colorScheme={watch('tbi_data.lung_blocks') === hvl ? 'green' : 'gray'}
-                                    variant={watch('tbi_data.lung_blocks') === hvl ? 'solid' : 'outline'}
-                                    color={watch('tbi_data.lung_blocks') === hvl ? 'white' : 'gray.300'}
-                                    borderColor="gray.600"
-                                    _hover={{ bg: watch('tbi_data.lung_blocks') === hvl ? 'green.600' : 'gray.700' }}
-                                  >
-                                    {hvl}
-                                  </Button>
-                                ))}
-                              </HStack>
-                            </Box>
-                          )}
+                              12/6
+                            </Button>
+                            
+                            {/* HVL Selection for 6fx */}
+                            {watchRegimen === '12gy6fx' && showHVLSelection && (
+                              <Box
+                                width="100%"
+                                bg="blue.900"
+                                borderBottomRadius="md"
+                                borderLeft="1px"
+                                borderRight="1px"
+                                borderBottom="1px"
+                                borderColor="blue.500"
+                                p={2}
+                              >
+                                <HStack spacing={1}>
+                                  {['1 HVL', '2 HVL', '3 HVL'].map((hvl) => (
+                                    <Button
+                                      key={hvl}
+                                      size="xs"
+                                      flex={1}
+                                      onClick={() => selectHVL(hvl)}
+                                      colorScheme={watch('tbi_data.lung_blocks') === hvl ? 'green' : 'gray'}
+                                      variant={watch('tbi_data.lung_blocks') === hvl ? 'solid' : 'outline'}
+                                      color={watch('tbi_data.lung_blocks') === hvl ? 'white' : 'gray.300'}
+                                      borderColor="gray.600"
+                                      _hover={{ bg: watch('tbi_data.lung_blocks') === hvl ? 'green.600' : 'gray.700' }}
+                                    >
+                                      {hvl}
+                                    </Button>
+                                  ))}
+                                </HStack>
+                              </Box>
+                            )}
+                          </VStack>
+                          
+                          <VStack spacing={0} width="100%">
+                            <Button
+                              size="sm"
+                              width="100%"
+                              colorScheme={watchRegimen === '13.2gy8fx' ? 'blue' : 'gray'}
+                              variant={watchRegimen === '13.2gy8fx' ? 'solid' : 'outline'}
+                              onClick={() => selectRegimen('13.2gy8fx')}
+                              color={watchRegimen === '13.2gy8fx' ? 'white' : 'gray.300'}
+                              borderColor={watchRegimen === '13.2gy8fx' ? 'blue.500' : 'gray.600'}
+                              _hover={{ borderColor: watchRegimen === '13.2gy8fx' ? 'blue.400' : 'gray.500' }}
+                              borderBottomRadius={watchRegimen === '13.2gy8fx' && showHVLSelection ? 0 : 'md'}
+                            >
+                              13.2/8
+                            </Button>
+                            
+                            {/* HVL Selection for 8fx */}
+                            {watchRegimen === '13.2gy8fx' && showHVLSelection && (
+                              <Box
+                                width="100%"
+                                bg="blue.900"
+                                borderBottomRadius="md"
+                                borderLeft="1px"
+                                borderRight="1px"
+                                borderBottom="1px"
+                                borderColor="blue.500"
+                                p={2}
+                              >
+                                <HStack spacing={1}>
+                                  {['1 HVL', '2 HVL', '3 HVL'].map((hvl) => (
+                                    <Button
+                                      key={hvl}
+                                      size="xs"
+                                      flex={1}
+                                      onClick={() => selectHVL(hvl)}
+                                      colorScheme={watch('tbi_data.lung_blocks') === hvl ? 'green' : 'gray'}
+                                      variant={watch('tbi_data.lung_blocks') === hvl ? 'solid' : 'outline'}
+                                      color={watch('tbi_data.lung_blocks') === hvl ? 'white' : 'gray.300'}
+                                      borderColor="gray.600"
+                                      _hover={{ bg: watch('tbi_data.lung_blocks') === hvl ? 'green.600' : 'gray.700' }}
+                                    >
+                                      {hvl}
+                                    </Button>
+                                  ))}
+                                </HStack>
+                              </Box>
+                            )}
+                          </VStack>
                         </VStack>
-                      </VStack>
-                    </Grid>
+                      </Grid>
+                    )}
+                    
+                    {isCustomRx && (
+                      <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3}>
+                        <Input
+                          size="sm"
+                          type="number"
+                          step="any"
+                          {...register("tbi_data.prescription_dose", { 
+                            required: "Dose is required",
+                            min: { value: 0.1, message: "Dose must be greater than 0" }
+                          })}
+                          placeholder="Rx (Gy)"
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _hover={{ borderColor: "gray.500" }}
+                          _focus={{ borderColor: "blue.500" }}
+                          _placeholder={{ color: "gray.400" }}
+                        />
+                        <Input
+                          size="sm"
+                          type="number"
+                          step="1"
+                          {...register("tbi_data.fractions", { 
+                            required: "Fractions is required",
+                            min: { value: 1, message: "Minimum 1 fraction" }
+                          })}
+                          placeholder="Fx"
+                          bg="gray.700"
+                          borderColor="gray.600"
+                          color="white"
+                          _hover={{ borderColor: "gray.500" }}
+                          _focus={{ borderColor: "blue.500" }}
+                          _placeholder={{ color: "gray.400" }}
+                        />
+                      </Grid>
+                    )}
+                    
+                    <Checkbox
+                      size="sm"
+                      isChecked={isCustomRx}
+                      onChange={handleCustomRxChange}
+                      colorScheme="blue"
+                    >
+                      <Text fontSize="sm" color="gray.300">Custom Rx?</Text>
+                    </Checkbox>
+                    
                     <FormErrorMessage fontSize="xs" sx={{ color: 'red.300' }}>
                       {errors.tbi_data?.regimen?.message}
                     </FormErrorMessage>

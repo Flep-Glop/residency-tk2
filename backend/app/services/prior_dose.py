@@ -849,7 +849,7 @@ class PriorDoseService:
             # Conservative approach when DICOM unavailable
             return (
                 "Due to unavailable DICOM files, the previous treatment dose distribution could not be "
-                "directly reconstructed in the treatment planning system. Dose constraints are therefore "
+                "directly reconstructed in Velocity. Dose constraints are therefore "
                 "estimated based on available treatment records and clinical assessment of overlapping anatomy. "
                 f"Dose estimation uses {method_abbreviation} methodology{alpha_beta_text}, referencing {constraint_source}. "
                 "A conservative approach is recommended given the uncertainty in composite dose calculation without direct dose summation.\n"
@@ -889,7 +889,7 @@ class PriorDoseService:
             # Conservative approach when any DICOM unavailable
             return (
                 "Due to unavailable DICOM files for one or more prior treatments, the previous dose distributions "
-                "could not be completely reconstructed in the treatment planning system. Available treatments were "
+                "could not be completely reconstructed in Velocity. Available treatments were "
                 "reconstructed where possible, and dose constraints for treatments without DICOM files are estimated "
                 "based on available treatment records and clinical assessment of overlapping anatomy. "
                 f"Dose estimation uses {method_abbreviation} methodology{alpha_beta_text}, referencing {constraint_source}. "

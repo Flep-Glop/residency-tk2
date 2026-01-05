@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 class SBRTService:
     def __init__(self):
         self.treatment_sites = [
-            "bone", "breast", "kidney", "liver", "pancreas", "prostate", "spine"
+            "breast", "kidney", "liver", "lung", "pancreas", "prostate"
         ]
         
         self.dose_constraints = {
@@ -41,16 +41,12 @@ class SBRTService:
                 "Spinal Cord": "Dmax < 18 Gy",
                 "Kidney": "V12 < 25%"
             },
-            "bone": {
+            "lung": {
                 "Spinal Cord": "Dmax < 18 Gy",
-                "Small Bowel": "Dmax < 27 Gy",
-                "Kidney": "V12 < 25%"
-            },
-            "spine": {
-                "Spinal Cord": "Dmax < 14 Gy",
-                "Cauda Equina": "Dmax < 16 Gy",
-                "Esophagus": "Dmax < 15 Gy",
-                "Kidney": "V12 < 25%"
+                "Esophagus": "Dmax < 27 Gy",
+                "Heart": "Dmax < 30 Gy",
+                "Brachial Plexus": "Dmax < 24 Gy",
+                "Chest Wall": "V30 < 30 cc"
             }
         }
         
@@ -74,14 +70,10 @@ class SBRTService:
                 {"dose": 33, "fractions": 5, "description": "Standard dose"},
                 {"dose": 40, "fractions": 5, "description": "High dose"}
             ],
-            "bone": [
-                {"dose": 30, "fractions": 5, "description": "Standard dose"},
-                {"dose": 24, "fractions": 3, "description": "High dose/3fx"}
-            ],
-            "spine": [
-                {"dose": 24, "fractions": 3, "description": "Standard dose"},
-                {"dose": 27, "fractions": 3, "description": "High dose"},
-                {"dose": 30, "fractions": 5, "description": "Moderate dose/5fx"}
+            "lung": [
+                {"dose": 50, "fractions": 4, "description": "Standard dose"},
+                {"dose": 54, "fractions": 3, "description": "High dose/3fx"},
+                {"dose": 48, "fractions": 4, "description": "Peripheral lesion"}
             ]
         }
 
@@ -142,13 +134,8 @@ class SBRTService:
             max_dose_2cm_ring = 50.0
             heterogeneity_index = 1.0
         
-        # Handle anatomical clarification for spine/bone sites
-        anatomical_clarification = data.anatomical_clarification if hasattr(data, 'anatomical_clarification') else ""
+        # Set lesion description (same as treatment site)
         lesion_description = treatment_site
-        
-        # Add anatomical clarification for spine and bone sites
-        if (treatment_site in ["spine", "bone"]) and anatomical_clarification:
-            lesion_description = f"{anatomical_clarification} {treatment_site}"
         
         # Get SIB data
         is_sib = data.is_sib if hasattr(data, 'is_sib') else False
@@ -317,33 +304,33 @@ class SBRTService:
         heterogeneity_clean = format_number(heterogeneity_index, 2)
         
         # Generate plain text list of metrics with intro
-        metrics_text = f"Below are the plan statistics:\n\n"
+        metrics_text = f"Below are the plan statistics:\n"
         metrics_text += f"• Target: {target_name}\n"
         metrics_text += f"• Target Volume: {ptv_vol_clean} cc\n"
         metrics_text += f"• Prescription Dose: {dose_clean} Gy\n"
         metrics_text += f"• Coverage: {coverage_clean}%\n"
         metrics_text += f"• Conformity Index (PITV): {conformity_clean}"
-        if not is_sib:
-            metrics_text += f" (Deviation: {conformity_deviation})"
+        if not is_sib and conformity_deviation.lower() != "none":
+            metrics_text += f" (deviation: {conformity_deviation.lower()})"
         metrics_text += f"\n"
         metrics_text += f"• R50: {r50_clean}"
-        if not is_sib:
-            metrics_text += f" (Deviation: {r50_deviation})"
+        if not is_sib and r50_deviation.lower() != "none":
+            metrics_text += f" (deviation: {r50_deviation.lower()})"
         metrics_text += f"\n"
         metrics_text += f"• Gradient Measure: {gradient_clean} cm\n"
         metrics_text += f"• Max Dose in 2cm Ring: {max_dose_clean}%"
-        if not is_sib:
-            metrics_text += f" (Deviation: {max_dose_2cm_deviation})"
+        if not is_sib and max_dose_2cm_deviation.lower() != "none":
+            metrics_text += f" (deviation: {max_dose_2cm_deviation.lower()})"
         metrics_text += f"\n"
         metrics_text += f"• Heterogeneity Index: {heterogeneity_clean}\n"
         
-        # Add summary based on deviations
-        metrics_text += "\n"
+        # Add summary based on deviations (with blank line before summary)
+        metrics_text += "\n"  # Blank line between bullet list and summary
         if is_sib:
             if sib_comment:
-                metrics_text += f"This is an SIB case ({sib_comment}). Deviation analysis not applicable for simultaneous integrated boost treatments.\n"
+                metrics_text += f"This is an SIB case ({sib_comment}). Deviation analysis not applicable for simultaneous integrated boost treatments."
             else:
-                metrics_text += f"This is an SIB case. Deviation analysis not applicable for simultaneous integrated boost treatments.\n"
+                metrics_text += f"This is an SIB case. Deviation analysis not applicable for simultaneous integrated boost treatments."
         else:
             # Check if there are any deviations
             deviations = []
@@ -363,19 +350,19 @@ class SBRTService:
                 deviations.append(("Max Dose in 2cm Ring", f"{max_dose_clean}%", "shows acceptable intermediate dose with minor deviation"))
             
             if not deviations:
-                metrics_text += "No deviations from institutional guidelines were observed. All metrics meet RTOG 0915 compliance criteria for SBRT plan quality.\n"
+                metrics_text += "No deviations from institutional guidelines were observed. All metrics meet RTOG 0915 compliance criteria for SBRT plan quality."
             else:
                 if len(deviations) == 1 and any("Minor" in dev[2] for dev in deviations):
-                    metrics_text += f"One minor deviation was noted: {deviations[0][0]} of {deviations[0][1]} {deviations[0][2]}. This deviation is clinically acceptable and does not compromise treatment quality.\n"
+                    metrics_text += f"One minor deviation was noted: {deviations[0][0]} of {deviations[0][1]} {deviations[0][2]}. This deviation is clinically acceptable and does not compromise treatment quality."
                 elif all("Minor" in dev[2] for dev in deviations):
                     metrics_text += f"Minor deviations were noted in {len(deviations)} metrics: "
                     metrics_text += ", ".join([f"{dev[0]}" for dev in deviations])
-                    metrics_text += ". These minor deviations are clinically acceptable and do not compromise treatment quality.\n"
+                    metrics_text += ". These minor deviations are clinically acceptable and do not compromise treatment quality."
                 else:
                     metrics_text += f"The following deviation(s) were identified:\n"
                     for dev_name, dev_value, dev_explanation in deviations:
                         metrics_text += f"• {dev_name} of {dev_value} {dev_explanation}.\n"
-                    metrics_text += "These deviations were evaluated and accepted during the treatment planning process.\n"
+                    metrics_text += "These deviations were evaluated and accepted during the treatment planning process."
         
         return metrics_text
 

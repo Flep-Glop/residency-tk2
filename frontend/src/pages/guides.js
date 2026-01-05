@@ -7,9 +7,10 @@ const GuidesPage = () => {
 
   return (
     <Box bg="gray.900" minH="100vh">
-      {/* Home button positioned absolutely */}
-      <Box position="absolute" top={4} right={4} zIndex={10}>
+      {/* Home button positioned absolutely, aligned with header */}
+      <Box position="absolute" top={8} right={6} zIndex={10}>
         <Button 
+          size="lg"
           onClick={() => router.push('/')} 
           colorScheme="teal" 
           variant="outline"

@@ -147,9 +147,9 @@ class SRSService:
         if deviation == "none":
             return ""
         elif deviation == "minor":
-            return " [Minor Deviation]"
+            return " [minor deviation]"
         else:  # major
-            return " [MAJOR DEVIATION]"
+            return " [major deviation]"
 
     def _generate_planning_paragraph(self, lesions: List) -> str:
         """Generate treatment planning paragraph with metrics and deviations."""
@@ -176,7 +176,6 @@ class SRSService:
             text += f"• Rx Dose: {self._format_number(lesion.dose)} Gy in {lesion.fractions} {fraction_word}\n"
             text += f"• Target Volume: {self._format_number(lesion.volume)} cc\n"
             text += f"• Location: {lesion.site}\n"
-            text += f"• Rx Isodose: {self._format_number(lesion.prescription_isodose)}%\n"
             text += f"• PTV Coverage: {self._format_number(lesion.ptv_coverage)}%\n"
             text += f"• Conformity Index: {self._format_number(lesion.conformity_index, 2)}{self._format_deviation(ci_dev)}\n"
             text += f"• Gradient Index: {self._format_number(lesion.gradient_index, 2)}{self._format_deviation(gi_dev)}\n"
@@ -205,7 +204,6 @@ class SRSService:
                 text += f"Lesion {i+1}: {lesion.site}\n"
                 text += f"• Volume: {self._format_number(lesion.volume)} cc\n"
                 text += f"• Dose: {self._format_number(lesion.dose)} Gy in {lesion.fractions} {fraction_word}\n"
-                text += f"• Rx Isodose: {self._format_number(lesion.prescription_isodose)}%\n"
                 text += f"• PTV Coverage: {self._format_number(lesion.ptv_coverage)}%\n"
                 text += f"• Conformity Index: {self._format_number(lesion.conformity_index, 2)}{self._format_deviation(ci_dev)}\n"
                 text += f"• Gradient Index: {self._format_number(lesion.gradient_index, 2)}{self._format_deviation(gi_dev)}\n"
@@ -258,11 +256,11 @@ class SRSService:
             text += "All plan metrics are within acceptable limits."
         else:
             if major_deviations:
-                text += f"MAJOR DEVIATIONS: {', '.join(major_deviations)}. "
+                text += f"Major deviations: {', '.join(major_deviations)}. "
                 text += "These values exceed protocol limits and may require clinical justification.\n"
             
             if minor_deviations:
-                text += f"Minor Deviations: {', '.join(minor_deviations)}. "
+                text += f"Minor deviations: {', '.join(minor_deviations)}. "
                 text += "These values are within acceptable clinical variation."
         
         return text

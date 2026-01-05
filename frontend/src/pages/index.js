@@ -512,8 +512,8 @@ const HomePage = () => {
                   Pacemaker
                 </Button>
 
-                {/* Neurostimulator */}
-                <Button
+                {/* Neurostimulator - HIDDEN: pending further development */}
+                {/* <Button
                   size="md"
                   variant={mpcChecklist.neurostimulator ? "solid" : "outline"}
                   colorScheme={mpcChecklist.neurostimulator ? "cyan" : "gray"}
@@ -526,7 +526,7 @@ const HomePage = () => {
                   }}
                 >
                   Neurostim
-                </Button>
+                </Button> */}
 
                 {/* SBRT - TEMPORARY: Mutually exclusive with DIBH */}
                 <Button
