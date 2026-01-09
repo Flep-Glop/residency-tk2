@@ -1434,7 +1434,7 @@ const PriorDoseForm = () => {
                                     {!isCustom && <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.structure`)} />}
                                     {!isCustom && <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.constraint_type`)} />}
                                     <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.source`)} />
-                                    <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.unit`)} />
+                                    {!isCustom && <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.unit`)} />}
                                     <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.limit`)} />
                                     <input type="hidden" {...register(`prior_dose_data.dose_statistics.${index}.region`)} />
                                   </Box>
