@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import {
@@ -19,16 +19,11 @@ import {
   AlertIcon,
   Badge,
   Flex,
-  Stat,
-  StatLabel,
-  StatNumber,
   Checkbox,
   Card,
   CardBody,
   HStack,
   VStack,
-  List,
-  ListItem,
 } from '@chakra-ui/react';
 import { getTreatmentSites, getImmobilizationDevices, getFractionationSchemes, generateDIBHWriteup } from '../../services/dibhService';
 
@@ -41,8 +36,8 @@ const DIBHForm = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [writeup, setWriteup] = useState('');
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
-  const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const physicians = ['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli'];
+  const physicists = ['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen'];
   const [isCustomTreatmentSite, setIsCustomTreatmentSite] = useState(false);
   const [isCustomRx, setIsCustomRx] = useState(false);
   const [isCustomBoostRx, setIsCustomBoostRx] = useState(false);

@@ -366,47 +366,6 @@ class SBRTService:
         
         return metrics_text
 
-    def _calculate_deviation_status(self, data) -> dict:
-        """Calculate deviation status based on clinical tolerance table."""
-        ptv_volume = data.ptv_volume
-        conformity_index = data.conformity_index
-        r50 = data.r50
-        max_dose_2cm_ring = data.max_dose_2cm_ring
-        
-        # Tolerance table from the frontend (representative values)
-        tolerance_table = [
-            {"ptvVol": 1.8, "conformityNone": 1.2, "conformityMinor": 1.5, "r50None": 5.9, "r50Minor": 7.5, "maxDose2cmNone": 50.0, "maxDose2cmMinor": 57.0},
-            {"ptvVol": 22.0, "conformityNone": 1.2, "conformityMinor": 1.5, "r50None": 4.5, "r50Minor": 5.5, "maxDose2cmNone": 54.0, "maxDose2cmMinor": 63.0},
-            {"ptvVol": 50.0, "conformityNone": 1.2, "conformityMinor": 1.5, "r50None": 4.0, "r50Minor": 5.0, "maxDose2cmNone": 62.0, "maxDose2cmMinor": 77.0},
-            {"ptvVol": 163.0, "conformityNone": 1.2, "conformityMinor": 1.5, "r50None": 2.9, "r50Minor": 3.7, "maxDose2cmNone": 77.0, "maxDose2cmMinor": 94.0}
-        ]
-        
-        # Find closest tolerance values
-        closest_tolerance = min(tolerance_table, key=lambda x: abs(x["ptvVol"] - ptv_volume))
-        
-        def get_deviation(value, none_limit, minor_limit, lower_is_better=True):
-            if lower_is_better:
-                if value <= none_limit:
-                    return "None"
-                elif value <= minor_limit:
-                    return "Minor"
-                else:
-                    return "Major"
-            else:
-                if value >= none_limit:
-                    return "None"
-                elif value >= minor_limit:
-                    return "Minor"
-                else:
-                    return "Major"
-        
-        return {
-            "coverage": "None",  # Coverage is typically always acceptable if plan is approved
-            "conformity": get_deviation(conformity_index, closest_tolerance["conformityNone"], closest_tolerance["conformityMinor"]),
-            "r50": get_deviation(r50, closest_tolerance["r50None"], closest_tolerance["r50Minor"]),
-            "max_dose_2cm": get_deviation(max_dose_2cm_ring, closest_tolerance["maxDose2cmNone"], closest_tolerance["maxDose2cmMinor"])
-        }
-
     def _generate_4dct_template(self, physician, physicist, lesion_description, 
                                dose, fractions, target_name, coverage, conformity_index, r50, metrics_table) -> str:
         """Generate 4DCT template write-up."""

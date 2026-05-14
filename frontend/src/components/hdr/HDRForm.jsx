@@ -24,8 +24,8 @@ const HDRForm = () => {
   const [loading, setLoading] = useState(false);
   const [writeup, setWriteup] = useState('');
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Kluwe', 'Le', 'Lewis']);
-  const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const physicians = ['Kluwe', 'Le', 'Lewis'];
+  const physicists = ['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen'];
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';

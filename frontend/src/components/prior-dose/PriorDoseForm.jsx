@@ -267,7 +267,7 @@ const PriorDoseForm = () => {
           setValue('prior_dose_data.dose_statistics', formattedConstraints);
         }
       } catch (error) {
-        console.log('Could not fetch constraints for site:', currentSite);
+        // Constraints not available for this site
       }
     };
     

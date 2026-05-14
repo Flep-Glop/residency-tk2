@@ -10,14 +10,10 @@ import {
   CardBody, 
   CardFooter,
   Button,
-  Center,
   HStack,
   VStack,
   Checkbox,
   IconButton,
-  Flex,
-  Select,
-  Divider,
   Tabs,
   TabList,
   TabPanels,
@@ -29,26 +25,13 @@ import {
   Tr,
   Th,
   Td,
-  ButtonGroup,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalCloseButton
 } from '@chakra-ui/react';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 import UpdateNotification from '../components/UpdateNotification';
-import { VERSION_INFO } from '../constants/version';
-import observatory1 from '../images/observatory1.png';
-import observatory2 from '../images/observatory2.png';
 
 const HomePage = () => {
   const router = useRouter();
-  
-  // State for enlarged observatory image
-  const [enlargedImage, setEnlargedImage] = useState(null);
   
   // State for detailed fusion configuration
   const [fusionConfig, setFusionConfig] = useState({
@@ -66,16 +49,9 @@ const HomePage = () => {
     }
   });
   
-  // State for general MPC checklist (following workflow order)
   const [mpcChecklist, setMpcChecklist] = useState({
     prior: false,
-    pacemaker: {
-      enabled: false,
-      low: false,
-      medium: false,
-      high: false
-    },
-    neurostimulator: false,
+    pacemaker: { enabled: false },
     specialTreatmentTypes: {
       sbrt: false,
       srs: false,
@@ -124,24 +100,11 @@ const HomePage = () => {
     });
   };
   
-  // All General MPC options are mutually exclusive - only one can be selected at a time
   const toggleMpcItem = (section, item) => {
-    // Reset state - all options cleared
     const clearedState = {
       prior: false,
-      pacemaker: {
-        enabled: false,
-        low: false,
-        medium: false,
-        high: false
-      },
-      neurostimulator: false,
-      specialTreatmentTypes: {
-        sbrt: false,
-        srs: false,
-        tbi: false,
-        hdr: false
-      },
+      pacemaker: { enabled: false },
+      specialTreatmentTypes: { sbrt: false, srs: false, tbi: false, hdr: false },
       dibh: false
     };
     
@@ -149,92 +112,32 @@ const HomePage = () => {
       setMpcChecklist(prev => prev.dibh ? clearedState : { ...clearedState, dibh: true });
     } else if (section === 'prior') {
       setMpcChecklist(prev => prev.prior ? clearedState : { ...clearedState, prior: true });
-    } else if (section === 'neurostimulator') {
-      setMpcChecklist(prev => prev.neurostimulator ? clearedState : { ...clearedState, neurostimulator: true });
     } else if (section === 'specialTreatmentTypes') {
       setMpcChecklist(prev => {
         const wasSelected = prev.specialTreatmentTypes[item];
-        if (wasSelected) {
-          return clearedState;
-        }
-        return {
-          ...clearedState,
-          specialTreatmentTypes: { ...clearedState.specialTreatmentTypes, [item]: true }
-        };
+        if (wasSelected) return clearedState;
+        return { ...clearedState, specialTreatmentTypes: { ...clearedState.specialTreatmentTypes, [item]: true } };
       });
     } else if (section === 'pacemaker' && item === 'enabled') {
-      setMpcChecklist(prev => prev.pacemaker.enabled ? clearedState : { ...clearedState, pacemaker: { ...clearedState.pacemaker, enabled: true } });
+      setMpcChecklist(prev => prev.pacemaker.enabled ? clearedState : { ...clearedState, pacemaker: { enabled: true } });
     }
   };
 
-  // Helper function to check if MPC checklist is valid
   const isMpcValid = () => {
-    // Check if anything is selected at all
-    const hasPriorSelection = mpcChecklist.prior;
-    const hasPacemakerSelection = mpcChecklist.pacemaker.enabled;
-    const hasNeurostimulatorSelection = mpcChecklist.neurostimulator;
-    const hasSpecialTreatment = Object.values(mpcChecklist.specialTreatmentTypes).some(Boolean);
-    const hasDibhSelection = mpcChecklist.dibh;
-    
-    // Must have at least one main category selected
-    return hasPriorSelection || hasPacemakerSelection || hasNeurostimulatorSelection || hasSpecialTreatment || hasDibhSelection;
+    return mpcChecklist.prior || mpcChecklist.pacemaker.enabled || 
+           Object.values(mpcChecklist.specialTreatmentTypes).some(Boolean) || mpcChecklist.dibh;
   };
 
-  // Helper function to determine which MPC module to route to
   const getMpcRoute = (mpcConfig) => {
-    // Priority order: Prior Dose → Pacemaker → Neurostimulator → Treatment Types (SBRT/SRS/TBI/HDR) → DIBH
-    
-    if (mpcConfig.prior) {
-      return '/prior-dose';
-    }
-    
-    if (mpcConfig.pacemaker.enabled) {
-      return '/pacemaker';
-    }
-    
-    if (mpcConfig.neurostimulator) {
-      return '/neurostimulator';
-    }
-    
+    if (mpcConfig.prior) return '/prior-dose';
+    if (mpcConfig.pacemaker.enabled) return '/pacemaker';
     const specialTypes = mpcConfig.specialTreatmentTypes;
-    if (specialTypes.sbrt) {
-      return '/sbrt';
-    }
-    if (specialTypes.srs) {
-      return '/srs';
-    }
-    if (specialTypes.tbi) {
-      return '/tbi';
-    }
-    if (specialTypes.hdr) {
-      return '/hdr';
-    }
-    
-    if (mpcConfig.dibh) {
-      return '/dibh';
-    }
-    
-    // Fallback (should never reach here due to button validation)
+    if (specialTypes.sbrt) return '/sbrt';
+    if (specialTypes.srs) return '/srs';
+    if (specialTypes.tbi) return '/tbi';
+    if (specialTypes.hdr) return '/hdr';
+    if (mpcConfig.dibh) return '/dibh';
     return '/';
-  };
-
-  // Helper to calculate total fusions
-  const getTotalFusions = () => {
-    return fusionConfig.mri.rigid + 
-           fusionConfig.pet.rigid + 
-           fusionConfig.pet.deformable + 
-           fusionConfig.ct.rigid + 
-           fusionConfig.ct.deformable;
-  };
-
-  // Helper to get selected treatment type
-  const getSelectedTreatmentType = () => {
-    const types = mpcChecklist.specialTreatmentTypes;
-    if (types.sbrt) return 'SBRT';
-    if (types.srs) return 'SRS/SRT';
-    if (types.tbi) return 'TBI';
-    if (types.hdr) return 'HDR';
-    return null;
   };
 
   // Counter control component for compact display
@@ -303,18 +206,11 @@ const HomePage = () => {
                 QuickWrite
               </Tab>
               <Tab 
-                _selected={{ bg: "cyan.500", color: "white" }}
-                _hover={{ bg: "gray.700" }}
-                color="gray.300"
-              >
-                The Observatory
-              </Tab>
-              <Tab 
                 _selected={{ bg: "purple.500", color: "white" }}
                 _hover={{ bg: "gray.700" }}
                 color="gray.300"
               >
-                About
+                Settings
               </Tab>
             </TabList>
           </Container>
@@ -417,7 +313,7 @@ const HomePage = () => {
               {/* Bladder Comparison Callout */}
               <Box 
                 p={3} 
-                bg={fusionConfig.ct.bladderStatus ? "yellow.900" : "gray.750"} 
+                bg={fusionConfig.ct.bladderStatus ? "yellow.900" : "gray.700"} 
                 borderRadius="md" 
                 borderLeft="4px" 
                 borderColor={fusionConfig.ct.bladderStatus ? "yellow.400" : "gray.600"}
@@ -477,10 +373,6 @@ const HomePage = () => {
             
             <CardBody>
               <SimpleGrid columns={2} spacing={3}>
-                
-                {/* PRODUCTION NOTE: Prior Dose module hidden - pending comprehensive QA */}
-                
-                {/* Prior Dose */}
                 <Button
                   size="md"
                   variant={mpcChecklist.prior ? "solid" : "outline"}
@@ -512,23 +404,7 @@ const HomePage = () => {
                   Pacemaker
                 </Button>
 
-                {/* Neurostimulator - HIDDEN: pending further development */}
-                {/* <Button
-                  size="md"
-                  variant={mpcChecklist.neurostimulator ? "solid" : "outline"}
-                  colorScheme={mpcChecklist.neurostimulator ? "cyan" : "gray"}
-                  onClick={() => toggleMpcItem('neurostimulator')}
-                  borderColor="gray.600"
-                  color={mpcChecklist.neurostimulator ? "white" : "gray.300"}
-                  _hover={{ 
-                    bg: mpcChecklist.neurostimulator ? "cyan.600" : "gray.700",
-                    borderColor: mpcChecklist.neurostimulator ? "cyan.300" : "gray.500"
-                  }}
-                >
-                  Neurostim
-                </Button> */}
-
-                {/* SBRT - TEMPORARY: Mutually exclusive with DIBH */}
+                {/* SBRT */}
                 <Button
                   size="md"
                   variant={mpcChecklist.specialTreatmentTypes.sbrt ? "solid" : "outline"}
@@ -592,7 +468,7 @@ const HomePage = () => {
                   HDR
                 </Button>
 
-                {/* DIBH - TEMPORARY: Mutually exclusive with SBRT */}
+                {/* DIBH */}
                 <Button
                   size="md"
                   variant={mpcChecklist.dibh ? "solid" : "outline"}
@@ -631,103 +507,16 @@ const HomePage = () => {
               </SimpleGrid>
             </TabPanel>
 
-            {/* The Observatory Tab */}
-            <TabPanel p={0}>
-              <Box maxW="container.lg" mx="auto">
-              <Box bg="gray.800" p={8} borderRadius="lg" border="1px" borderColor="gray.600">
-                <Flex 
-                  direction={{ base: "column", md: "row" }} 
-                  gap={8} 
-                  align="flex-start"
-                >
-                  {/* Text Content - Left Side */}
-                  <VStack spacing={0} align="flex-start" flex="1" minW={{ base: "100%", md: "280px" }}>
-                    <Heading size="lg" color="teal.300" textAlign="left" lineHeight="1" mb={0}>
-                      Enjoying to Learn,
-                    </Heading>
-                    <Heading size="lg" color="teal.300" textAlign="left" lineHeight="1" mb={4}>
-                      Learning to Enjoy
-                    </Heading>
-                    <Text fontSize="lg" color="gray.300" textAlign="left">
-                      The Observatory is a medical physics educational game that teaches clinical concepts through creative and 
-                      interactive experiences. Spurred by a passion for video games, pixel art, and teaching,
-                      The Observatory is a passion project led by Luke Lussier and assisted by Zachariah Appelbaum. 
-                      The project is currently in development by Luke and Zach's game design studio: Questrium.
-                    </Text>
-                  </VStack>
-                  
-                  {/* Game Screenshots - Right Side */}
-                  <VStack spacing={4} flex="1" maxW={{ base: "100%", md: "520px" }}>
-                    <Box 
-                      borderRadius="lg" 
-                      overflow="hidden"
-                      cursor="pointer"
-                      onClick={() => setEnlargedImage(observatory1)}
-                      _hover={{ transform: "scale(1.02)", opacity: 0.9 }}
-                      transition="all 0.2s"
-                    >
-                      <Image
-                        src={observatory1}
-                        alt="The Observatory - Screenshot 1"
-                        style={{ width: '100%', height: 'auto' }}
-                        placeholder="blur"
-                      />
-                    </Box>
-                    <Box 
-                      borderRadius="lg" 
-                      overflow="hidden"
-                      cursor="pointer"
-                      onClick={() => setEnlargedImage(observatory2)}
-                      _hover={{ transform: "scale(1.02)", opacity: 0.9 }}
-                      transition="all 0.2s"
-                    >
-                      <Image
-                        src={observatory2}
-                        alt="The Observatory - Screenshot 2"
-                        style={{ width: '100%', height: 'auto' }}
-                        placeholder="blur"
-                      />
-                    </Box>
-                  </VStack>
-                </Flex>
-              </Box>
-              
-              {/* Enlarged Image Modal */}
-              <Modal isOpen={enlargedImage !== null} onClose={() => setEnlargedImage(null)} size="6xl" isCentered>
-                <ModalOverlay bg="blackAlpha.800" />
-                <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
-                  <ModalCloseButton color="white" size="lg" top={-10} right={-10} />
-                  <ModalBody p={0}>
-                    {enlargedImage && (
-                      <Image
-                        src={enlargedImage}
-                        alt="The Observatory - Enlarged"
-                        style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                        placeholder="blur"
-                      />
-                    )}
-                  </ModalBody>
-                </ModalContent>
-              </Modal>
-              </Box>
-            </TabPanel>
-
-            {/* About Tab */}
+            {/* Settings Tab */}
             <TabPanel p={0}>
               <Box bg="gray.800" p={6} borderRadius="lg" border="1px" borderColor="gray.600">
                 <VStack spacing={6} align="start">
-                  {/* Studio Header */}
-                  <Box>
-                    <Heading as="h2" size="lg" mb={2} color="purple.200">
-                      Questrium
-                    </Heading>
-                    <Text fontSize="lg" color="gray.300">
-                      A small software studio founded by Luke Lussier and Zachariah Appelbaum dedicated to advancing medical physics through innovative tools and applications.
-                      The studio is currently focused on the development of Quickwrite, a clinical documentation tool, and The Observatory, a medical physics educational game.
-                      Questrium is known for its unique pixel art style and tight UI/UX design.
-                      The studio is located in the greater San Antonio area, USA.
-                    </Text>
-                  </Box>
+                  <Heading as="h2" size="lg" mb={2} color="purple.200">
+                    Settings
+                  </Heading>
+                  <Text fontSize="lg" color="gray.300">
+                    Settings coming soon.
+                  </Text>
                 </VStack>
               </Box>
             </TabPanel>

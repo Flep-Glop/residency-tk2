@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { TBIForm } from '../components/tbi';
+import TBIForm from '../components/tbi/TBIForm';
 
 const TBIPage = () => {
   const router = useRouter();

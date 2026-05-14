@@ -56,8 +56,8 @@ const FusionForm = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [writeup, setWriteup] = useState('');
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
-  const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const physicians = ['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli'];
+  const physicists = ['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen'];
   const [selectedSecondaryModality, setSelectedSecondaryModality] = useState('');
   const initialLoadRef = useRef(true);
   const [isCustomRegion, setIsCustomRegion] = useState(false);

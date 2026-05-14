@@ -1,6 +1,6 @@
 import { Box, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { PacemakerForm } from '../components/pacemaker';
+import PacemakerForm from '../components/pacemaker/PacemakerForm';
 
 export default function PacemakerPage() {
   const router = useRouter();

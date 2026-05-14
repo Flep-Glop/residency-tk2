@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { SRSForm } from '../components/srs';
+import SRSForm from '../components/srs/SRSForm';
 
 const SRSPage = () => {
   const router = useRouter();

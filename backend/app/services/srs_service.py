@@ -1,5 +1,5 @@
 from app.schemas.srs_schemas import SRSGenerateRequest, SRSGenerateResponse
-from typing import List, Dict, Any
+from typing import List
 
 class SRSService:
     def __init__(self):
@@ -12,22 +12,6 @@ class SRSService:
             "corpus callosum", "pineal region", "midbrain", "pons",
             "medulla", "left cerebellar hemisphere", "right cerebellar hemisphere",
             "left hippocampus", "right hippocampus", "optic chiasm", "sellar region"
-        ]
-        
-        # Typical SRS dose schemes (single fraction)
-        self.srs_schemes = [
-            {"dose": 16.0, "fractions": 1, "description": "16 Gy in 1 fraction"},
-            {"dose": 18.0, "fractions": 1, "description": "18 Gy in 1 fraction"},
-            {"dose": 20.0, "fractions": 1, "description": "20 Gy in 1 fraction"},
-            {"dose": 21.0, "fractions": 1, "description": "21 Gy in 1 fraction"}
-        ]
-        
-        # Typical SRT dose schemes (multiple fractions)
-        self.srt_schemes = [
-            {"dose": 25.0, "fractions": 5, "description": "25 Gy in 5 fractions"},
-            {"dose": 27.0, "fractions": 3, "description": "27 Gy in 3 fractions"},
-            {"dose": 30.0, "fractions": 5, "description": "30 Gy in 5 fractions"},
-            {"dose": 35.0, "fractions": 5, "description": "35 Gy in 5 fractions"}
         ]
 
     def get_brain_regions(self) -> List[str]:

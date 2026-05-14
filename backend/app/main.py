@@ -2,11 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from app.routers import fusion, dibh, sbrt, pacemaker, prior_dose, srs, tbi, hdr, neurostimulator
+from app.routers import fusion, dibh, sbrt, pacemaker, prior_dose, srs, tbi, hdr
 from app.database import engine, Base
 from app.middleware import add_error_handling, ErrorHandlerMiddleware
 import logging
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +61,6 @@ app.include_router(pacemaker.router, prefix="/api/pacemaker", tags=["Pacemaker"]
 app.include_router(prior_dose.router, prefix="/api/prior-dose", tags=["Prior Dose"])
 app.include_router(tbi.router, prefix="/api/tbi", tags=["TBI"])
 app.include_router(hdr.router, prefix="/api/hdr", tags=["HDR"])
-app.include_router(neurostimulator.router, prefix="/api/neurostimulator", tags=["Neurostimulator"])
 
 @app.get("/")
 async def root():

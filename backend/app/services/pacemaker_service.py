@@ -176,8 +176,6 @@ class PacemakerService:
         tps_max_dose = pacemaker_data.tps_max_dose
         osld_mean_dose = pacemaker_data.osld_mean_dose
         
-        # Always recalculate risk level to ensure accuracy (never trust frontend)
-        from app.schemas.pacemaker_schemas import PacemakerRiskAssessmentRequest
         risk_request = PacemakerRiskAssessmentRequest(
             pacing_dependent=pacing_dependent,
             field_distance=pacemaker_data.field_distance,

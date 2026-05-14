@@ -1,9 +1,6 @@
-// Version information for the Medical Physics Toolkit
 export const VERSION_INFO = {
   current: "2.5.0",
   releaseDate: "2026-01-05",
-  
-  // Update history - add new updates to the top of this array
   updates: [
     {
       version: "2.5.0",
@@ -18,10 +15,6 @@ export const VERSION_INFO = {
   ]
 };
 
-// Helper function to get the latest update
-export const getLatestUpdate = () => VERSION_INFO.updates[0];
-
-// Helper function to check if there are new updates since last seen version
 export const hasNewUpdates = (lastSeenVersion) => {
   return !lastSeenVersion || lastSeenVersion !== VERSION_INFO.current;
 };

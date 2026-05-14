@@ -1,20 +1,7 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
-// Custom color palette - all colors from provided palette
 const theme = extendTheme({
   colors: {
-    brand: {
-      50: '#a4dddb',
-      100: '#73bed3',
-      200: '#4f8fba',
-      300: '#3c5e8b',
-      400: '#253a5e',
-      500: '#172038',  // Primary color - dark blue
-      600: '#172038',
-      700: '#10141f',
-      800: '#090a14',
-      900: '#090a14',
-    },
     gray: {
       50: '#ebede9',
       100: '#c7cfcc',
@@ -122,7 +109,6 @@ const theme = extendTheme({
   },
   styles: {
     global: {
-      // Load the Aseprite pixel font
       '@font-face': {
         fontFamily: 'Aseprite',
         src: 'url("/fonts/AsepriteFont.ttf") format("truetype")',
@@ -133,79 +119,25 @@ const theme = extendTheme({
       body: {
         bg: '#090a14',
         color: '#ebede9',
-        fontFamily: '"Aseprite", monospace',
         fontSize: '32px',
         lineHeight: '1.0',
       },
-      // Custom scrollbar styling
+      '*, *::before, *::after': {
+        scrollbarWidth: 'none',
+        fontWeight: 'normal !important',
+        fontFamily: '"Aseprite", monospace !important',
+      },
       '*::-webkit-scrollbar': {
         width: '0px',
         height: '0px',
       },
-      '*::-webkit-scrollbar-track': {
-        background: 'transparent',
-      },
-      '*::-webkit-scrollbar-thumb': {
-        background: 'transparent',
-      },
-      // Universal font override
-      '*, *::before, *::after': {
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none', // IE and Edge
-        fontWeight: 'normal !important', // Pixel font looks better uniform
-        fontFamily: '"Aseprite", monospace !important',
-      },
-      // HTML and root elements
-      'html, body': {
-        fontFamily: '"Aseprite", monospace !important',
-      },
-      // Fix dropdown option visibility in dark theme
-      'select': {
+      'select, select option': {
         backgroundColor: '#151d28 !important',
         color: '#ebede9 !important',
-        fontFamily: '"Aseprite", monospace !important',
-        fontSize: '32px !important',
-      },
-      'select option, option': {
-        backgroundColor: '#151d28 !important',
-        color: '#ebede9 !important',
-        padding: '10px 14px !important',
         fontSize: '28px !important',
       },
-      // Ensure select elements maintain dark styling
-      'select[data-theme="dark"]': {
-        backgroundColor: '#151d28 !important',
-        color: '#ebede9 !important',
-        borderColor: '#394a50 !important',
-        fontFamily: '"Aseprite", monospace !important',
-        fontSize: '32px !important',
-      },
-      'select[data-theme="dark"] option': {
-        backgroundColor: '#151d28 !important',
-        color: '#ebede9 !important',
-        fontFamily: '"Aseprite", monospace !important',
-        fontSize: '28px !important',
-      },
-      // Alternative approach for better browser compatibility
-      '.chakra-select__wrapper select, .chakra-select__wrapper select option': {
-        backgroundColor: '#151d28 !important',
-        color: '#ebede9 !important',
-        fontFamily: '"Aseprite", monospace !important',
-        fontSize: '32px !important',
-      },
-      // Chakra Select component overrides
-      '.chakra-select': {
-        fontSize: '32px !important',
-        fontFamily: '"Aseprite", monospace !important',
-      },
-      // Ensure textarea and output areas use Aseprite font
-      'textarea, pre, code, .chakra-textarea, .chakra-textarea__wrapper textarea': {
-        fontFamily: '"Aseprite", monospace !important',
+      'textarea, pre, code': {
         fontSize: '24px !important',
-      },
-      // Input elements
-      'input, button, select, textarea': {
-        fontFamily: '"Aseprite", monospace !important',
       },
     },
   },
@@ -219,4 +151,4 @@ function MyApp({ Component, pageProps }) {
   );
 }
 
-export default MyApp; 
+export default MyApp;

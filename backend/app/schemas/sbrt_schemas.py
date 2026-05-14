@@ -181,13 +181,3 @@ class SBRTValidateResponse(BaseModel):
     message: str = Field(default="Validation successful")
     constraints_met: List[Dict[str, Any]] = Field(default_factory=list)
     constraints_violated: List[Dict[str, Any]] = Field(default_factory=list)
-
-# Placeholder for treatment site details if needed later
-# class SBRTTreatmentSiteInfo(BaseModel):
-#     name: str
-#     available_fx_schemes: List[Dict[str, Any]]
-#     dose_constraints: Dict[str, Any]
-
-# You might also want schemas for what /treatment-sites, /dose-constraints, 
-# and /fractionation-schemes return if they are more complex than simple lists/dicts.
-# For now, assuming they return List[str] or Dict[str, Any] which FastAPI can handle. 

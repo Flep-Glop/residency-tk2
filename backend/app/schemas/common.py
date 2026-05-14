@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
 
 class PersonInfo(BaseModel):
     """Schema for representing a staff member."""

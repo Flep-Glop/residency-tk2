@@ -60,4 +60,12 @@ var/
 
 # Logs
 logs
-*.log 
+*.log
+
+# Virtual environments
+venv/
+.venv/
+
+# Runtime
+.service_pids
+.pytest_cache/

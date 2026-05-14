@@ -1,5 +1,5 @@
 from app.schemas.fusion import FusionRequest, FusionResponse, Registration
-from typing import List, Dict
+from typing import List
 
 class FusionService:
     """Service for generating fusion write-ups."""
@@ -10,16 +10,6 @@ class FusionService:
     
     def generate_fusion_writeup(self, request: FusionRequest) -> FusionResponse:
         """Generate a fusion write-up based on the request data."""
-        # DEBUG: Log the incoming request data
-        print(f"\nDEBUG: generate_fusion_writeup called!")
-        print(f"DEBUG: Physician: {request.common_info.physician.name}")
-        print(f"DEBUG: Region: {request.fusion_data.anatomical_region}")
-        print(f"DEBUG: Custom region: {request.fusion_data.custom_anatomical_region}")
-        print(f"DEBUG: Registrations ({len(request.fusion_data.registrations)}):")
-        for i, reg in enumerate(request.fusion_data.registrations):
-            print(f"  [{i+1}] {reg.primary} -> {reg.secondary} ({reg.method})")
-        print(f"DEBUG: Bladder study: {request.fusion_data.is_bladder_filling_study}")
-        
         common_info = request.common_info
         fusion_data = request.fusion_data
         
@@ -55,11 +45,6 @@ class FusionService:
     
     def _generate_fusion_text(self, registrations: List[Registration], anatomical_region: str) -> str:
         """Generate the fusion description text based on the configured registrations."""
-        # DEBUG: Always log what we receive
-        print(f"DEBUG: _generate_fusion_text called with {len(registrations)} registrations:")
-        for i, reg in enumerate(registrations):
-            print(f"  [{i+1}] {reg.primary} -> {reg.secondary} ({reg.method})")
-        print(f"DEBUG: anatomical_region='{anatomical_region}'")
         # Count registrations by modality for summary
         modality_counts = {}
         for reg in registrations:
@@ -128,40 +113,18 @@ class FusionService:
         is_mixed_mri_pet = has_mri and has_pet and not has_ct
         
         if is_mixed_mri_pet:
-            print(f"DEBUG: MRI+PET MIXED COMBINATION DETECTED!")
-            print(f"DEBUG: MRI registrations: {len(mri_registrations)}")
-            print(f"DEBUG: PET registrations: {len(pet_registrations)}")
-            for i, pet_reg in enumerate(pet_registrations):
-                print(f"  PET[{i+1}] method: {pet_reg.method}")
-            
-            # Generate combined text for MRI + PET combinations
             return self._generate_mixed_mri_pet_text(mri_registrations, pet_registrations, anatomical_region)
         
         # Check if this is the ultimate MRI+CT+PET combination
         is_mixed_mri_ct_pet = has_mri and has_ct and has_pet
         
         if is_mixed_mri_ct_pet:
-            print(f"DEBUG: ULTIMATE MRI+CT+PET COMBINATION DETECTED!")
-            print(f"DEBUG: MRI={len(mri_registrations)}, CT={len(ct_registrations)}, PET={len(pet_registrations)}")
-            for i, ct_reg in enumerate(ct_registrations):
-                print(f"  CT[{i+1}] method: {ct_reg.method}")
-            for i, pet_reg in enumerate(pet_registrations):
-                print(f"  PET[{i+1}] method: {pet_reg.method}")
-            
-            # Generate combined text for ultimate MRI + CT + PET combinations
             return self._generate_mixed_mri_ct_pet_text(mri_registrations, ct_registrations, pet_registrations, anatomical_region)
         
         # Check if this is a mixed MRI+CT combination
         is_mixed_mri_ct = has_mri and has_ct and not has_pet
         
         if is_mixed_mri_ct:
-            print(f"DEBUG: MRI+CT MIXED COMBINATION DETECTED!")
-            print(f"DEBUG: MRI registrations: {len(mri_registrations)}")
-            print(f"DEBUG: CT registrations: {len(ct_registrations)}")
-            for i, ct_reg in enumerate(ct_registrations):
-                print(f"  CT[{i+1}] method: {ct_reg.method}")
-            
-            # Generate combined text for MRI + CT combinations
             return self._generate_mixed_mri_ct_text(mri_registrations, ct_registrations, anatomical_region)
         
         if mri_registrations:
@@ -206,7 +169,6 @@ class FusionService:
                         pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for one study, while the remaining {deformable_count} studies received rigid registration followed by deformable registration."
                     else:
                         # Multiple of each type (including cases with >2 total where deformable_count == 1)
-                        print(f"DEBUG: FIXED BRANCH WORKING! rigid_count={rigid_count}, deformable_count={deformable_count}")
                         rigid_word = "study" if rigid_count == 1 else "studies"
                         deformable_word = "study" if deformable_count == 1 else "studies"
                         pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for {rigid_count} {rigid_word} and rigid registration followed by deformable registration for {deformable_count} {deformable_word}."
@@ -251,7 +213,6 @@ class FusionService:
                         ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for one study, while the remaining {deformable_count} studies received rigid registration followed by deformable registration."
                     else:
                         # Multiple of each type (including cases with >2 total where deformable_count == 1)
-                        print(f"DEBUG: CT/CT ENHANCED BRANCH! rigid_count={rigid_count}, deformable_count={deformable_count}")
                         rigid_word = "study" if rigid_count == 1 else "studies"
                         deformable_word = "study" if deformable_count == 1 else "studies"
                         ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for {rigid_count} {rigid_word} and rigid registration followed by deformable registration for {deformable_count} {deformable_word}."
@@ -279,7 +240,6 @@ class FusionService:
         pet_deformable_count = sum(1 for reg in pet_registrations if reg.method.lower() != "rigid")
         has_deformable_pet = pet_deformable_count > 0
         
-        print(f"DEBUG: MRI+PET Analysis: MRI={mri_count}, PET={pet_count} (rigid={pet_rigid_count}, deformable={pet_deformable_count})")
         
         # Generate introduction text for MRI+PET combinations
         intro_text = ""
@@ -341,7 +301,6 @@ class FusionService:
                     pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for one study, while the remaining {pet_deformable_count} studies received rigid registration followed by deformable registration."
                 else:
                     # Multiple of each type
-                    print(f"DEBUG: MRI+PET COMPLEX CASE! pet_rigid={pet_rigid_count}, pet_deformable={pet_deformable_count}")
                     rigid_word = "study" if pet_rigid_count == 1 else "studies"
                     deformable_word = "study" if pet_deformable_count == 1 else "studies"
                     pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for {pet_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {pet_deformable_count} {deformable_word}."
@@ -369,7 +328,6 @@ class FusionService:
         ct_deformable_count = sum(1 for reg in ct_registrations if reg.method.lower() != "rigid")
         has_deformable_ct = ct_deformable_count > 0
         
-        print(f"DEBUG: MRI+CT Analysis: MRI={mri_count}, CT={ct_count} (rigid={ct_rigid_count}, deformable={ct_deformable_count})")
         
         # Generate introduction text for MRI+CT combinations
         intro_text = ""
@@ -431,7 +389,6 @@ class FusionService:
                     ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for one study, while the remaining {ct_deformable_count} studies received rigid registration followed by deformable registration."
                 else:
                     # Multiple of each type
-                    print(f"DEBUG: MRI+CT COMPLEX CASE! ct_rigid={ct_rigid_count}, ct_deformable={ct_deformable_count}")
                     rigid_word = "study" if ct_rigid_count == 1 else "studies"
                     deformable_word = "study" if ct_deformable_count == 1 else "studies"
                     ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for {ct_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {ct_deformable_count} {deformable_word}."
@@ -465,7 +422,6 @@ class FusionService:
         pet_deformable_count = sum(1 for reg in pet_registrations if reg.method.lower() != "rigid")
         has_deformable_pet = pet_deformable_count > 0
         
-        print(f"DEBUG: ULTIMATE Analysis: MRI={mri_count}, CT={ct_count} (rigid={ct_rigid_count}, deformable={ct_deformable_count}), PET={pet_count} (rigid={pet_rigid_count}, deformable={pet_deformable_count})")
         
         # Generate introduction text for ultimate MRI+CT+PET combinations
         intro_text = ""
@@ -539,7 +495,6 @@ class FusionService:
                     ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for one study, while the remaining {ct_deformable_count} studies received rigid registration followed by deformable registration."
                 else:
                     # Multiple of each type
-                    print(f"DEBUG: ULTIMATE CT COMPLEX CASE! ct_rigid={ct_rigid_count}, ct_deformable={ct_deformable_count}")
                     rigid_word = "study" if ct_rigid_count == 1 else "studies"
                     deformable_word = "study" if ct_deformable_count == 1 else "studies"
                     ct_text = f"The planning CT and imported CT image sets were aligned using rigid registration for {ct_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {ct_deformable_count} {deformable_word}."
@@ -573,7 +528,6 @@ class FusionService:
                     pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for one study, while the remaining {pet_deformable_count} studies received rigid registration followed by deformable registration."
                 else:
                     # Multiple of each type
-                    print(f"DEBUG: ULTIMATE PET COMPLEX CASE! pet_rigid={pet_rigid_count}, pet_deformable={pet_deformable_count}")
                     rigid_word = "study" if pet_rigid_count == 1 else "studies"
                     deformable_word = "study" if pet_deformable_count == 1 else "studies"
                     pet_text = f"The CT and PET/CT image sets were aligned using rigid registration for {pet_rigid_count} {rigid_word} and rigid registration followed by deformable registration for {pet_deformable_count} {deformable_word}."

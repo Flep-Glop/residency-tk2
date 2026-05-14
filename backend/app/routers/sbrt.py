@@ -65,18 +65,3 @@ async def validate_sbrt_dose_fractionation(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
-# Updated method to include /treatment-sites/info endpoint if needed in the future
-# Uncomment and implement if needed
-# @router.get("/treatment-sites/info", response_model=Dict[str, Any])
-# async def get_sbrt_treatment_sites_info(
-#     sbrt_service: SBRTService = Depends(get_sbrt_service)
-# ):
-#     """Get detailed information about all treatment sites."""
-#     result = {}
-#     for site in sbrt_service.treatment_sites:
-#         result[site] = {
-#             "fractionation_schemes": sbrt_service.get_fractionation_schemes(site),
-#             "dose_constraints": sbrt_service.get_dose_constraints(site)
-#         }
-#     return result 

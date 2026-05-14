@@ -1,6 +1,5 @@
 from app.schemas.prior_dose import PriorDoseRequest, PriorDoseResponse, PriorTreatment
-from typing import List, Dict, Any, Tuple
-from datetime import datetime
+from typing import List, Dict, Any
 
 class PriorDoseService:
     """Service for generating prior dose write-ups."""

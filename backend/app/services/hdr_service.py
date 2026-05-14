@@ -1,5 +1,5 @@
 from app.schemas.hdr_schemas import HDRGenerateRequest, HDRGenerateResponse
-from typing import List, Dict, Any
+from typing import List, Dict
 
 class HDRService:
     def __init__(self):
@@ -31,21 +31,6 @@ class HDRService:
                 "description": "SYED applicator"
             }
         }
-        
-        # Planning systems
-        self.planning_systems = [
-            "Oncentra",
-            "Oncentra Brachy",
-            "BrachyVision",
-            "Sagiplan"
-        ]
-        
-        # Afterloader units
-        self.afterloaders = [
-            "ELEKTA Ir-192 remote afterloader",
-            "Varian GammaMed HDR",
-            "Nucletron microSelectron"
-        ]
 
     def get_applicators(self) -> List[str]:
         """Return list of available applicator types."""

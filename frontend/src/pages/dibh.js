@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Container, Heading, Button, HStack } from '@chakra-ui/react';
+import { Box, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { DIBHForm } from '../components/dibh';
+import DIBHForm from '../components/dibh/DIBHForm';
 
 const DIBHPage = () => {
   const router = useRouter();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { HDRForm } from '../components/hdr';
+import HDRForm from '../components/hdr/HDRForm';
 
 const HDRPage = () => {
   const router = useRouter();

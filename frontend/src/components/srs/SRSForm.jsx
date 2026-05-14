@@ -32,8 +32,8 @@ const SRSForm = () => {
   const [pendingLesionType, setPendingLesionType] = useState(null); // null, 'SRS', or 'SRT'
   const [editingPrescriptionIndex, setEditingPrescriptionIndex] = useState(null); // index of lesion being edited
   const toast = useToast();
-  const [physicians, setPhysicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
-  const [physicists, setPhysicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const physicians = ['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli'];
+  const physicists = ['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen'];
   
   // Preset options for quick selection
   const srsPresets = [14, 16, 18, 20, 22]; // Gy (single fraction)
