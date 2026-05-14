@@ -1,5 +1,5 @@
 from app.schemas.hdr_schemas import HDRGenerateRequest, HDRGenerateResponse
-from typing import List, Dict
+from typing import List, Dict, Any
 
 class HDRService:
     def __init__(self):
