@@ -163,9 +163,13 @@ async def startup():
                 if not getattr(existing, field, None):
                     setattr(existing, field, SYSTEM_DEFAULT_PROFILE[field])
                     updated = True
+            for field in ("name", "physicians", "physicists"):
+                if getattr(existing, field) != SYSTEM_DEFAULT_PROFILE[field]:
+                    setattr(existing, field, SYSTEM_DEFAULT_PROFILE[field])
+                    updated = True
             if updated:
                 await session.commit()
-                logger.info("Backfilled system profile with default settings")
+                logger.info("Synced system profile with environment config")
 
 @app.on_event("shutdown")
 async def shutdown():
