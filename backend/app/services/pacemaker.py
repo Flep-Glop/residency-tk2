@@ -1,4 +1,4 @@
-from app.schemas.pacemaker_schemas import (
+from app.schemas.pacemaker import (
     PacemakerGenerateRequest, PacemakerGenerateResponse,
     PacemakerRiskAssessmentRequest, PacemakerRiskAssessmentResponse,
     DeviceInfo, TreatmentSiteInfo

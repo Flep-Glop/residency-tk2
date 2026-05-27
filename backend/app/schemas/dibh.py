@@ -14,6 +14,10 @@ class DIBHData(BaseModel):
     boost_dose: Optional[float] = Field(None, description="Boost dose in Gy")
     boost_fractions: Optional[int] = Field(None, description="Number of boost fractions")
 
+    # Facility defaults (populated from clinic profile)
+    scanning_system: str = Field(default="C-RAD", description="Surface scanning/gating system brand")
+    gating_device: str = Field(default="C-RAD CatalystHD", description="Specific gating device name")
+
 class DIBHRequest(BaseModel):
     """Schema for DIBH write-up request."""
     common_info: CommonInfo

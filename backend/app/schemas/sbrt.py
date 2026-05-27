@@ -39,6 +39,12 @@ class SBRTData(BaseModel):
     calculated_metrics: Optional[CalculatedMetrics] = Field(None, description="Real-time calculated metrics")
     is_sib: bool = Field(default=False, description="SIB case flag")
 
+    # Facility defaults (populated from clinic profile)
+    planning_system: str = Field(default="Pinnacle", description="Treatment planning system")
+    accelerator: str = Field(default="VersaHD", description="Linear accelerator")
+    imaging_system: str = Field(default="kV-CBCT", description="Imaging/verification system")
+    gating_system: str = Field(default="C-RAD CatalystHD", description="Gating system for DIBH technique")
+
     @validator('dose')
     def dose_must_be_positive(cls, v):
         if v <= 0:

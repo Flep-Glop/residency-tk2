@@ -1,15 +1,4 @@
-import api from './api';
+import { apiPost } from './api';
 
-const hdrService = {
-  generateWriteup: async (data) => {
-    try {
-      const response = await api.post('/hdr/generate', data);
-      return response.data;
-    } catch (error) {
-      console.error('Error generating HDR write-up:', error);
-      throw error;
-    }
-  }
-};
-
-export default hdrService;
+export const generateHDRWriteup = (data) =>
+  apiPost('/hdr/generate', data, 'Failed to generate HDR write-up');

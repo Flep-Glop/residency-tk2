@@ -1,10 +1,4 @@
-import api from './api';
+import { apiPost } from './api';
 
-const srsService = {
-  generateWriteup: async (data) => {
-    const response = await api.post('/srs/generate', data);
-    return response.data;
-  }
-};
-
-export default srsService;
+export const generateSRSWriteup = (data) =>
+  apiPost('/srs/generate', data, 'Failed to generate SRS write-up');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import {
@@ -36,10 +36,11 @@ import {
   RadioGroup,
   SimpleGrid,
 } from '@chakra-ui/react';
-import { getModalities, getRegistrationMethods, generateFusionWriteup } from '../../services/fusionService';
+import { getModalities, getRegistrationMethods, generateFusionWriteup } from '../services/fusionService';
+import { ClinicProfileContext } from '../pages/_app';
+import WriteupPanel from './WriteupPanel';
 
-// Anatomical regions for fusion registration
-const ANATOMICAL_REGIONS = [
+const DEFAULT_ANATOMICAL_REGIONS = [
   { value: 'brain', label: 'Brain' },
   { value: 'head and neck', label: 'Head & Neck' },
   { value: 'thoracic', label: 'Thoracic' },
@@ -50,14 +51,16 @@ const ANATOMICAL_REGIONS = [
 
 const FusionForm = () => {
   const router = useRouter();
+  const { activeProfile } = useContext(ClinicProfileContext);
+  const ANATOMICAL_REGIONS = activeProfile?.module_presets?.fusion?.anatomical_regions || DEFAULT_ANATOMICAL_REGIONS;
   const [modalities, setModalities] = useState([]);
   const [registrationMethods, setRegistrationMethods] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [writeup, setWriteup] = useState('');
   const toast = useToast();
-  const physicians = ['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli'];
-  const physicists = ['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen'];
+  const physicians = activeProfile?.physicians || [];
+  const physicists = activeProfile?.physicists || [];
   const [selectedSecondaryModality, setSelectedSecondaryModality] = useState('');
   const initialLoadRef = useRef(true);
   const [isCustomRegion, setIsCustomRegion] = useState(false);
@@ -1162,64 +1165,20 @@ const FusionForm = () => {
                       rules={{ required: 'Physicist is required' }}
                       render={({ field }) => (
                         <Grid templateColumns="1fr 1fr" gap={2}>
-                          <GridItem colSpan={2}>
-                            <Button
-                              size="sm"
-                              width="100%"
-                              variant={field.value === 'Papanikolaou' ? 'solid' : 'outline'}
-                              colorScheme={field.value === 'Papanikolaou' ? 'blue' : 'gray'}
-                              color={field.value === 'Papanikolaou' ? 'white' : 'gray.300'}
-                              borderColor="gray.600"
-                              onClick={() => field.onChange('Papanikolaou')}
-                              _hover={{ bg: field.value === 'Papanikolaou' ? 'blue.600' : 'gray.700' }}
-                            >
-                              Papanikolaou
-                            </Button>
-                          </GridItem>
+                        {physicists.map(name => (
                           <Button
+                            key={name}
                             size="sm"
-                            variant={field.value === 'Bassiri' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Bassiri' ? 'blue' : 'gray'}
-                            color={field.value === 'Bassiri' ? 'white' : 'gray.300'}
+                            variant={field.value === name ? 'solid' : 'outline'}
+                            colorScheme={field.value === name ? 'blue' : 'gray'}
+                            color={field.value === name ? 'white' : 'gray.300'}
                             borderColor="gray.600"
-                            onClick={() => field.onChange('Bassiri')}
-                            _hover={{ bg: field.value === 'Bassiri' ? 'blue.600' : 'gray.700' }}
+                            onClick={() => field.onChange(name)}
+                            _hover={{ bg: field.value === name ? 'blue.600' : 'gray.700' }}
                           >
-                            Bassiri
+                            {name}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Kirby' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Kirby' ? 'blue' : 'gray'}
-                            color={field.value === 'Kirby' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Kirby')}
-                            _hover={{ bg: field.value === 'Kirby' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Kirby
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Paschal' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Paschal' ? 'blue' : 'gray'}
-                            color={field.value === 'Paschal' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Paschal')}
-                            _hover={{ bg: field.value === 'Paschal' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Paschal
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Rasmussen' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Rasmussen' ? 'blue' : 'gray'}
-                            color={field.value === 'Rasmussen' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Rasmussen')}
-                            _hover={{ bg: field.value === 'Rasmussen' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Rasmussen
-                          </Button>
+                        ))}
                         </Grid>
                       )}
                     />
@@ -1236,86 +1195,20 @@ const FusionForm = () => {
                       rules={{ required: 'Physician is required' }}
                       render={({ field }) => (
                         <Grid templateColumns="1fr 1fr" gap={2}>
-                          <GridItem colSpan={2}>
-                            <Button
-                              size="sm"
-                              width="100%"
-                              variant={field.value === 'Tuli' ? 'solid' : 'outline'}
-                              colorScheme={field.value === 'Tuli' ? 'blue' : 'gray'}
-                              color={field.value === 'Tuli' ? 'white' : 'gray.300'}
-                              borderColor="gray.600"
-                              onClick={() => field.onChange('Tuli')}
-                              _hover={{ bg: field.value === 'Tuli' ? 'blue.600' : 'gray.700' }}
-                            >
-                              Tuli
-                            </Button>
-                          </GridItem>
+                        {physicians.map(name => (
                           <Button
+                            key={name}
                             size="sm"
-                            variant={field.value === 'Dalwadi' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Dalwadi' ? 'blue' : 'gray'}
-                            color={field.value === 'Dalwadi' ? 'white' : 'gray.300'}
+                            variant={field.value === name ? 'solid' : 'outline'}
+                            colorScheme={field.value === name ? 'blue' : 'gray'}
+                            color={field.value === name ? 'white' : 'gray.300'}
                             borderColor="gray.600"
-                            onClick={() => field.onChange('Dalwadi')}
-                            _hover={{ bg: field.value === 'Dalwadi' ? 'blue.600' : 'gray.700' }}
+                            onClick={() => field.onChange(name)}
+                            _hover={{ bg: field.value === name ? 'blue.600' : 'gray.700' }}
                           >
-                            Dalwadi
+                            {name}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Galvan' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Galvan' ? 'blue' : 'gray'}
-                            color={field.value === 'Galvan' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Galvan')}
-                            _hover={{ bg: field.value === 'Galvan' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Galvan
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Ha' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Ha' ? 'blue' : 'gray'}
-                            color={field.value === 'Ha' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Ha')}
-                            _hover={{ bg: field.value === 'Ha' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Ha
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Kluwe' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Kluwe' ? 'blue' : 'gray'}
-                            color={field.value === 'Kluwe' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Kluwe')}
-                            _hover={{ bg: field.value === 'Kluwe' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Kluwe
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Le' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Le' ? 'blue' : 'gray'}
-                            color={field.value === 'Le' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Le')}
-                            _hover={{ bg: field.value === 'Le' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Le
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Lewis' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Lewis' ? 'blue' : 'gray'}
-                            color={field.value === 'Lewis' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Lewis')}
-                            _hover={{ bg: field.value === 'Lewis' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Lewis
-                          </Button>
+                        ))}
                         </Grid>
                       )}
                     />
@@ -1603,50 +1496,7 @@ const FusionForm = () => {
             </Flex>
           </form>
           
-          {writeup && (
-            <Box mt={6}>
-              <Box
-                p={4}
-                borderWidth={1}
-                borderRadius="md"
-                bg={writeupBg}
-                borderColor={borderColor}
-                boxShadow="md"
-              >
-                <Flex justify="space-between" align="center" mb={3}>
-                  <Heading size="sm" color="white">Generated Write-up</Heading>
-                  <Button
-                    size="sm"
-                    colorScheme="green"
-                    onClick={() => {
-                      navigator.clipboard.writeText(writeup);
-                      toast({
-                        title: "Copied to clipboard",
-                        status: "success",
-                        duration: 2000,
-                      });
-                    }}
-                  >
-                    Copy to Clipboard
-                  </Button>
-                </Flex>
-                <Textarea
-                  value={writeup}
-                  height="300px"
-                  isReadOnly
-                  fontSize="sm"
-                  lineHeight="1"
-                  resize="vertical"
-                  aria-label="Generated write-up"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  _focus={{ borderColor: "green.500" }}
-                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
-                />
-              </Box>
-            </Box>
-          )}
+          <WriteupPanel writeup={writeup} minH="300px" />
         </Box>
         
         {/* Delete confirmation dialog */}

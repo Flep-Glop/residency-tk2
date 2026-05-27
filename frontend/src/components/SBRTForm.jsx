@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
@@ -22,9 +22,15 @@ import {
   Center,
   Badge,
 } from '@chakra-ui/react';
-import { generateSBRTWriteup } from '../../services/sbrtService';
+import { generateSBRTWriteup } from '../services/sbrtService';
+import { ClinicProfileContext } from '../pages/_app';
+import WriteupPanel from './WriteupPanel';
 
 const SBRTForm = () => {
+  const { activeProfile } = useContext(ClinicProfileContext);
+  const physicists = activeProfile?.physicists || [];
+  const physicians = activeProfile?.physicians || [];
+  const sbrtFacilityDefaults = activeProfile?.facility_defaults?.sbrt || {};
   // State variables
   const [loading, setLoading] = useState(false);
   const [writeup, setWriteup] = useState('');
@@ -40,8 +46,8 @@ const SBRTForm = () => {
   const writeupBg = 'gray.800';
   const borderColor = 'gray.600';
 
-  // Treatment site options
-  const treatmentSites = [
+  // Treatment site options from profile or fallback defaults
+  const treatmentSites = activeProfile?.module_presets?.sbrt?.treatment_sites || [
     { id: 'liver', label: 'Liver' },
     { id: 'lung', label: 'Lung' },
     { id: 'prostate', label: 'Prostate' },
@@ -86,7 +92,11 @@ const SBRTForm = () => {
         vol_50_rx_isodose: '',
         max_dose_2cm_ring: '',
         max_dose_in_target: '',
-        sib_comment: ''
+        sib_comment: '',
+        planning_system: sbrtFacilityDefaults.planning_system || 'Pinnacle',
+        accelerator: sbrtFacilityDefaults.accelerator || 'VersaHD',
+        imaging_system: sbrtFacilityDefaults.imaging_system || 'kV-CBCT',
+        gating_system: sbrtFacilityDefaults.gating_system || 'C-RAD CatalystHD',
       }
     }
   });
@@ -255,6 +265,14 @@ const SBRTForm = () => {
       calculateMetrics();
     }, [watchPTVVolume, watchDose, watchVolAtRx, watchVol100RxIsodose, 
         watchVol50RxIsodose, watchMaxDose2cmRing, watchMaxDoseInTarget, isSIB]);
+
+  useEffect(() => {
+    const defaults = activeProfile?.facility_defaults?.sbrt || {};
+    setValue('sbrt_data.planning_system', defaults.planning_system || 'Pinnacle');
+    setValue('sbrt_data.accelerator', defaults.accelerator || 'VersaHD');
+    setValue('sbrt_data.imaging_system', defaults.imaging_system || 'kV-CBCT');
+    setValue('sbrt_data.gating_system', defaults.gating_system || 'C-RAD CatalystHD');
+  }, [activeProfile, setValue]);
   
   const onSubmit = async (data) => {
     // Validate site is selected
@@ -427,21 +445,7 @@ const SBRTForm = () => {
                         rules={{ required: 'Physicist is required' }}
                         render={({ field }) => (
                           <Grid templateColumns="1fr 1fr" gap={2}>
-                            <GridItem colSpan={2}>
-                              <Button
-                                size="sm"
-                                width="100%"
-                                variant={field.value === 'Papanikolaou' ? 'solid' : 'outline'}
-                                colorScheme={field.value === 'Papanikolaou' ? 'blue' : 'gray'}
-                                color={field.value === 'Papanikolaou' ? 'white' : 'gray.300'}
-                                borderColor="gray.600"
-                                onClick={() => field.onChange('Papanikolaou')}
-                                _hover={{ bg: field.value === 'Papanikolaou' ? 'blue.600' : 'gray.700' }}
-                              >
-                                Papanikolaou
-                              </Button>
-                            </GridItem>
-                          {['Bassiri', 'Kirby', 'Paschal', 'Rasmussen'].map(name => (
+                          {physicists.map(name => (
                             <Button
                               key={name}
                               size="sm"
@@ -471,21 +475,7 @@ const SBRTForm = () => {
                         rules={{ required: 'Physician is required' }}
                         render={({ field }) => (
                           <Grid templateColumns="1fr 1fr" gap={2}>
-                            <GridItem colSpan={2}>
-                              <Button
-                                size="sm"
-                                width="100%"
-                                variant={field.value === 'Tuli' ? 'solid' : 'outline'}
-                                colorScheme={field.value === 'Tuli' ? 'blue' : 'gray'}
-                                color={field.value === 'Tuli' ? 'white' : 'gray.300'}
-                                borderColor="gray.600"
-                                onClick={() => field.onChange('Tuli')}
-                                _hover={{ bg: field.value === 'Tuli' ? 'blue.600' : 'gray.700' }}
-                              >
-                                Tuli
-                              </Button>
-                            </GridItem>
-                          {['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis'].map(name => (
+                          {physicians.map(name => (
                             <Button
                               key={name}
                               size="sm"
@@ -556,11 +546,11 @@ const SBRTForm = () => {
                         >
                             {/* Technique selection - inline buttons */}
                           <HStack spacing={1} mb={2} justify="center">
-                            {[
+                            {(activeProfile?.module_presets?.sbrt?.breathing_techniques || [
                               { value: 'freebreathe', label: 'FB' },
                               { value: '4DCT', label: '4DCT' },
                               { value: 'DIBH', label: 'DIBH' }
-                            ].map(technique => (
+                            ]).map(technique => (
                               <Button
                                 key={technique.value}
                                 size="xs"
@@ -712,11 +702,11 @@ const SBRTForm = () => {
                       
                       {/* Technique selection - inline buttons */}
                       <HStack spacing={1} mb={2} justify="center">
-                        {[
+                        {(activeProfile?.module_presets?.sbrt?.breathing_techniques || [
                           { value: 'freebreathe', label: 'FB' },
                           { value: '4DCT', label: '4DCT' },
                           { value: 'DIBH', label: 'DIBH' }
-                        ].map(technique => (
+                        ]).map(technique => (
                           <Button
                             key={technique.value}
                             size="xs"
@@ -1065,52 +1055,7 @@ const SBRTForm = () => {
             </Flex>
           </form>
           
-          {/* Generated Write-up Section - Below Form */}
-          {writeup && (
-            <Box mt={6}>
-              <Box
-                p={4}
-                borderWidth={1}
-                borderRadius="md"
-                bg={writeupBg}
-                borderColor={borderColor}
-                boxShadow="md"
-              >
-                <Flex justify="space-between" align="center" mb={3}>
-                  <Heading size="sm" color="white">Generated Write-up</Heading>
-                  <Button
-                    size="sm"
-                    colorScheme="green"
-                    onClick={() => {
-                      navigator.clipboard.writeText(writeup);
-                      toast({
-                        title: 'Copied to clipboard',
-                        status: 'success',
-                        duration: 2000,
-                        isClosable: true,
-                      });
-                    }}
-                  >
-                    Copy to Clipboard
-                  </Button>
-                </Flex>
-                <Textarea
-                  value={writeup}
-                  height="400px"
-                  isReadOnly
-                  fontSize="sm"
-                  lineHeight="1"
-                  resize="vertical"
-                  aria-label="Generated write-up"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  _hover={{ borderColor: "gray.500" }}
-                  sx={{ fontFamily: '"Aseprite", monospace !important' }}
-                />
-              </Box>
-            </Box>
-          )}
+          <WriteupPanel writeup={writeup} />
         </Box>
       </Box>
     </Box>

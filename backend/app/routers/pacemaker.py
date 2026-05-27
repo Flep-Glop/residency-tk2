@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict, Any
 
-from app.schemas.pacemaker_schemas import (
+from app.schemas.pacemaker import (
     PacemakerGenerateRequest, PacemakerGenerateResponse,
     PacemakerRiskAssessmentRequest, PacemakerRiskAssessmentResponse,
     DeviceInfo, TreatmentSiteInfo
 )
-from app.services.pacemaker_service import PacemakerService
+from app.services.pacemaker import PacemakerService
 
 router = APIRouter()
 

@@ -76,12 +76,13 @@ class DIBHService:
         
         # Default values for fixed parameters
         machine = "linear accelerator"
-        scanning_system = "C-RAD"
+        scanning_system = dibh_data.scanning_system
+        gating_device = dibh_data.gating_device
         
         # Generate the write-up
         write_up = f"Dr. {physician} requested a medical physics consultation for --- for a gated, DIBH treatment. "
         write_up += f"Dr. {physician} has elected to treat the {site_specific_text} "
-        write_up += f"with the C-RAD positioning and gating system in conjunction with the {machine}.\n\n"
+        write_up += f"with the {scanning_system} positioning and gating system in conjunction with the {machine}.\n\n"
         
         write_up += f"Days before the initial radiation delivery, the patient was simulated in the treatment "
         write_up += f"position using a {immobilization_device} to aid in immobilization "
@@ -105,7 +106,7 @@ class DIBHService:
             write_up += f"to the {treatment_site}. "
         
         write_up += f"The delivery of the DIBH gating technique on the linear accelerator will be performed "
-        write_up += f"using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, "
+        write_up += f"using the {gating_device}. The {gating_device} will be used to position the patient, "
         write_up += f"monitor intra-fraction motion, and gate the beam delivery. Verification of the patient "
         write_up += f"position will be validated with a DIBH kV-CBCT. Treatment plan calculations and delivery "
         write_up += f"procedures were reviewed and approved by the prescribing radiation oncologist, Dr. {physician}, "

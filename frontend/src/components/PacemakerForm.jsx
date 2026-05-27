@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
@@ -26,16 +26,18 @@ import {
   Checkbox
 } from '@chakra-ui/react';
 import { WarningIcon, CheckIcon } from '@chakra-ui/icons';
+import WriteupPanel from './WriteupPanel';
 import { 
   getTreatmentSites, 
   getDeviceInfo, 
   getTreatmentSiteInfo, 
   calculateRiskAssessment, 
   generatePacemakerWriteup 
-} from '../../services/pacemakerService';
+} from '../services/pacemakerService';
+import { ClinicProfileContext } from '../pages/_app';
 
 const PacemakerForm = () => {
-  // State variables
+  const { activeProfile } = useContext(ClinicProfileContext);
   const [treatmentSites, setTreatmentSites] = useState([]);
   const [deviceInfo, setDeviceInfo] = useState({ vendors: [], models_by_vendor: {} });
   const [distanceOptions, setDistanceOptions] = useState([]);
@@ -46,10 +48,8 @@ const PacemakerForm = () => {
   const [selectedVendor, setSelectedVendor] = useState('');
   const [isCustomDevice, setIsCustomDevice] = useState(false);
   const toast = useToast();
-  
-  // Default staff lists (can be moved to a service later)
-  const [physicians] = useState(['Dalwadi', 'Galvan', 'Ha', 'Kluwe', 'Le', 'Lewis', 'Tuli']);
-  const [physicists] = useState(['Bassiri', 'Kirby', 'Papanikolaou', 'Paschal', 'Rasmussen']);
+  const physicians = activeProfile?.physicians || [];
+  const physicists = activeProfile?.physicists || [];
   
   // Fixed dark theme colors for consistency
   const formBg = 'gray.800';
@@ -218,16 +218,6 @@ const PacemakerForm = () => {
     }
   };
 
-  // Copy write-up to clipboard
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(writeup);
-    toast({
-      title: 'Write-up copied to clipboard',
-      status: 'success',
-      duration: 2000,
-      isClosable: true,
-    });
-  };
 
   if (initialLoading) {
     return (
@@ -282,64 +272,20 @@ const PacemakerForm = () => {
                       rules={{ required: 'Physicist is required' }}
                       render={({ field }) => (
                         <Grid templateColumns="1fr 1fr" gap={2}>
-                          <GridItem colSpan={2}>
-                            <Button
-                              size="sm"
-                              width="100%"
-                              variant={field.value === 'Papanikolaou' ? 'solid' : 'outline'}
-                              colorScheme={field.value === 'Papanikolaou' ? 'blue' : 'gray'}
-                              color={field.value === 'Papanikolaou' ? 'white' : 'gray.300'}
-                              borderColor="gray.600"
-                              onClick={() => field.onChange('Papanikolaou')}
-                              _hover={{ bg: field.value === 'Papanikolaou' ? 'blue.600' : 'gray.700' }}
-                            >
-                              Papanikolaou
-                            </Button>
-                          </GridItem>
+                        {physicists.map(name => (
                           <Button
+                            key={name}
                             size="sm"
-                            variant={field.value === 'Bassiri' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Bassiri' ? 'blue' : 'gray'}
-                            color={field.value === 'Bassiri' ? 'white' : 'gray.300'}
+                            variant={field.value === name ? 'solid' : 'outline'}
+                            colorScheme={field.value === name ? 'blue' : 'gray'}
+                            color={field.value === name ? 'white' : 'gray.300'}
                             borderColor="gray.600"
-                            onClick={() => field.onChange('Bassiri')}
-                            _hover={{ bg: field.value === 'Bassiri' ? 'blue.600' : 'gray.700' }}
+                            onClick={() => field.onChange(name)}
+                            _hover={{ bg: field.value === name ? 'blue.600' : 'gray.700' }}
                           >
-                            Bassiri
+                            {name}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Kirby' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Kirby' ? 'blue' : 'gray'}
-                            color={field.value === 'Kirby' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Kirby')}
-                            _hover={{ bg: field.value === 'Kirby' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Kirby
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Paschal' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Paschal' ? 'blue' : 'gray'}
-                            color={field.value === 'Paschal' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Paschal')}
-                            _hover={{ bg: field.value === 'Paschal' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Paschal
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Rasmussen' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Rasmussen' ? 'blue' : 'gray'}
-                            color={field.value === 'Rasmussen' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Rasmussen')}
-                            _hover={{ bg: field.value === 'Rasmussen' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Rasmussen
-                          </Button>
+                        ))}
                         </Grid>
                       )}
                     />
@@ -354,86 +300,20 @@ const PacemakerForm = () => {
                       rules={{ required: 'Physician is required' }}
                       render={({ field }) => (
                         <Grid templateColumns="1fr 1fr" gap={2}>
-                          <GridItem colSpan={2}>
-                            <Button
-                              size="sm"
-                              width="100%"
-                              variant={field.value === 'Tuli' ? 'solid' : 'outline'}
-                              colorScheme={field.value === 'Tuli' ? 'blue' : 'gray'}
-                              color={field.value === 'Tuli' ? 'white' : 'gray.300'}
-                              borderColor="gray.600"
-                              onClick={() => field.onChange('Tuli')}
-                              _hover={{ bg: field.value === 'Tuli' ? 'blue.600' : 'gray.700' }}
-                            >
-                              Tuli
-                            </Button>
-                          </GridItem>
+                        {physicians.map(name => (
                           <Button
+                            key={name}
                             size="sm"
-                            variant={field.value === 'Dalwadi' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Dalwadi' ? 'blue' : 'gray'}
-                            color={field.value === 'Dalwadi' ? 'white' : 'gray.300'}
+                            variant={field.value === name ? 'solid' : 'outline'}
+                            colorScheme={field.value === name ? 'blue' : 'gray'}
+                            color={field.value === name ? 'white' : 'gray.300'}
                             borderColor="gray.600"
-                            onClick={() => field.onChange('Dalwadi')}
-                            _hover={{ bg: field.value === 'Dalwadi' ? 'blue.600' : 'gray.700' }}
+                            onClick={() => field.onChange(name)}
+                            _hover={{ bg: field.value === name ? 'blue.600' : 'gray.700' }}
                           >
-                            Dalwadi
+                            {name}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Galvan' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Galvan' ? 'blue' : 'gray'}
-                            color={field.value === 'Galvan' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Galvan')}
-                            _hover={{ bg: field.value === 'Galvan' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Galvan
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Ha' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Ha' ? 'blue' : 'gray'}
-                            color={field.value === 'Ha' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Ha')}
-                            _hover={{ bg: field.value === 'Ha' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Ha
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Kluwe' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Kluwe' ? 'blue' : 'gray'}
-                            color={field.value === 'Kluwe' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Kluwe')}
-                            _hover={{ bg: field.value === 'Kluwe' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Kluwe
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Le' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Le' ? 'blue' : 'gray'}
-                            color={field.value === 'Le' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Le')}
-                            _hover={{ bg: field.value === 'Le' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Le
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={field.value === 'Lewis' ? 'solid' : 'outline'}
-                            colorScheme={field.value === 'Lewis' ? 'blue' : 'gray'}
-                            color={field.value === 'Lewis' ? 'white' : 'gray.300'}
-                            borderColor="gray.600"
-                            onClick={() => field.onChange('Lewis')}
-                            _hover={{ bg: field.value === 'Lewis' ? 'blue.600' : 'gray.700' }}
-                          >
-                            Lewis
-                          </Button>
+                        ))}
                         </Grid>
                       )}
                     />
@@ -837,30 +717,7 @@ const PacemakerForm = () => {
             </Flex>
           </form>
 
-          {/* Write-up Section */}
-          {writeup && (
-            <Box mt={8} bg={writeupBg} p={6} borderRadius="lg" border="1px" borderColor={borderColor}>
-              <Flex justify="space-between" align="center" mb={3}>
-                <Heading size="sm" color="white">Generated Write-up</Heading>
-                <Button size="sm" colorScheme="green" onClick={copyToClipboard}>
-                  Copy to Clipboard
-                </Button>
-              </Flex>
-              <Textarea
-                value={writeup}
-                readOnly
-                rows={15}
-                resize="vertical"
-                bg="gray.900"
-                color="white"
-                border="1px solid"
-                borderColor={borderColor}
-                fontSize="sm"
-                lineHeight="1"
-                sx={{ fontFamily: '"Aseprite", monospace !important' }}
-              />
-            </Box>
-          )}
+          <WriteupPanel writeup={writeup} />
         </Box>
       </Box>
     </Box>

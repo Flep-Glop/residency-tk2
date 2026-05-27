@@ -1,4 +1,5 @@
-from app.schemas.srs_schemas import SRSGenerateRequest, SRSGenerateResponse
+from app.schemas.srs import SRSGenerateRequest, SRSGenerateResponse
+from app.services.utils import format_number
 from typing import List
 
 class SRSService:
@@ -22,14 +23,6 @@ class SRSService:
         """Return 'fraction' for count=1, 'fractions' for count>1."""
         return "fraction" if count == 1 else "fractions"
 
-    def _format_number(self, value, decimal_places=1):
-        """Format number removing unnecessary trailing zeros."""
-        if isinstance(value, (int, float)):
-            formatted = f"{value:.{decimal_places}f}".rstrip('0').rstrip('.')
-            if '.' not in formatted:
-                return formatted
-            return formatted
-        return str(value)
 
     def generate_srs_writeup(self, request: SRSGenerateRequest) -> SRSGenerateResponse:
         """Generate SRS/SRT write-up using frontend form data."""
@@ -43,14 +36,14 @@ class SRSService:
         
         # Create lesion summary
         if len(lesions) == 1:
-            lesion_details = f"a {self._format_number(lesions[0].volume)} cc lesion located in the {lesions[0].site}"
+            lesion_details = f"a {format_number(lesions[0].volume)} cc lesion located in the {lesions[0].site}"
         else:
             # Create detailed list of each lesion
             lesion_details = f"{len(lesions)} brain lesions: "
             lesion_list = []
             
             for lesion in lesions:
-                lesion_list.append(f"a {self._format_number(lesion.volume)} cc lesion in the {lesion.site}")
+                lesion_list.append(f"a {format_number(lesion.volume)} cc lesion in the {lesion.site}")
             
             # Join lesion descriptions with commas and 'and' for the last one
             if len(lesion_list) > 1:
@@ -110,7 +103,7 @@ class SRSService:
         """Generate simulation and imaging paragraph."""
         text = f"Days before radiation delivery, a {immobilization_device} was constructed of the patient and was then "
         text += f"fixated onto a stereotactic carbon fiber frame base. Dr. {physician} was present to verify correct "
-        text += f"construction of the head mask. A high resolution CT scan ({self._format_number(ct_slice_thickness)}mm slice thickness) was then acquired. "
+        text += f"construction of the head mask. A high resolution CT scan ({format_number(ct_slice_thickness)}mm slice thickness) was then acquired. "
         
         # MRI fusion paragraph
         text += f"In addition, a previous high resolution MR image set ({mri_sequence} scan) was acquired. "
@@ -157,13 +150,13 @@ class SRSService:
             fraction_word = self._format_fractions(lesion.fractions)
             
             # Plain text metrics with deviation annotations
-            text += f"• Rx Dose: {self._format_number(lesion.dose)} Gy in {lesion.fractions} {fraction_word}\n"
-            text += f"• Target Volume: {self._format_number(lesion.volume)} cc\n"
+            text += f"• Rx Dose: {format_number(lesion.dose)} Gy in {lesion.fractions} {fraction_word}\n"
+            text += f"• Target Volume: {format_number(lesion.volume)} cc\n"
             text += f"• Location: {lesion.site}\n"
-            text += f"• PTV Coverage: {self._format_number(lesion.ptv_coverage)}%\n"
-            text += f"• Conformity Index: {self._format_number(lesion.conformity_index, 2)}{self._format_deviation(ci_dev)}\n"
-            text += f"• Gradient Index: {self._format_number(lesion.gradient_index, 2)}{self._format_deviation(gi_dev)}\n"
-            text += f"• Maximum Dose: {self._format_number(lesion.max_dose)}%"
+            text += f"• PTV Coverage: {format_number(lesion.ptv_coverage)}%\n"
+            text += f"• Conformity Index: {format_number(lesion.conformity_index, 2)}{self._format_deviation(ci_dev)}\n"
+            text += f"• Gradient Index: {format_number(lesion.gradient_index, 2)}{self._format_deviation(gi_dev)}\n"
+            text += f"• Maximum Dose: {format_number(lesion.max_dose)}%"
             
             # Add deviation summary if any deviations exist
             if ci_dev != "none" or gi_dev != "none":
@@ -186,12 +179,12 @@ class SRSService:
                 
                 fraction_word = self._format_fractions(lesion.fractions)
                 text += f"Lesion {i+1}: {lesion.site}\n"
-                text += f"• Volume: {self._format_number(lesion.volume)} cc\n"
-                text += f"• Dose: {self._format_number(lesion.dose)} Gy in {lesion.fractions} {fraction_word}\n"
-                text += f"• PTV Coverage: {self._format_number(lesion.ptv_coverage)}%\n"
-                text += f"• Conformity Index: {self._format_number(lesion.conformity_index, 2)}{self._format_deviation(ci_dev)}\n"
-                text += f"• Gradient Index: {self._format_number(lesion.gradient_index, 2)}{self._format_deviation(gi_dev)}\n"
-                text += f"• Maximum Dose: {self._format_number(lesion.max_dose)}%\n"
+                text += f"• Volume: {format_number(lesion.volume)} cc\n"
+                text += f"• Dose: {format_number(lesion.dose)} Gy in {lesion.fractions} {fraction_word}\n"
+                text += f"• PTV Coverage: {format_number(lesion.ptv_coverage)}%\n"
+                text += f"• Conformity Index: {format_number(lesion.conformity_index, 2)}{self._format_deviation(ci_dev)}\n"
+                text += f"• Gradient Index: {format_number(lesion.gradient_index, 2)}{self._format_deviation(gi_dev)}\n"
+                text += f"• Maximum Dose: {format_number(lesion.max_dose)}%\n"
                 if i < len(lesions) - 1:
                     text += "\n"
             
@@ -225,14 +218,14 @@ class SRSService:
         
         for lesion, ci_dev, gi_dev in deviation_data:
             if ci_dev == "minor":
-                minor_deviations.append(f"CI for {lesion.site} ({self._format_number(lesion.conformity_index, 2)})")
+                minor_deviations.append(f"CI for {lesion.site} ({format_number(lesion.conformity_index, 2)})")
             elif ci_dev == "major":
-                major_deviations.append(f"CI for {lesion.site} ({self._format_number(lesion.conformity_index, 2)})")
+                major_deviations.append(f"CI for {lesion.site} ({format_number(lesion.conformity_index, 2)})")
             
             if gi_dev == "minor":
-                minor_deviations.append(f"GI for {lesion.site} ({self._format_number(lesion.gradient_index, 2)})")
+                minor_deviations.append(f"GI for {lesion.site} ({format_number(lesion.gradient_index, 2)})")
             elif gi_dev == "major":
-                major_deviations.append(f"GI for {lesion.site} ({self._format_number(lesion.gradient_index, 2)})")
+                major_deviations.append(f"GI for {lesion.site} ({format_number(lesion.gradient_index, 2)})")
         
         text = "Plan Quality Assessment:\n"
         

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict
 
-from app.schemas.tbi_schemas import TBIGenerateRequest, TBIGenerateResponse
-from app.services.tbi_service import TBIService
+from app.schemas.tbi import TBIGenerateRequest, TBIGenerateResponse
+from app.services.tbi import TBIService
 
 router = APIRouter()
 

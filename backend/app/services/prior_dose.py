@@ -763,7 +763,7 @@ class PriorDoseService:
     def _format_dose_statistic(self, stat) -> str:
         """Format a dose statistic in clean clinical style.
         
-        Format: • Spinal Cord Dmax: 30 Gy (limit <50 Gy per QUANTEC)
+        Format: • Spinal Cord Dmax: 30 Gy (limit <50 Gy)
         
         Args:
             stat: DoseStatistic object with structure, constraint_type, value, limit, source, unit
@@ -771,23 +771,12 @@ class PriorDoseService:
         Returns:
             Formatted bullet point string
         """
-        # Build value with unit if not already present
         value_display = stat.value
         if stat.unit and stat.unit not in stat.value:
             value_display = f"{stat.value} {stat.unit}"
         
-        # Build limit+source string, removing redundant "(EQD2)" since it's in methodology
-        # Don't include source if it's "Custom" - user-added constraints don't need source attribution
-        is_custom = stat.source and stat.source.lower() == 'custom'
-        
-        if hasattr(stat, 'limit') and stat.limit and stat.source and not is_custom:
-            clean_source = stat.source.replace(" (EQD2)", "")
-            limit_source = f" (limit {stat.limit} per {clean_source})"
-        elif hasattr(stat, 'limit') and stat.limit:
+        if hasattr(stat, 'limit') and stat.limit:
             limit_source = f" (limit {stat.limit})"
-        elif stat.source and not is_custom:
-            clean_source = stat.source.replace(" (EQD2)", "")
-            limit_source = f" ({clean_source})"
         else:
             limit_source = ""
         
@@ -817,89 +806,59 @@ class PriorDoseService:
         
         return sorted(treatments, key=get_sort_key)
     
-    def _generate_methodology_text(self, method_abbreviation: str, any_dicom_unavailable: bool, constraint_source: str = None) -> str:
+    def _generate_methodology_text(self, method_abbreviation: str, any_dicom_unavailable: bool) -> str:
         """Generate methodology section based on DICOM availability and fractionation regime.
-        
-        Enhancement 1: Fix DICOM unavailable + overlap logic.
-        When DICOM files are unavailable, we cannot reconstruct dose in Velocity,
-        so we use a conservative estimation approach.
-        
-        Enhancement 2: Include constraint source reference (QUANTEC vs Timmerman).
-        
-        Enhancement 3: Alpha/beta ratios only mentioned for EQD2 (not Raw Dose).
         
         Args:
             method_abbreviation: EQD2, BED, or Raw Dose
             any_dicom_unavailable: True if any overlapping treatment has DICOM unavailable
-            constraint_source: Constraint reference source (e.g., "QUANTEC dose-volume constraints")
             
         Returns:
             Appropriate methodology text
         """
-        # Default constraint source if not provided
-        if not constraint_source:
-            constraint_source = "institutional dose-volume constraints"
-        
-        # Alpha/beta ratio text only applies to EQD2/BED, not Raw Dose
         uses_biologic_correction = method_abbreviation in ["EQD2", "BED"]
         alpha_beta_text = " with an alpha/beta ratio of 2 for spinal cord and 3 for all other organs at risk" if uses_biologic_correction else ""
         
         if any_dicom_unavailable:
-            # Conservative approach when DICOM unavailable
             return (
                 "Due to unavailable DICOM files, the previous treatment dose distribution could not be "
                 "directly reconstructed in Velocity. Dose constraints are therefore "
                 "estimated based on available treatment records and clinical assessment of overlapping anatomy. "
-                f"Dose estimation uses {method_abbreviation} methodology{alpha_beta_text}, referencing {constraint_source}. "
+                f"Dose estimation uses {method_abbreviation} methodology{alpha_beta_text}. "
                 "A conservative approach is recommended given the uncertainty in composite dose calculation without direct dose summation.\n"
             )
         else:
-            # Normal reconstruction methodology
             return (
                 "The previous treatment was reconstructed on the current patient CT for summation "
-                f"with the current plan in Velocity. Dose constraints are evaluated using {method_abbreviation} methodology{alpha_beta_text}, "
-                f"referencing {constraint_source}.\n"
+                f"with the current plan in Velocity. Dose constraints are evaluated using {method_abbreviation} methodology{alpha_beta_text}.\n"
             )
     
-    def _generate_multi_methodology_text(self, method_abbreviation: str, any_dicom_unavailable: bool, constraint_source: str = None) -> str:
+    def _generate_multi_methodology_text(self, method_abbreviation: str, any_dicom_unavailable: bool) -> str:
         """Generate methodology section for multiple prior treatments.
-        
-        Enhancement 1: Fix DICOM unavailable + overlap logic for multiple treatments.
-        Enhancement 2: Include constraint source reference (QUANTEC vs Timmerman).
-        Enhancement 3: Alpha/beta ratios only mentioned for EQD2 (not Raw Dose).
         
         Args:
             method_abbreviation: EQD2, BED, or Raw Dose
             any_dicom_unavailable: True if any overlapping treatment has DICOM unavailable
-            constraint_source: Constraint reference source (e.g., "QUANTEC dose-volume constraints")
             
         Returns:
             Appropriate methodology text
         """
-        # Default constraint source if not provided
-        if not constraint_source:
-            constraint_source = "institutional dose-volume constraints"
-        
-        # Alpha/beta ratio text only applies to EQD2/BED, not Raw Dose
         uses_biologic_correction = method_abbreviation in ["EQD2", "BED"]
         alpha_beta_text = " with an alpha/beta ratio of 2 for spinal cord and 3 for all other organs at risk" if uses_biologic_correction else ""
         
         if any_dicom_unavailable:
-            # Conservative approach when any DICOM unavailable
             return (
                 "Due to unavailable DICOM files for one or more prior treatments, the previous dose distributions "
                 "could not be completely reconstructed in Velocity. Available treatments were "
                 "reconstructed where possible, and dose constraints for treatments without DICOM files are estimated "
                 "based on available treatment records and clinical assessment of overlapping anatomy. "
-                f"Dose estimation uses {method_abbreviation} methodology{alpha_beta_text}, referencing {constraint_source}. "
+                f"Dose estimation uses {method_abbreviation} methodology{alpha_beta_text}. "
                 "A conservative approach is recommended given the uncertainty in composite dose calculation.\n"
             )
         else:
-            # Normal reconstruction methodology
             return (
                 "The previous treatment(s) were reconstructed on the current patient CT for summation "
-                f"with the current plan in Velocity. Dose constraints are evaluated using {method_abbreviation} methodology{alpha_beta_text}, "
-                f"referencing {constraint_source}.\n"
+                f"with the current plan in Velocity. Dose constraints are evaluated using {method_abbreviation} methodology{alpha_beta_text}.\n"
             )
     
     def generate_prior_dose_writeup(self, request: PriorDoseRequest) -> PriorDoseResponse:
@@ -1021,13 +980,6 @@ class PriorDoseService:
         else:
             method_abbreviation = "Raw Dose"
         
-        # Determine constraint source based on current treatment regime and dose calc method
-        # EQD2 always uses QUANTEC; Raw Dose uses regime-appropriate constraints
-        if "EQD2" in dose_calc_method:
-            constraint_source = "QUANTEC dose-volume constraints"
-        else:
-            constraint_source = self.get_constraint_source_text(current_regime)
-        
         if prior_treatment.has_overlap:
             # STRUCTURED FORMAT FOR OVERLAP CASES
             writeup = f"Dr. {physician} requested a medical physics consultation for --- for a prior dose assessment. This consultation provides dosimetric analysis and planning guidance for composite dose evaluation.\n\n"
@@ -1043,9 +995,9 @@ class PriorDoseService:
                 writeup += f" on the {', '.join(critical_structures)}"
             writeup += f".\n\n"
             
-            # ANALYSIS - DICOM-aware methodology, constraint source, and dose statistics
+            # ANALYSIS - DICOM-aware methodology and dose statistics
             writeup += f"Analysis:\n"
-            writeup += self._generate_methodology_text(method_abbreviation, prior_treatment.dicoms_unavailable, constraint_source)
+            writeup += self._generate_methodology_text(method_abbreviation, prior_treatment.dicoms_unavailable)
             
             # Dose statistics integrated under Analysis
             dose_statistics = prior_dose_data.dose_statistics if hasattr(prior_dose_data, 'dose_statistics') else []
@@ -1104,13 +1056,6 @@ class PriorDoseService:
         else:
             method_abbreviation = "Raw Dose"
         
-        # Determine constraint source based on current treatment regime and dose calc method
-        # EQD2 always uses QUANTEC; Raw Dose uses regime-appropriate constraints
-        if "EQD2" in dose_calc_method:
-            constraint_source = "QUANTEC dose-volume constraints"
-        else:
-            constraint_source = self.get_constraint_source_text(current_regime)
-        
         if overlapping_treatments:
             # STRUCTURED FORMAT FOR OVERLAP CASES
             writeup = f"Dr. {physician} requested a medical physics consultation for --- for a prior dose assessment. This consultation provides dosimetric analysis and planning guidance for composite dose evaluation.\n\n"
@@ -1150,7 +1095,7 @@ class PriorDoseService:
             # Check if any overlapping treatment has DICOM unavailable
             any_dicom_unavailable = any(t.dicoms_unavailable for t in overlapping_treatments)
             writeup += f"Analysis:\n"
-            writeup += self._generate_multi_methodology_text(method_abbreviation, any_dicom_unavailable, constraint_source)
+            writeup += self._generate_multi_methodology_text(method_abbreviation, any_dicom_unavailable)
             
             # Dose statistics integrated under Analysis
             dose_statistics = prior_dose_data.dose_statistics if hasattr(prior_dose_data, 'dose_statistics') else []

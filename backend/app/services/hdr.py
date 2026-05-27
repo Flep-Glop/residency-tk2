@@ -1,4 +1,5 @@
-from app.schemas.hdr_schemas import HDRGenerateRequest, HDRGenerateResponse
+from app.schemas.hdr import HDRGenerateRequest, HDRGenerateResponse
+from app.services.utils import format_number
 from typing import List, Dict, Any
 
 class HDRService:
@@ -59,9 +60,9 @@ class HDRService:
         
         # Fixed values
         patient_position = "lithotomy"
-        ct_slice_thickness = 3.0
-        afterloader = "ELEKTA Ir-192 remote afterloader"
-        planning_system = "Oncentra"
+        ct_slice_thickness = data.ct_slice_thickness
+        afterloader = data.afterloader
+        planning_system = data.planning_system
         critical_structures = ["bladder", "rectum", "intestines", "sigmoid"]
         survey_reading = "0.2"
         
@@ -98,7 +99,7 @@ class HDRService:
             article = "an" if applicator_description[0].lower() in ['a', 'e', 'i', 'o', 'u'] else "a"
         
         text += f"The patient elected to be treated with a temporary HDR implant using {article} "
-        text += f"{applicator_description} connected to a remote afterloader containing Ir-192."
+        text += f"{applicator_description} connected to the {afterloader}."
         
         return text
 
@@ -114,7 +115,7 @@ class HDRService:
         else:
             text = f"The applicator was implanted in our clinic with the patient "
         text += f"in the {patient_position} position. Once the applicator was implanted and fixed to the patient, "
-        text += f"a CT scan of {self._format_number(ct_slice_thickness)} mm slice thickness was acquired. "
+        text += f"a CT scan of {format_number(ct_slice_thickness)} mm slice thickness was acquired. "
         
         # Critical structures
         structures_text = self._format_structure_list(critical_structures)
@@ -164,12 +165,4 @@ class HDRService:
         else:
             return f"{num_channels} channels"
     
-    def _format_number(self, value, decimal_places=1):
-        """Format number removing unnecessary trailing zeros."""
-        if isinstance(value, (int, float)):
-            formatted = f"{value:.{decimal_places}f}".rstrip('0').rstrip('.')
-            if '.' not in formatted:
-                return formatted
-            return formatted
-        return str(value)
 

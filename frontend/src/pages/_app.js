@@ -1,4 +1,11 @@
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { getActiveProfile } from '../services/settingsService';
+
+export const ClinicProfileContext = createContext({
+  activeProfile: null,
+  refreshProfile: () => {},
+});
 
 const theme = extendTheme({
   colors: {
@@ -144,10 +151,27 @@ const theme = extendTheme({
 });
 
 function MyApp({ Component, pageProps }) {
+  const [activeProfile, setActiveProfile] = useState(null);
+
+  const refreshProfile = useCallback(async () => {
+    try {
+      const profile = await getActiveProfile();
+      setActiveProfile(profile);
+    } catch {
+      setActiveProfile(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
+
   return (
-    <ChakraProvider theme={theme}>
-      <Component {...pageProps} />
-    </ChakraProvider>
+    <ClinicProfileContext.Provider value={{ activeProfile, refreshProfile }}>
+      <ChakraProvider theme={theme}>
+        <Component {...pageProps} />
+      </ChakraProvider>
+    </ClinicProfileContext.Provider>
   );
 }
 

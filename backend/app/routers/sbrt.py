@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from typing import List, Dict, Any
 
-from app.schemas.sbrt_schemas import (
+from app.schemas.sbrt import (
     SBRTGenerateRequest, SBRTGenerateResponse,
     SBRTValidateRequest, SBRTValidateResponse
 )
-from app.services.sbrt_service import SBRTService
+from app.services.sbrt import SBRTService
 
 router = APIRouter()
 

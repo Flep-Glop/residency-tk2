@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict, Any
 
-from app.schemas.hdr_schemas import HDRGenerateRequest, HDRGenerateResponse
-from app.services.hdr_service import HDRService
+from app.schemas.hdr import HDRGenerateRequest, HDRGenerateResponse
+from app.services.hdr import HDRService
 
 router = APIRouter()
 

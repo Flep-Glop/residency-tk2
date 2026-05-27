@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 import logging
 
-from app.schemas.srs_schemas import SRSGenerateRequest, SRSGenerateResponse
-from app.services.srs_service import SRSService
+from app.schemas.srs import SRSGenerateRequest, SRSGenerateResponse
+from app.services.srs import SRSService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

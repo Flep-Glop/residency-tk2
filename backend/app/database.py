@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
@@ -9,21 +9,11 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./toolkit.db")
 
 engine = create_async_engine(DATABASE_URL, future=True)
 
-async_session_maker = sessionmaker(
-    engine, 
-    class_=AsyncSession, 
-    expire_on_commit=False,
-)
-
 Base = declarative_base()
 
-async def get_db():
-    async with async_session_maker() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+
+async def get_session():
+    async with AsyncSessionLocal() as session:
+        yield session

@@ -1,15 +1,4 @@
-import api from './api';
+import { apiPost } from './api';
 
-const tbiService = {
-  generateWriteup: async (data) => {
-    try {
-      const response = await api.post('/tbi/generate', data);
-      return response.data;
-    } catch (error) {
-      console.error('Error generating TBI write-up:', error);
-      throw error;
-    }
-  }
-};
-
-export default tbiService;
+export const generateTBIWriteup = (data) =>
+  apiPost('/tbi/generate', data, 'Failed to generate TBI write-up');

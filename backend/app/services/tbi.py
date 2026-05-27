@@ -1,4 +1,5 @@
-from app.schemas.tbi_schemas import TBIGenerateRequest, TBIGenerateResponse
+from app.schemas.tbi import TBIGenerateRequest, TBIGenerateResponse
+from app.services.utils import format_number
 from typing import List, Dict
 
 class TBIService:
@@ -62,7 +63,7 @@ class TBIService:
             fraction_text = f"{fractions} fractions"
         
         # Format dose (remove trailing zeros)
-        dose_str = self._format_number(prescription_dose)
+        dose_str = format_number(prescription_dose)
         
         # Setup description
         if setup == "AP/PA":
@@ -93,12 +94,4 @@ class TBIService:
         text = "The plan, calculations and measurements were reviewed by the prescribing physician and the medical physicist."
         return text
 
-    def _format_number(self, value, decimal_places=1):
-        """Format number removing unnecessary trailing zeros."""
-        if isinstance(value, (int, float)):
-            formatted = f"{value:.{decimal_places}f}".rstrip('0').rstrip('.')
-            if '.' not in formatted:
-                return formatted
-            return formatted
-        return str(value)
 
