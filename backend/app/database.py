@@ -5,9 +5,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./toolkit.db")
+_raw_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./toolkit.db")
 
-engine = create_async_engine(DATABASE_URL, future=True)
+# Railway provides postgres:// but SQLAlchemy needs postgresql+asyncpg://
+if _raw_url.startswith("postgres://"):
+    DATABASE_URL = _raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif _raw_url.startswith("postgresql://"):
+    DATABASE_URL = _raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+else:
+    DATABASE_URL = _raw_url
+
+_is_sqlite = DATABASE_URL.startswith("sqlite")
+
+engine_kwargs = {"future": True}
+if not _is_sqlite:
+    engine_kwargs.update({"pool_size": 5, "max_overflow": 10, "pool_pre_ping": True})
+
+engine = create_async_engine(DATABASE_URL, **engine_kwargs)
 
 Base = declarative_base()
 

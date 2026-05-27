@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.database import get_session
 from app.schemas.settings import ProfileCreate, ProfileUpdate, ProfileResponse, EditCodeVerify
 from app.services.settings import SettingsService
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 def get_service(session: AsyncSession = Depends(get_session)) -> SettingsService:
@@ -24,7 +27,9 @@ async def get_active_profile(service: SettingsService = Depends(get_service)):
 
 
 @router.post("/profiles", response_model=ProfileResponse, status_code=201)
+@limiter.limit("10/minute")
 async def create_profile(
+    request: Request,
     data: ProfileCreate,
     service: SettingsService = Depends(get_service),
 ):
@@ -35,7 +40,9 @@ async def create_profile(
 
 
 @router.post("/profiles/{profile_id}/verify")
+@limiter.limit("20/minute")
 async def verify_edit_code(
+    request: Request,
     profile_id: int,
     data: EditCodeVerify,
     service: SettingsService = Depends(get_service),
@@ -50,7 +57,9 @@ async def verify_edit_code(
 
 
 @router.put("/profiles/{profile_id}", response_model=ProfileResponse)
+@limiter.limit("20/minute")
 async def update_profile(
+    request: Request,
     profile_id: int,
     data: ProfileUpdate,
     service: SettingsService = Depends(get_service),
@@ -75,7 +84,9 @@ async def activate_profile(
 
 
 @router.delete("/profiles/{profile_id}", status_code=204)
+@limiter.limit("10/minute")
 async def delete_profile(
+    request: Request,
     profile_id: int,
     data: EditCodeVerify,
     service: SettingsService = Depends(get_service),
